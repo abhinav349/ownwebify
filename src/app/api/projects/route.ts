@@ -100,14 +100,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const adminEmail = process.env.ADMIN_EMAIL;
-    if (adminEmail) {
-      await sendEmail({
-        to: adminEmail,
-        subject: `New Project Request: ${project.title}`,
-        html: newProjectEmailHtml(project.title, user.name, user.email),
-      });
-    }
+    const adminEmail = process.env.ADMIN_EMAIL || "abhinavbansal349@gmail.com";
+    await sendEmail({
+      to: adminEmail,
+      subject: `New Project Request: ${project.title}`,
+      html: newProjectEmailHtml(project.title, user.name, user.email),
+    });
 
     return NextResponse.json(
       { success: true, projectId: project.id },
