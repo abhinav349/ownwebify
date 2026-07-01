@@ -16,7 +16,7 @@ export async function GET() {
       const { Resend } = await import("resend");
       const resend = new Resend(apiKey);
       const { data, error } = await resend.emails.send({
-        from: "OwnWebify <noreply@send.ownwebify.com>",
+        from: "OwnWebify <noreply@ownwebify.com>",
         to: "delivered@resend.dev",
         subject: "Test from OwnWebify Debug",
         html: "<p>Debug test email</p>",
