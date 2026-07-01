@@ -19,16 +19,22 @@ export async function sendEmail({
   }
 
   try {
-    const data = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: "OwnWebify <noreply@send.ownwebify.com>",
       to,
       subject,
       html,
     });
+
+    if (error) {
+      console.error("Resend API error:", JSON.stringify(error));
+      return { success: false, error: error.message || "Resend error" };
+    }
+
     return { success: true, data };
   } catch (error) {
-    console.error("Email send failed:", error);
-    return { success: false, error };
+    console.error("Email send exception:", error);
+    return { success: false, error: String(error) };
   }
 }
 

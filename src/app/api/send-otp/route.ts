@@ -35,14 +35,17 @@ export async function POST(request: NextRequest) {
       html: otpEmailHtml(code),
     });
 
-    if (!result.success && process.env.RESEND_API_KEY) {
-      return NextResponse.json(
-        { error: "Failed to send verification email" },
-        { status: 500 }
-      );
+    if (!result.success) {
+      console.error("OTP email failed:", JSON.stringify(result));
+      if (process.env.RESEND_API_KEY) {
+        return NextResponse.json(
+          { error: "Failed to send verification email. Please try again." },
+          { status: 500 }
+        );
+      }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, emailSent: result.success });
   } catch (error) {
     console.error("Send OTP error:", error);
     return NextResponse.json(
