@@ -20,7 +20,7 @@ export async function sendEmail({
 
   try {
     const data = await resend.emails.send({
-      from: "OwnWebify <noreply@ownwebify.com>",
+      from: "OwnWebify <noreply@send.ownwebify.com>",
       to,
       subject,
       html,
