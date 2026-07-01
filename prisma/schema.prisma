@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+enum ProjectStatus {
+  NEW
+  REVIEWING
+  QUOTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum QuoteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ReferralStatus {
+  PENDING
+  CREDITED
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String?
+  role            Role      @default(CLIENT)
+  company         String?
+  referralCode    String?   @unique
+  referralBalance Float     @default(0)
+  referredById    String?
+  referredBy      User?     @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals       User[]    @relation("UserReferrals")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  projects         Project[]
+  messages         Message[]
+  referralsMade    Referral[] @relation("ReferrerReferrals")
+  referralsUsed    Referral[] @relation("RefereeReferrals")
+}
+
+model Referral {
+  id         String         @id @default(cuid())
+  referrerId String
+  referrer   User           @relation("ReferrerReferrals", fields: [referrerId], references: [id])
+  refereeId  String
+  referee    User           @relation("RefereeReferrals", fields: [refereeId], references: [id])
+  status     ReferralStatus @default(PENDING)
+  amount     Float
+  createdAt  DateTime       @default(now())
+}
+
+model Project {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  projectType     String
+  budget          String
+  timeline        String
+  status          ProjectStatus @default(NEW)
+  referenceLinks  String?
+  howFoundUs      String?
+  clientId        String
+  client          User          @relation(fields: [clientId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  quotes   Quote[]
+  messages Message[]
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  projectId   String
+  project     Project     @relation(fields: [projectId], references: [id])
+  amount      Float
+  description String
+  validUntil  DateTime
+  status      QuoteStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model PortfolioItem {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  longDescription String?
+  imageUrl    String?
+  techStack   String[]
+  liveUrl     String?
+  category    String
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

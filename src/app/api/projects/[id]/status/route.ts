@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { sendEmail, statusChangeEmailHtml } from "@/lib/email";
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const { status } = await request.json();
+
+    const project = await prisma.project.update({
+      where: { id },
+      data: { status },
+      include: { client: true },
+    });
+
+    // Notify client of status change
+    if (project.client.email) {
+      await sendEmail({
+        to: project.client.email,
+        subject: `Project Update: ${project.title}`,
+        html: statusChangeEmailHtml(project.title, status),
+      });
+    }
+
+    return NextResponse.json(project);
+  } catch (error) {
+    console.error("Status update error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
