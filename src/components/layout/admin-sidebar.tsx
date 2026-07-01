@@ -12,6 +12,7 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: BarChart3 },
@@ -27,9 +28,7 @@ export function AdminSidebar() {
     <aside className="w-64 border-r bg-card flex flex-col">
       <div className="p-6 border-b">
         <Link href="/admin" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">O</span>
-          </div>
+          <Logo size={32} />
           <span className="font-semibold">OwnWebify Admin</span>
         </Link>
       </div>

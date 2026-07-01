@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: "OwnWebify | Professional Web Development Services",
   description:
     "Get a stunning, high-performance website built by experts. Submit your project and let us bring your vision to life.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

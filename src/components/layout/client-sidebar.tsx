@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { FolderKanban, LogOut, Plus, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 
 const navigation = [
   { name: "My Projects", href: "/dashboard", icon: FolderKanban },
@@ -18,9 +19,7 @@ export function ClientSidebar({ userName }: { userName: string }) {
     <aside className="w-64 border-r bg-card flex flex-col">
       <div className="p-6 border-b">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">O</span>
-          </div>
+          <Logo size={32} />
           <span className="font-semibold">OwnWebify</span>
         </Link>
         <p className="text-sm text-muted-foreground mt-2">

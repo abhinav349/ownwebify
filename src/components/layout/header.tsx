@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -21,9 +22,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full glass border-b">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-pink-500 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow">
-            <span className="text-white font-bold text-sm">O</span>
-          </div>
+          <Logo size={36} />
           <span className="font-bold text-lg tracking-tight">OwnWebify</span>
         </Link>
 
