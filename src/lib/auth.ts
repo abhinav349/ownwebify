@@ -61,6 +61,10 @@ providers.push(
           return null;
         }
 
+        if (user.role !== "ADMIN" && !user.emailVerified) {
+          throw new Error("Please verify your email before logging in.");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -92,6 +96,7 @@ export const authOptions: NextAuthOptions = {
               email,
               name: user.name || "User",
               role: "CLIENT",
+              emailVerified: true,
               referralCode: generateReferralCode(user.name || "USER"),
             },
           });

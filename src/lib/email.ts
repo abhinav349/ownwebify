@@ -77,6 +77,19 @@ export function quoteEmailHtml(projectTitle: string, amount: number, description
   `;
 }
 
+export function otpEmailHtml(code: string) {
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #a855f7;">Verify Your Email</h2>
+      <p>Use the code below to verify your email address on OwnWebify:</p>
+      <div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin: 20px 0; text-align: center;">
+        <p style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #1e293b; margin: 0;">${code}</p>
+      </div>
+      <p style="color: #64748b; font-size: 14px;">This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
+    </div>
+  `;
+}
+
 export function newMessageEmailHtml(projectTitle: string, senderName: string, messagePreview: string) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">

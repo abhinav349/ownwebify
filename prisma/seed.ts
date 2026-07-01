@@ -10,12 +10,14 @@ async function main() {
     where: { email: "admin@ownwebify.com" },
     update: {
       referralCode: "ABHI-ADMN",
+      emailVerified: true,
     },
     create: {
       email: "admin@ownwebify.com",
       name: "Abhi",
       passwordHash: adminPassword,
       role: "ADMIN",
+      emailVerified: true,
       referralCode: "ABHI-ADMN",
     },
   });

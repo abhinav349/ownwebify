@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,21 +49,86 @@ const steps = [
   { title: "Contact Info", description: "How can I reach you?" },
   { title: "Project Details", description: "Tell me about your project" },
   { title: "Budget & Timeline", description: "When and how much?" },
+  { title: "Verify Email", description: "Confirm your email address" },
 ];
 
 export default function HirePage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   const {
     register,
     handleSubmit,
     trigger,
+    getValues,
     formState: { errors },
   } = useForm<ProjectIntakeFormData>({
     resolver: zodResolver(projectIntakeSchema),
   });
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const sendOtp = useCallback(async () => {
+    const email = getValues("email");
+    if (!email) return;
+
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOtpSent(true);
+        setCountdown(60);
+      } else {
+        setOtpError(data.error || "Failed to send code");
+      }
+    } catch {
+      setOtpError("Network error. Please try again.");
+    } finally {
+      setOtpLoading(false);
+    }
+  }, [getValues]);
+
+  const verifyOtp = async () => {
+    const email = getValues("email");
+    if (!email || !otpCode) return;
+
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otpCode }),
+      });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        setOtpVerified(true);
+      } else {
+        setOtpError(data.error || "Invalid code");
+      }
+    } catch {
+      setOtpError("Network error. Please try again.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const nextStep = async () => {
     const fieldsToValidate: (keyof ProjectIntakeFormData)[][] = [
@@ -72,9 +137,16 @@ export default function HirePage() {
       ["budget", "timeline"],
     ];
 
-    const isValid = await trigger(fieldsToValidate[currentStep]);
-    if (isValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    if (currentStep < 3) {
+      const isValid = await trigger(fieldsToValidate[currentStep]);
+      if (isValid) {
+        if (currentStep === 2) {
+          setCurrentStep(3);
+          if (!otpSent) sendOtp();
+        } else {
+          setCurrentStep((prev) => prev + 1);
+        }
+      }
     }
   };
 
@@ -83,6 +155,11 @@ export default function HirePage() {
   };
 
   const onSubmit = async (data: ProjectIntakeFormData) => {
+    if (!otpVerified) {
+      setOtpError("Please verify your email first");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/projects", {
@@ -360,6 +437,63 @@ export default function HirePage() {
                 </div>
               )}
 
+              {/* Step 4: Email Verification */}
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <div className="text-center">
+                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/10 to-pink-500/10 flex items-center justify-center mx-auto mb-4">
+                      <Mail className="h-8 w-8 text-primary" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      We sent a 6-digit code to <strong>{getValues("email")}</strong>
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="otp">Verification Code</Label>
+                    <Input
+                      id="otp"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="Enter 6-digit code"
+                      className="mt-1.5 text-center text-2xl tracking-[0.5em] font-mono"
+                      maxLength={6}
+                      disabled={otpVerified}
+                    />
+                    {otpError && (
+                      <p className="text-sm text-destructive mt-1">{otpError}</p>
+                    )}
+                    {otpVerified && (
+                      <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                        <CheckCircle className="h-4 w-4" /> Email verified successfully
+                      </p>
+                    )}
+                  </div>
+                  {!otpVerified && (
+                    <div className="flex items-center justify-between">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={sendOtp}
+                        disabled={countdown > 0 || otpLoading}
+                      >
+                        {countdown > 0 ? `Resend in ${countdown}s` : "Resend Code"}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={verifyOtp}
+                        disabled={otpCode.length !== 6 || otpLoading}
+                      >
+                        {otpLoading ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : null}
+                        Verify
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Navigation Buttons */}
               <div className="flex justify-between pt-4">
                 {currentStep > 0 ? (
@@ -371,12 +505,12 @@ export default function HirePage() {
                   <div />
                 )}
 
-                {currentStep < steps.length - 1 ? (
+                {currentStep < 3 ? (
                   <Button type="button" onClick={nextStep}>
                     Next
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
-                ) : (
+                ) : currentStep === 3 && otpVerified ? (
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
@@ -387,7 +521,7 @@ export default function HirePage() {
                       "Submit Project"
                     )}
                   </Button>
-                )}
+                ) : null}
               </div>
             </form>
           </CardContent>

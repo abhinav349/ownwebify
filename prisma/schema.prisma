@@ -39,6 +39,7 @@ model User {
   passwordHash    String?
   role            Role      @default(CLIENT)
   company         String?
+  emailVerified   Boolean   @default(false)
   referralCode    String?   @unique
   referralBalance Float     @default(0)
   referredById    String?
@@ -103,6 +104,17 @@ model Message {
   sender    User     @relation(fields: [senderId], references: [id])
   content   String
   createdAt DateTime @default(now())
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, code])
 }
 
 model PortfolioItem {

@@ -16,6 +16,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = projectIntakeSchema.parse(body);
 
+    const verifiedOtp = await prisma.otpCode.findFirst({
+      where: {
+        email: validatedData.email,
+        verified: true,
+        expiresAt: { gte: new Date(Date.now() - 10 * 60 * 1000) },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!verifiedOtp) {
+      return NextResponse.json(
+        { error: "Email not verified. Please complete OTP verification." },
+        { status: 403 }
+      );
+    }
+
     let user = await prisma.user.findUnique({
       where: { email: validatedData.email },
     });
@@ -33,7 +49,13 @@ export async function POST(request: NextRequest) {
           passwordHash: hashedPassword,
           role: "CLIENT",
           referralCode,
+          emailVerified: true,
         },
+      });
+    } else if (!user.emailVerified) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
       });
     }
 
