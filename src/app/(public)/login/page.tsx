@@ -207,13 +207,6 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
-            <div className="mt-6 p-4 rounded-xl bg-muted/50 border">
-              <p className="text-center text-xs text-muted-foreground font-medium mb-2">Demo Credentials</p>
-              <div className="space-y-1 text-center text-xs text-muted-foreground">
-                <p>Admin: admin@ownwebify.com / admin123</p>
-                <p>Client: client@example.com / client123</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

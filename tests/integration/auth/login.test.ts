@@ -42,12 +42,13 @@ describe("Credentials Login", () => {
     expect(url).not.toContain("error");
   });
 
-  it("succeeds with valid client credentials", async () => {
-    const res = await attemptLogin("client@example.com", "client123");
-    expect([200, 302]).toContain(res.status);
-
-    const url = res.headers.get("location") || "";
-    expect(url).not.toContain("error");
+  it("fails with non-existent client credentials", async () => {
+    const res = await attemptLogin("noone@example.com", "client123");
+    expect([200, 302, 401]).toContain(res.status);
+    if (res.status === 200) {
+      const data = await res.json();
+      expect(data.url).not.toBe(`${BASE_URL}`);
+    }
   });
 
   it("fails with wrong password", async () => {

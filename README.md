@@ -63,10 +63,9 @@ A full-stack web development service platform where clients can submit website c
 
 7. Open [http://localhost:3000](http://localhost:3000)
 
-### Demo Credentials
+### Admin Access
 
-- **Admin**: admin@ownwebify.com / admin123
-- **Client**: client@example.com / client123
+After seeding, log in with the admin email configured in `ADMIN_EMAIL` environment variable.
 
 ## Project Structure
 
