@@ -5,7 +5,6 @@ import {
   Palette,
   Rocket,
   Shield,
-  Star,
   Zap,
   Globe,
   Sparkles,
@@ -54,35 +53,12 @@ const features = [
   },
 ];
 
-const testimonials = [
-  {
-    quote:
-      "OwnWebify transformed our online presence. Revenue increased 60% within the first quarter after launch.",
-    author: "Sarah Johnson",
-    role: "CEO, TechStart Inc.",
-    metric: "+60% Revenue",
-  },
-  {
-    quote:
-      "The attention to detail is insane. Every interaction feels polished and intentional. Truly world-class work.",
-    author: "Michael Chen",
-    role: "Founder, GreenTech Solutions",
-    metric: "4.9/5 Rating",
-  },
-  {
-    quote:
-      "From concept to launch in just 3 weeks. The speed and quality exceeded everything we imagined possible.",
-    author: "Emily Rodriguez",
-    role: "Marketing Director, FreshMarket",
-    metric: "3 Week Delivery",
-  },
-];
 
 const stats = [
-  { value: "50+", label: "Projects Delivered" },
-  { value: "98%", label: "Client Satisfaction" },
+  { value: "10+", label: "Projects Delivered" },
   { value: "3x", label: "Avg. Performance Boost" },
   { value: "<48h", label: "Response Time" },
+  { value: "100%", label: "Code Ownership" },
 ];
 
 
@@ -115,7 +91,7 @@ export default function HomePage() {
 
             <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed animate-slide-up" style={{ animationDelay: "0.2s" }}>
               Not just pretty pages — high-converting digital experiences that turn
-              visitors into customers. Trusted by 50+ businesses worldwide.
+              visitors into customers.
             </p>
 
             <div className="mt-12 flex items-center justify-center gap-4 flex-wrap animate-slide-up" style={{ animationDelay: "0.4s" }}>
@@ -131,25 +107,6 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Social proof strip */}
-            <div className="mt-16 flex items-center justify-center gap-3 flex-wrap animate-fade-in" style={{ animationDelay: "0.6s" }}>
-              <div className="flex -space-x-2">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-8 w-8 rounded-full border-2 border-background bg-gradient-to-br from-primary/60 to-pink-500/60"
-                  />
-                ))}
-              </div>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground">
-                Rated 4.9/5 by 50+ clients
-              </span>
-            </div>
           </div>
         </div>
       </section>
@@ -269,58 +226,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 relative">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-secondary/30 to-background" />
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">
-              Client Love
-            </p>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Don&apos;t Take My Word —{" "}
-              <span className="gradient-text">Hear Theirs</span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial) => (
-              <Card
-                key={testimonial.author}
-                className="border border-border/50 bg-card/80 backdrop-blur-sm hover-lift"
-              >
-                <CardContent className="p-8">
-                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-5">
-                    <TrendingUp className="h-3 w-3" />
-                    {testimonial.metric}
-                  </div>
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="h-4 w-4 fill-amber-400 text-amber-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-foreground mb-6 leading-relaxed">
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-pink-500 flex items-center justify-center text-white text-sm font-bold">
-                      {testimonial.author.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{testimonial.author}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {testimonial.role}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* What You Get Section */}
       <section className="py-24">
@@ -403,8 +308,8 @@ export default function HomePage() {
                 Ready to 10x Your Online Presence?
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-lg text-white/80 leading-relaxed">
-                Join 50+ businesses who transformed their online presence with OwnWebify.
-                Get a free custom quote — no commitment, no pressure.
+                Get a stunning, high-performance website that grows your business.
+                Free custom quote — no commitment, no pressure.
               </p>
               <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
                 <Link href="/hire">

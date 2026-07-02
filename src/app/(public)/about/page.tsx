@@ -1,12 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Award, Clock, Code2, Users, Sparkles, Heart } from "lucide-react";
+import { ArrowRight, Award, Clock, Code2, Sparkles, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const stats = [
-  { icon: Users, label: "Happy Clients", value: "50+" },
-  { icon: Code2, label: "Projects Shipped", value: "80+" },
+  { icon: Code2, label: "Projects Delivered", value: "10+" },
   { icon: Clock, label: "Years Experience", value: "3+" },
-  { icon: Award, label: "5-Star Reviews", value: "45+" },
+  { icon: Award, label: "Technologies Mastered", value: "12+" },
 ];
 
 const techStack = [
@@ -59,8 +58,8 @@ export default function AboutPage() {
                 than look good — they should drive real business results.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Over the past 3 years, I&apos;ve helped 50+ businesses transform their
-                online presence. From scrappy startups to established enterprises,
+                Over the past 3 years, I&apos;ve helped businesses transform their
+                online presence. From scrappy startups to growing companies,
                 I bring the same obsessive attention to detail and commitment to
                 excellence to every project.
               </p>
@@ -100,7 +99,7 @@ export default function AboutPage() {
       {/* Stats */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center p-6 rounded-2xl border bg-card hover-lift">
                 <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
