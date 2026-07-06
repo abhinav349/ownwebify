@@ -3,11 +3,11 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
-  const { token, newPassword } = await request.json();
+  const { email, otp, newPassword } = await request.json();
 
-  if (!token || !newPassword) {
+  if (!email || !otp || !newPassword) {
     return NextResponse.json(
-      { error: "Token and new password are required" },
+      { error: "Email, OTP, and new password are required" },
       { status: 400 }
     );
   }
@@ -19,20 +19,24 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const resetToken = await prisma.passwordResetToken.findUnique({
-    where: { token },
+  const otpRecord = await prisma.otpCode.findFirst({
+    where: {
+      email,
+      code: otp,
+      verified: false,
+      expiresAt: { gte: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
   });
 
-  if (!resetToken || resetToken.used || resetToken.expiresAt < new Date()) {
+  if (!otpRecord) {
     return NextResponse.json(
-      { error: "Invalid or expired reset link. Please request a new one." },
+      { error: "Invalid or expired OTP. Please request a new one." },
       { status: 400 }
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: resetToken.email },
-  });
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -45,9 +49,9 @@ export async function POST(request: NextRequest) {
       where: { id: user.id },
       data: { passwordHash },
     }),
-    prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data: { used: true },
+    prisma.otpCode.update({
+      where: { id: otpRecord.id },
+      data: { verified: true },
     }),
   ]);
 
