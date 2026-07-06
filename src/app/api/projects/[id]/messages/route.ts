@@ -42,7 +42,7 @@ export async function POST(
       const isAdmin = session.user.role === "ADMIN";
       const recipientEmail = isAdmin
         ? project.client.email
-        : process.env.ADMIN_EMAIL;
+        : (process.env.ADMIN_EMAIL || "admin@ownwebify.com");
 
       if (recipientEmail) {
         await sendEmail({
