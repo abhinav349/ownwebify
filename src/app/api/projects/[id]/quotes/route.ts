@@ -65,6 +65,15 @@ export async function PATCH(
     const { id } = await params;
     const { quoteId, status } = await request.json();
 
+    // Verify the user owns this project or is admin
+    const project = await prisma.project.findUnique({ where: { id } });
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+    if (session.user.role !== "ADMIN" && project.clientId !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const quote = await prisma.quote.update({
       where: { id: quoteId },
       data: { status },

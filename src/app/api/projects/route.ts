@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { projectIntakeSchema } from "@/lib/validations";
@@ -128,13 +130,21 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
-    const clientId = searchParams.get("clientId");
 
     const where: Record<string, unknown> = {};
     if (status) where.status = status;
-    if (clientId) where.clientId = clientId;
+
+    // Non-admin users can only see their own projects
+    if (session.user.role !== "ADMIN") {
+      where.clientId = session.user.id;
+    }
 
     const projects = await prisma.project.findMany({
       where,

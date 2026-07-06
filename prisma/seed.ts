@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const adminPassword = await bcrypt.hash("REDACTED", 10);
+  const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || "change-me-immediately", 10);
 
   await prisma.user.upsert({
     where: { email: "admin@ownwebify.com" },
