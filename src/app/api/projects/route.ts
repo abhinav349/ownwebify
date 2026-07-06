@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const adminEmail = process.env.ADMIN_EMAIL || "abhinavbansal349@gmail.com";
+    const adminEmail = process.env.ADMIN_EMAIL || "admin@ownwebify.com";
     await sendEmail({
       to: adminEmail,
       subject: `New Project Request: ${project.title}`,
