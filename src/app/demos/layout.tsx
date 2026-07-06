@@ -1,9 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 
-export const metadata = {
-  title: "Portfolio | OwnWebify",
-  description: "Explore our demo websites showcasing designs for different industries.",
+export const metadata: Metadata = {
+  title: "Website Portfolio | Demo Sites for Cafes, Restaurants, Salons & More",
+  description:
+    "Browse our portfolio of affordable website designs. Demo sites for cafes, restaurants, salons, gyms, e-commerce, real estate, photography studios, and clinics.",
+  openGraph: {
+    title: "Website Portfolio - OwnWebify",
+    description:
+      "See examples of professional websites we build. Affordable designs for every industry.",
+    url: "https://ownwebify.com/demos",
+  },
 };
 
 export default function DemosLayout({

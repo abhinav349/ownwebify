@@ -122,12 +122,12 @@ export default function ServicesPage() {
               Transparent pricing. No hidden fees.
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-              Invest in a Website That{" "}
-              <span className="gradient-text">Pays for Itself</span>
+              Affordable Web Development{" "}
+              <span className="gradient-text">That Pays for Itself</span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Clear packages for every stage of your business. Every plan includes
-              responsive design, modern tech, and dedicated support.
+              Professional websites at budget-friendly prices. Every plan includes
+              responsive design, modern tech, and dedicated support — starting at just $99.
             </p>
 
             {/* Currency Toggle */}

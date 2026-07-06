@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Coffee, UtensilsCrossed, Scissors, Dumbbell, ShoppingBag, Building2, Camera, Stethoscope } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { CreativeWorkJsonLd } from "@/components/seo/json-ld";
 
 const demos = [
   {
@@ -80,6 +81,15 @@ const demos = [
 export default function DemosIndexPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {demos.map((demo) => (
+        <CreativeWorkJsonLd
+          key={demo.slug}
+          name={`${demo.name} - ${demo.type} Website`}
+          description={demo.description}
+          url={`https://ownwebify.com/demos/${demo.slug}`}
+        />
+      ))}
+
       {/* Header */}
       <header className="py-8 px-6">
         <div className="mx-auto max-w-7xl flex items-center justify-between">

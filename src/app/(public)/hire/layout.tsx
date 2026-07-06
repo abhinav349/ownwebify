@@ -1,8 +1,15 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Start a Project | OwnWebify",
-  description: "Submit your web development project request and get a custom quote within 48 hours. No commitment required.",
+  title: "Start Your Project | Get a Free Quote in 48 Hours",
+  description:
+    "Submit your website project and get a free custom quote within 48 hours. Affordable web development starting at $99. No commitment required.",
+  openGraph: {
+    title: "Start Your Web Development Project - Free Quote",
+    description:
+      "Tell us about your project and get a free quote within 48 hours. Affordable, professional web development.",
+    url: "https://ownwebify.com/hire",
+  },
 };
 
 export default function HireLayout({ children }: { children: React.ReactNode }) {
