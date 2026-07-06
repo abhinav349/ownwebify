@@ -13,6 +13,7 @@ import {
   Settings,
   Menu,
   X,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
@@ -22,6 +23,7 @@ const navigation = [
   { name: "Projects", href: "/admin/projects", icon: FolderKanban },
   { name: "Clients", href: "/admin/clients", icon: Users },
   { name: "Portfolio", href: "/admin/portfolio", icon: Image },
+  { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -67,7 +69,7 @@ export function AdminSidebar() {
           onClick={() => setOpen(false)}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
-          <Settings className="h-5 w-5" />
+          <Home className="h-5 w-5" />
           View Site
         </Link>
         <button

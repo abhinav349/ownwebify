@@ -117,6 +117,17 @@ model OtpCode {
   @@index([email, code])
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, token])
+}
+
 model PortfolioItem {
   id          String   @id @default(cuid())
   title       String

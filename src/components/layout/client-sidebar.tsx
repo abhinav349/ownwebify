@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { FolderKanban, LogOut, Plus, Home, Menu, X } from "lucide-react";
+import { FolderKanban, LogOut, Plus, Home, Menu, X, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
 
 const navigation = [
   { name: "My Projects", href: "/dashboard", icon: FolderKanban },
   { name: "New Project", href: "/hire", icon: Plus },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function ClientSidebar({ userName }: { userName: string }) {
