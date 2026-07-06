@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { FolderKanban, LogOut, Plus, Home } from "lucide-react";
+import { FolderKanban, LogOut, Plus, Home, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
 
@@ -14,11 +15,12 @@ const navigation = [
 
 export function ClientSidebar({ userName }: { userName: string }) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
-  return (
-    <aside className="w-64 border-r bg-card flex flex-col">
+  const sidebarContent = (
+    <>
       <div className="p-6 border-b">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <Logo size={32} />
           <span className="font-semibold">OwnWebify</span>
         </Link>
@@ -34,6 +36,7 @@ export function ClientSidebar({ userName }: { userName: string }) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={() => setOpen(false)}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActive
@@ -51,6 +54,7 @@ export function ClientSidebar({ userName }: { userName: string }) {
       <div className="p-4 border-t space-y-1">
         <Link
           href="/"
+          onClick={() => setOpen(false)}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
         >
           <Home className="h-5 w-5" />
@@ -64,6 +68,42 @@ export function ClientSidebar({ userName }: { userName: string }) {
           Sign Out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b bg-card">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Logo size={28} />
+          <span className="font-semibold text-sm">OwnWebify</span>
+        </Link>
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2 rounded-lg hover:bg-muted transition-colors"
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div className="md:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setOpen(false)} />
+      )}
+
+      {/* Mobile sidebar drawer */}
+      <aside className={cn(
+        "md:hidden fixed top-0 left-0 z-50 h-full w-64 bg-card border-r flex flex-col transition-transform duration-200",
+        open ? "translate-x-0" : "-translate-x-full"
+      )}>
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-64 border-r bg-card flex-col">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
