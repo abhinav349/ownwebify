@@ -85,10 +85,10 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">My Projects</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">My Projects</h1>
         <Link href="/hire">
-          <Button>
+          <Button className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             New Project
           </Button>
@@ -111,19 +111,19 @@ export default async function DashboardPage() {
           {projects.map((project) => (
             <Link key={project.id} href={`/dashboard/projects/${project.id}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg">{project.title}</h3>
-                        <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${getStatusColor(project.status)}`}>
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-base sm:text-lg truncate">{project.title}</h3>
+                        <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap ${getStatusColor(project.status)}`}>
                           {project.status.replace("_", " ")}
                         </span>
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                         {project.description}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                         <span>Submitted {formatDate(project.createdAt)}</span>
                         {project._count.messages > 0 && (
                           <>
@@ -134,7 +134,7 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     {project.quotes[0] && (
-                      <div className="text-right ml-4">
+                      <div className="text-left sm:text-right sm:ml-4 pt-2 sm:pt-0 border-t sm:border-t-0">
                         <p className="text-sm text-muted-foreground">Quote</p>
                         <p className="font-semibold">
                           ${project.quotes[0].amount.toLocaleString()}

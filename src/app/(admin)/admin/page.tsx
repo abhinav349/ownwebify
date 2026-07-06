@@ -31,7 +31,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
@@ -63,16 +63,16 @@ export default async function AdminDashboardPage() {
               {recentProjects.map((project) => (
                 <div
                   key={project.id}
-                  className="flex items-center justify-between p-4 rounded-lg border"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-lg border"
                 >
-                  <div>
-                    <p className="font-medium">{project.title}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{project.title}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
                       {project.client.name} &middot; {project.client.email}
                     </p>
                   </div>
                   <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap self-start sm:self-auto ${
                       project.status === "NEW"
                         ? "bg-blue-100 text-blue-800"
                         : project.status === "IN_PROGRESS"
