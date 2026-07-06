@@ -66,23 +66,18 @@ export function Footer() {
             <h3 className="text-sm font-semibold mb-4">Connect</h3>
             <ul className="space-y-3">
               <li>
+                <a href="https://www.instagram.com/ownwebify" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Instagram
+                </a>
+              </li>
+              <li>
                 <a href="https://github.com/abhinav349" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   GitHub
                 </a>
               </li>
               <li>
-                <a href="https://linkedin.com/in/abhinavbansal349" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  LinkedIn
-                </a>
-              </li>
-              <li>
-                <a href="https://twitter.com/abhinavbansal49" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Twitter
-                </a>
-              </li>
-              <li>
-                <a href="mailto:hello@ownwebify.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  hello@ownwebify.com
+                <a href="mailto:admin@ownwebify.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  admin@ownwebify.com
                 </a>
               </li>
             </ul>
