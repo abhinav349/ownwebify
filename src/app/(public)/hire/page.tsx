@@ -24,11 +24,11 @@ const projectTypes = [
 
 function getBudgetRanges(currency: CurrencyCode) {
   return [
-    { value: "under-100", label: `Under ${formatPrice(100, currency)}` },
-    { value: "100-200", label: `${formatPrice(100, currency)} - ${formatPrice(200, currency)}` },
-    { value: "200-300", label: `${formatPrice(200, currency)} - ${formatPrice(300, currency)}` },
-    { value: "300-400", label: `${formatPrice(300, currency)} - ${formatPrice(400, currency)}` },
-    { value: "400-plus", label: `${formatPrice(400, currency)}+` },
+    { value: "under-200", label: `Under ${formatPrice(200, currency)}` },
+    { value: "200-400", label: `${formatPrice(200, currency)} - ${formatPrice(400, currency)}` },
+    { value: "400-600", label: `${formatPrice(400, currency)} - ${formatPrice(600, currency)}` },
+    { value: "600-900", label: `${formatPrice(600, currency)} - ${formatPrice(900, currency)}` },
+    { value: "900-plus", label: `${formatPrice(900, currency)}+` },
   ];
 }
 

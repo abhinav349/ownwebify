@@ -42,7 +42,7 @@ export const countryToCurrency: Record<string, CurrencyCode> = {
   CA: "CAD",
 };
 
-export const basePricesUSD = [99, 199, 299, 399];
+export const basePricesUSD = [175, 349, 599, 849];
 
 export const referralRewardUSD = 5;
 

@@ -10,7 +10,8 @@ import { type CurrencyCode, currencies, formatPrice } from "@/lib/pricing";
 const services = [
   {
     name: "Landing Page",
-    priceUSD: 99,
+    priceUSD: 175,
+    originalPriceUSD: 299,
     priceNote: "one-time",
     description: "A high-converting single page that turns visitors into leads.",
     features: [
@@ -26,7 +27,8 @@ const services = [
   },
   {
     name: "Business Website",
-    priceUSD: 199,
+    priceUSD: 349,
+    originalPriceUSD: 599,
     priceNote: "starting at",
     description: "A complete multi-page site that showcases your brand professionally.",
     features: [
@@ -44,7 +46,8 @@ const services = [
   },
   {
     name: "E-Commerce",
-    priceUSD: 299,
+    priceUSD: 599,
+    originalPriceUSD: 999,
     priceNote: "starting at",
     description: "A full online store with payments, inventory, and order management.",
     features: [
@@ -62,7 +65,8 @@ const services = [
   },
   {
     name: "Web Application",
-    priceUSD: 399,
+    priceUSD: 849,
+    originalPriceUSD: 1499,
     priceNote: "starting at",
     description: "Custom web apps with complex logic, auth, and integrations.",
     features: [
@@ -81,12 +85,12 @@ const services = [
 ];
 
 const addons = [
-  { name: "SEO Audit & Optimization", priceUSD: 49, icon: "🔍" },
-  { name: "Content Writing (per page)", priceUSD: 25, icon: "✍️" },
-  { name: "Logo & Brand Identity", priceUSD: 79, icon: "🎨" },
-  { name: "Monthly Maintenance", priceUSD: 39, icon: "🛡️", perMonth: true },
-  { name: "Performance Optimization", priceUSD: 59, icon: "⚡" },
-  { name: "Accessibility Audit (WCAG)", priceUSD: 69, icon: "♿" },
+  { name: "SEO Audit & Optimization", priceUSD: 79, icon: "🔍" },
+  { name: "Content Writing (per page)", priceUSD: 39, icon: "✍️" },
+  { name: "Logo & Brand Identity", priceUSD: 129, icon: "🎨" },
+  { name: "Monthly Maintenance", priceUSD: 59, icon: "🛡️", perMonth: true },
+  { name: "Performance Optimization", priceUSD: 89, icon: "⚡" },
+  { name: "Accessibility Audit (WCAG)", priceUSD: 99, icon: "♿" },
 ];
 
 const currencyOptions: CurrencyCode[] = ["USD", "INR", "CAD"];
@@ -117,17 +121,17 @@ export default function ServicesPage() {
         </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-card/80 text-sm font-medium mb-6">
-              <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-              Transparent pricing. No hidden fees.
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 bg-green-500/10 text-sm font-semibold text-green-700 mb-6">
+              <Sparkles className="h-4 w-4" />
+              Launch Offer — Up to 43% OFF for a limited time
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
               Affordable Web Development{" "}
               <span className="gradient-text">That Pays for Itself</span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Professional websites at budget-friendly prices. Every plan includes
-              responsive design, modern tech, and dedicated support — starting at just ₹8,000.
+              Agency-quality websites at a fraction of the price. Every plan includes
+              responsive design, modern tech, and dedicated support — transparent pricing, no hidden fees.
             </p>
 
             {/* Currency Toggle */}
@@ -175,8 +179,16 @@ export default function ServicesPage() {
                     <span className="text-xs text-muted-foreground">
                       {service.priceNote}
                     </span>
-                    <p className="text-3xl font-bold">
-                      {formatPrice(service.priceUSD, currency)}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-3xl font-bold">
+                        {formatPrice(service.priceUSD, currency)}
+                      </p>
+                      <span className="text-sm font-semibold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
+                        {Math.round((1 - service.priceUSD / service.originalPriceUSD) * 100)}% OFF
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-through">
+                      {formatPrice(service.originalPriceUSD, currency)}
                     </p>
                   </div>
                 </CardHeader>
