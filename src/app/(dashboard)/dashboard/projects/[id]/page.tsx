@@ -2,10 +2,12 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatDate, formatCurrency, getStatusColor } from "@/lib/utils";
+import { formatDate, getStatusColor } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteResponse } from "@/components/forms/quote-response";
 import { MessageThread } from "@/components/shared/message-thread";
+import { formatBudget, formatFromUSD } from "@/lib/pricing";
+import { getServerCurrency } from "@/lib/currency-server";
 
 const statusSteps = ["NEW", "REVIEWING", "QUOTED", "IN_PROGRESS", "COMPLETED"];
 
@@ -17,6 +19,7 @@ export default async function ClientProjectDetailPage({
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
+  const currency = await getServerCurrency();
   const { id } = await params;
 
   const project = await prisma.project.findUnique({
@@ -38,7 +41,7 @@ export default async function ClientProjectDetailPage({
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-2">{project.title}</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{project.title}</h1>
       <span className={`text-sm px-3 py-1 rounded-full font-medium ${getStatusColor(project.status)}`}>
         {project.status.replace("_", " ")}
       </span>
@@ -96,7 +99,7 @@ export default async function ClientProjectDetailPage({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Budget</p>
-                  <p className="mt-1">{project.budget}</p>
+                  <p className="mt-1">{formatBudget(project.budget, currency)}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Timeline</p>
@@ -120,6 +123,7 @@ export default async function ClientProjectDetailPage({
                 messages={project.messages.map((m) => ({
                   id: m.id,
                   content: m.content,
+                  imageUrl: m.imageUrl,
                   senderName: m.sender.name,
                   senderRole: m.sender.role,
                   createdAt: m.createdAt.toISOString(),
@@ -147,7 +151,7 @@ export default async function ClientProjectDetailPage({
                     <div key={quote.id} className="p-4 rounded-lg border">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-2xl font-bold text-primary">
-                          {formatCurrency(quote.amount)}
+                          {formatFromUSD(quote.amount, currency)}
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(quote.status)}`}>
                           {quote.status}

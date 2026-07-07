@@ -5,21 +5,40 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { Plus, Gift, Copy, DollarSign, Users } from "lucide-react";
+import { Plus, Gift, Wallet, Users } from "lucide-react";
 import { ReferralSection } from "./referral-section";
-import { formatPrice, referralRewardUSD } from "@/lib/pricing";
+import { formatPrice, formatFromUSD, referralRewardUSD } from "@/lib/pricing";
+import { getServerCurrency } from "@/lib/currency-server";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
+  const currency = await getServerCurrency();
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { id: session!.user.id },
     select: {
+      name: true,
       referralCode: true,
       referralBalance: true,
       _count: { select: { referralsMade: true } },
     },
   });
+
+  // Backfill a referral code for accounts created without one so the
+  // referral section always shows up for clients.
+  if (user && !user.referralCode) {
+    const prefix = (user.name || "USER")
+      .substring(0, 4)
+      .toUpperCase()
+      .replace(/[^A-Z]/g, "X");
+    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const referralCode = `${prefix}-${suffix}`;
+    await prisma.user.update({
+      where: { id: session!.user.id },
+      data: { referralCode },
+    });
+    user = { ...user, referralCode };
+  }
 
   const projects = await prisma.project.findMany({
     where: { clientId: session!.user.id },
@@ -53,11 +72,11 @@ export default async function DashboardPage() {
               <CardContent className="p-5">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <Wallet className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Referral Balance</p>
-                    <p className="font-bold text-lg">${user.referralBalance.toFixed(2)}</p>
+                    <p className="font-bold text-lg">{formatFromUSD(user.referralBalance, currency)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -80,7 +99,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Share & Earn:</span>{" "}
               Share your referral code with friends. They get <span className="font-semibold text-primary">10% off</span> their first project, and you earn{" "}
-              <span className="font-semibold text-primary">{formatPrice(referralRewardUSD, "INR")} credit</span> for each successful referral!
+              <span className="font-semibold text-primary">{formatPrice(referralRewardUSD, currency)} credit</span> for each successful referral!
             </p>
           </div>
         </div>
@@ -138,7 +157,7 @@ export default async function DashboardPage() {
                       <div className="text-left sm:text-right sm:ml-4 pt-2 sm:pt-0 border-t sm:border-t-0">
                         <p className="text-sm text-muted-foreground">Quote</p>
                         <p className="font-semibold">
-                          ${project.quotes[0].amount.toLocaleString()}
+                          {formatFromUSD(project.quotes[0].amount, currency)}
                         </p>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(project.quotes[0].status)}`}>
                           {project.quotes[0].status}

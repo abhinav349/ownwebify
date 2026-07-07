@@ -103,6 +103,7 @@ model Message {
   senderId  String
   sender    User     @relation(fields: [senderId], references: [id])
   content   String
+  imageUrl  String?
   createdAt DateTime @default(now())
 }
 

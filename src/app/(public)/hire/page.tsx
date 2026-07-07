@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { projectIntakeSchema, type ProjectIntakeFormData } from "@/lib/validations";
+import {
+  projectIntakeSchema,
+  projectDetailsSchema,
+  type ProjectIntakeFormData,
+} from "@/lib/validations";
 import { type CurrencyCode, currencies, formatPrice } from "@/lib/pricing";
 
 const projectTypes = [
@@ -48,17 +53,37 @@ const referralSources = [
   { value: "other", label: "Other" },
 ];
 
-const steps = [
+const guestSteps = [
   { title: "Contact Info", description: "How can I reach you?" },
   { title: "Project Details", description: "Tell me about your project" },
   { title: "Budget & Timeline", description: "When and how much?" },
   { title: "Verify Email", description: "Confirm your email address" },
 ];
 
+const authedSteps = [
+  { title: "Project Details", description: "Tell me about your project" },
+  { title: "Budget & Timeline", description: "When and how much?" },
+];
+
 export default function HirePage() {
+  const { status } = useSession();
+
+  if (status === "loading") {
+    return (
+      <div className="py-32 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return <HireForm isLoggedIn={status === "authenticated"} />;
+}
+
+function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [newProjectId, setNewProjectId] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -66,6 +91,9 @@ export default function HirePage() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>("INR");
+
+  const steps = isLoggedIn ? authedSteps : guestSteps;
+  const lastStep = steps.length - 1;
 
   useEffect(() => {
     fetch("/api/geo")
@@ -87,7 +115,9 @@ export default function HirePage() {
     getValues,
     formState: { errors },
   } = useForm<ProjectIntakeFormData>({
-    resolver: zodResolver(projectIntakeSchema),
+    resolver: zodResolver(
+      (isLoggedIn ? projectDetailsSchema : projectIntakeSchema) as typeof projectIntakeSchema
+    ),
   });
 
   useEffect(() => {
@@ -147,24 +177,34 @@ export default function HirePage() {
     }
   };
 
-  const nextStep = async () => {
-    const fieldsToValidate: (keyof ProjectIntakeFormData)[][] = [
-      ["name", "email", "password"],
-      ["projectType", "title", "description"],
-      ["budget", "timeline"],
-    ];
+  // Field validation groups differ between guest and logged-in flows.
+  const guestFields: (keyof ProjectIntakeFormData)[][] = [
+    ["name", "email", "password"],
+    ["projectType", "title", "description"],
+    ["budget", "timeline"],
+  ];
+  const authedFields: (keyof ProjectIntakeFormData)[][] = [
+    ["projectType", "title", "description"],
+    ["budget", "timeline"],
+  ];
+  const fieldsToValidate = isLoggedIn ? authedFields : guestFields;
 
-    if (currentStep < 3) {
-      const isValid = await trigger(fieldsToValidate[currentStep]);
-      if (isValid) {
-        if (currentStep === 2) {
-          setCurrentStep(3);
-          if (!otpSent) sendOtp();
-        } else {
-          setCurrentStep((prev) => prev + 1);
-        }
-      }
+  const nextStep = async () => {
+    // For guests, the last step (index 3) is OTP verification and has no
+    // fields to validate here. For logged-in users the final step is Budget.
+    if (currentStep >= fieldsToValidate.length) return;
+
+    const isValid = await trigger(fieldsToValidate[currentStep]);
+    if (!isValid) return;
+
+    // Guest flow transitions into OTP step after Budget & Timeline.
+    if (!isLoggedIn && currentStep === 2) {
+      setCurrentStep(3);
+      if (!otpSent) sendOtp();
+      return;
     }
+
+    setCurrentStep((prev) => prev + 1);
   };
 
   const prevStep = () => {
@@ -172,7 +212,7 @@ export default function HirePage() {
   };
 
   const onSubmit = async (data: ProjectIntakeFormData) => {
-    if (!otpVerified) {
+    if (!isLoggedIn && !otpVerified) {
       setOtpError("Please verify your email first");
       return;
     }
@@ -186,6 +226,8 @@ export default function HirePage() {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        setNewProjectId(result.projectId || null);
         setIsSubmitted(true);
       } else {
         alert("Something went wrong. Please try again.");
@@ -209,19 +251,30 @@ export default function HirePage() {
             I&apos;ve received your project details and I&apos;m excited to take a look.
             Expect a custom quote in your inbox within 48 hours.
           </p>
-          <div className="p-4 rounded-xl bg-muted/50 border space-y-2">
-            <p className="text-sm font-medium">
-              Your account is ready!
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Log in with the email and password you just set to track your project, view quotes, and message me directly.
-            </p>
-          </div>
-          <a href="/login" className="inline-block mt-6">
-            <Button className="rounded-full shadow-md shadow-primary/20">
-              Go to Dashboard &rarr;
-            </Button>
-          </a>
+          {isLoggedIn ? (
+            <a
+              href={newProjectId ? `/dashboard/projects/${newProjectId}` : "/dashboard"}
+              className="inline-block mt-2"
+            >
+              <Button className="rounded-full shadow-md shadow-primary/20">
+                View Your Project &rarr;
+              </Button>
+            </a>
+          ) : (
+            <>
+              <div className="p-4 rounded-xl bg-muted/50 border space-y-2">
+                <p className="text-sm font-medium">Your account is ready!</p>
+                <p className="text-sm text-muted-foreground">
+                  Log in with the email and password you just set to track your project, view quotes, and message me directly.
+                </p>
+              </div>
+              <a href="/login" className="inline-block mt-6">
+                <Button className="rounded-full shadow-md shadow-primary/20">
+                  Go to Dashboard &rarr;
+                </Button>
+              </a>
+            </>
+          )}
         </div>
       </div>
     );
@@ -240,7 +293,9 @@ export default function HirePage() {
             <span className="gradient-text">Amazing</span>
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Tell me about your vision. I&apos;ll respond with a custom proposal within 48 hours.
+            {isLoggedIn
+              ? "Welcome back! Just share your project details and I'll respond with a custom proposal within 48 hours."
+              : "Tell me about your vision. I'll respond with a custom proposal within 48 hours."}
           </p>
         </div>
 
@@ -284,8 +339,8 @@ export default function HirePage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* Step 1: Contact Info */}
-              {currentStep === 0 && (
+              {/* Contact Info (guest only) */}
+              {!isLoggedIn && currentStep === 0 && (
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="name">Full Name *</Label>
@@ -352,8 +407,8 @@ export default function HirePage() {
                 </div>
               )}
 
-              {/* Step 2: Project Details */}
-              {currentStep === 1 && (
+              {/* Project Details */}
+              {steps[currentStep].title === "Project Details" && (
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="projectType">Project Type *</Label>
@@ -409,8 +464,8 @@ export default function HirePage() {
                 </div>
               )}
 
-              {/* Step 3: Budget & Timeline */}
-              {currentStep === 2 && (
+              {/* Budget & Timeline */}
+              {steps[currentStep].title === "Budget & Timeline" && (
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="budget">Budget Range *</Label>
@@ -454,8 +509,8 @@ export default function HirePage() {
                 </div>
               )}
 
-              {/* Step 4: Email Verification */}
-              {currentStep === 3 && (
+              {/* Email Verification (guest only) */}
+              {!isLoggedIn && steps[currentStep].title === "Verify Email" && (
                 <div className="space-y-6">
                   <div className="text-center">
                     <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/10 to-pink-500/10 flex items-center justify-center mx-auto mb-4">
@@ -522,12 +577,23 @@ export default function HirePage() {
                   <div />
                 )}
 
-                {currentStep < 3 ? (
+                {currentStep < lastStep ? (
                   <Button type="button" onClick={nextStep}>
                     Next
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
-                ) : currentStep === 3 && otpVerified ? (
+                ) : isLoggedIn ? (
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Project"
+                    )}
+                  </Button>
+                ) : otpVerified ? (
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { projectIntakeSchema } from "@/lib/validations";
+import { projectIntakeSchema, projectDetailsSchema } from "@/lib/validations";
 import { sendEmail, newProjectEmailHtml } from "@/lib/email";
 import { referralRewardUSD } from "@/lib/pricing";
 
@@ -15,7 +15,49 @@ function generateReferralCode(name: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
     const body = await request.json();
+
+    // Logged-in users: create the project directly against their account
+    // without requiring contact info, a password, or OTP verification.
+    if (session?.user?.id) {
+      const data = projectDetailsSchema.parse(body);
+
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, name: true, email: true },
+      });
+
+      if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const project = await prisma.project.create({
+        data: {
+          title: data.title,
+          description: data.description,
+          projectType: data.projectType,
+          budget: data.budget,
+          timeline: data.timeline,
+          referenceLinks: data.referenceLinks || null,
+          howFoundUs: data.howFoundUs || null,
+          clientId: user.id,
+        },
+      });
+
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@ownwebify.com";
+      await sendEmail({
+        to: adminEmail,
+        subject: `New Project Request: ${project.title}`,
+        html: newProjectEmailHtml(project.title, user.name, user.email),
+      });
+
+      return NextResponse.json(
+        { success: true, projectId: project.id },
+        { status: 201 }
+      );
+    }
+
     const validatedData = projectIntakeSchema.parse(body);
 
     const verifiedOtp = await prisma.otpCode.findFirst({

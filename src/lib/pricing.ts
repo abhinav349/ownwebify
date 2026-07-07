@@ -70,3 +70,29 @@ export function getDefaultCurrency(countryCode: string | null): CurrencyCode {
   if (!countryCode) return "INR";
   return countryToCurrency[countryCode.toUpperCase()] || "INR";
 }
+
+// Budget range values (stored in USD terms) mapped to localized display labels.
+export const budgetRangeBoundsUSD: Record<string, [number, number | null]> = {
+  "under-200": [0, 200],
+  "200-400": [200, 400],
+  "400-600": [400, 600],
+  "600-900": [600, 900],
+  "900-plus": [900, null],
+};
+
+export function formatBudget(value: string, currency: CurrencyCode): string {
+  const bounds = budgetRangeBoundsUSD[value];
+  if (!bounds) return value;
+  const [min, max] = bounds;
+  if (min === 0 && max !== null) return `Under ${formatPrice(max, currency)}`;
+  if (max === null) return `${formatPrice(min, currency)}+`;
+  return `${formatPrice(min, currency)} - ${formatPrice(max, currency)}`;
+}
+
+/**
+ * Formats an amount that is stored in USD into the given display currency.
+ * Use for values persisted in USD (quotes, referral balance, revenue).
+ */
+export function formatFromUSD(usdAmount: number, currency: CurrencyCode): string {
+  return formatPrice(usdAmount, currency);
+}

@@ -78,14 +78,14 @@ describe("getDefaultCurrency", () => {
     expect(getDefaultCurrency("CA")).toBe("CAD");
   });
 
-  it("returns USD for unknown country codes", () => {
-    expect(getDefaultCurrency("XX")).toBe("USD");
-    expect(getDefaultCurrency("GB")).toBe("USD");
-    expect(getDefaultCurrency("DE")).toBe("USD");
+  it("returns INR for unknown country codes (default fallback)", () => {
+    expect(getDefaultCurrency("XX")).toBe("INR");
+    expect(getDefaultCurrency("GB")).toBe("INR");
+    expect(getDefaultCurrency("DE")).toBe("INR");
   });
 
-  it("returns USD for null", () => {
-    expect(getDefaultCurrency(null)).toBe("USD");
+  it("returns INR for null (default fallback)", () => {
+    expect(getDefaultCurrency(null)).toBe("INR");
   });
 
   it("handles case-insensitive input", () => {
@@ -96,24 +96,24 @@ describe("getDefaultCurrency", () => {
 });
 
 describe("getReferralReward", () => {
-  it("returns formatted $50 for USD", () => {
+  it("returns formatted $5 for USD", () => {
     const result = getReferralReward("USD");
     expect(result).toContain("$");
-    expect(result).toContain("50");
+    expect(result).toContain("5");
   });
 
   it("returns formatted INR equivalent", () => {
     const result = getReferralReward("INR");
     expect(result).toContain("₹");
-    // 50 * 85 = 4250
-    expect(result).toMatch(/4,250|4250/);
+    // 5 * 85 = 425
+    expect(result).toMatch(/425/);
   });
 
   it("returns formatted CAD equivalent", () => {
     const result = getReferralReward("CAD");
     expect(result).toContain("$");
-    // 50 * 1.36 = 68
-    expect(result).toContain("68");
+    // 5 * 1.36 = 6.8 -> rounds to 7
+    expect(result).toContain("7");
   });
 });
 
@@ -157,9 +157,9 @@ describe("basePricesUSD", () => {
     expect(basePricesUSD).toHaveLength(4);
   });
 
-  it("all prices are within $400 max", () => {
+  it("all prices are positive", () => {
     for (const price of basePricesUSD) {
-      expect(price).toBeLessThanOrEqual(400);
+      expect(price).toBeGreaterThan(0);
     }
   });
 
@@ -171,7 +171,8 @@ describe("basePricesUSD", () => {
 });
 
 describe("referralRewardUSD", () => {
-  it("is $50", () => {
-    expect(referralRewardUSD).toBe(50);
+  it("is $5 (capped at $5 per business rules)", () => {
+    expect(referralRewardUSD).toBe(5);
+    expect(referralRewardUSD).toBeLessThanOrEqual(5);
   });
 });

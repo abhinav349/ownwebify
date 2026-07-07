@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderKanban, Users, DollarSign, Clock } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { FolderKanban, Users, IndianRupee, Clock } from "lucide-react";
+import { formatFromUSD } from "@/lib/pricing";
 
 export default async function AdminDashboardPage() {
   const [totalProjects, activeProjects, totalClients, quotes] =
@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
     { label: "Total Projects", value: totalProjects, icon: FolderKanban },
     { label: "Active Projects", value: activeProjects, icon: Clock },
     { label: "Total Clients", value: totalClients, icon: Users },
-    { label: "Revenue", value: formatCurrency(totalRevenue), icon: DollarSign },
+    { label: "Revenue", value: formatFromUSD(totalRevenue, "INR"), icon: IndianRupee },
   ];
 
   return (
