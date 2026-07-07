@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, quoteEmailHtml } from "@/lib/email";
+import { formatAmount, toCurrencyCode } from "@/lib/pricing";
 
 export async function POST(
   request: NextRequest,
@@ -15,12 +16,14 @@ export async function POST(
     }
 
     const { id } = await params;
-    const { amount, description, validUntil } = await request.json();
+    const { amount, description, validUntil, currency } = await request.json();
+    const quoteCurrency = toCurrencyCode(currency);
 
     const quote = await prisma.quote.create({
       data: {
         projectId: id,
         amount,
+        currency: quoteCurrency,
         description,
         validUntil: new Date(validUntil),
       },
@@ -38,7 +41,11 @@ export async function POST(
       await sendEmail({
         to: project.client.email,
         subject: `New Quote for: ${project.title}`,
-        html: quoteEmailHtml(project.title, amount, description),
+        html: quoteEmailHtml(
+          project.title,
+          formatAmount(amount, quoteCurrency, quoteCurrency),
+          description
+        ),
       });
     }
 

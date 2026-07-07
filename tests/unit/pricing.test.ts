@@ -8,6 +8,9 @@ import {
   countryToCurrency,
   basePricesUSD,
   referralRewardUSD,
+  toCurrencyCode,
+  convertBetween,
+  formatAmount,
 } from "@/lib/pricing";
 
 describe("convertPrice", () => {
@@ -174,5 +177,50 @@ describe("referralRewardUSD", () => {
   it("is $5 (capped at $5 per business rules)", () => {
     expect(referralRewardUSD).toBe(5);
     expect(referralRewardUSD).toBeLessThanOrEqual(5);
+  });
+});
+
+describe("toCurrencyCode", () => {
+  it("returns valid currency codes unchanged", () => {
+    expect(toCurrencyCode("USD")).toBe("USD");
+    expect(toCurrencyCode("INR")).toBe("INR");
+    expect(toCurrencyCode("CAD")).toBe("CAD");
+  });
+
+  it("falls back to USD for null/invalid values", () => {
+    expect(toCurrencyCode(null)).toBe("USD");
+    expect(toCurrencyCode(undefined)).toBe("USD");
+    expect(toCurrencyCode("EUR")).toBe("USD");
+  });
+});
+
+describe("convertBetween", () => {
+  it("returns same value when currencies match", () => {
+    expect(convertBetween(100, "USD", "USD")).toBe(100);
+    expect(convertBetween(8500, "INR", "INR")).toBe(8500);
+  });
+
+  it("converts USD to INR using the pivot rate", () => {
+    // 100 USD -> 100 * 85
+    expect(convertBetween(100, "USD", "INR")).toBe(8500);
+  });
+
+  it("converts INR back to USD", () => {
+    // 8500 INR -> 100 USD
+    expect(convertBetween(8500, "INR", "USD")).toBe(100);
+  });
+});
+
+describe("formatAmount", () => {
+  it("formats an INR-stored amount in INR without conversion", () => {
+    const result = formatAmount(25000, "INR", "INR");
+    expect(result).toContain("₹");
+    expect(result).toMatch(/25,000/);
+  });
+
+  it("converts a USD-stored amount to INR for display", () => {
+    const result = formatAmount(100, "USD", "INR");
+    expect(result).toContain("₹");
+    expect(result).toMatch(/8,500/);
   });
 });

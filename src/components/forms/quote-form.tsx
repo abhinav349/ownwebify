@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { type CurrencyCode, currencies } from "@/lib/pricing";
 
 export function QuoteForm({ projectId }: { projectId: string }) {
   const router = useRouter();
@@ -15,6 +16,18 @@ export function QuoteForm({ projectId }: { projectId: string }) {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [validUntil, setValidUntil] = useState("");
+  const [currency, setCurrency] = useState<CurrencyCode>("INR");
+
+  useEffect(() => {
+    fetch("/api/geo")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.currency && currencies[data.currency as CurrencyCode]) {
+          setCurrency(data.currency as CurrencyCode);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +41,7 @@ export function QuoteForm({ projectId }: { projectId: string }) {
           amount: parseFloat(amount),
           description,
           validUntil,
+          currency,
         }),
       });
 
@@ -62,17 +76,20 @@ export function QuoteForm({ projectId }: { projectId: string }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <Label htmlFor="amount">Amount ($)</Label>
+        <Label htmlFor="amount">Amount ({currencies[currency].symbol})</Label>
         <Input
           id="amount"
           type="number"
           step="0.01"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          placeholder="5000"
+          placeholder={currency === "INR" ? "25000" : "300"}
           required
           className="mt-1"
         />
+        <p className="text-xs text-muted-foreground mt-1">
+          Entered in {currencies[currency].name} ({currencies[currency].symbol}).
+        </p>
       </div>
       <div>
         <Label htmlFor="description">Description</Label>

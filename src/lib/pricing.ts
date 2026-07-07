@@ -91,8 +91,47 @@ export function formatBudget(value: string, currency: CurrencyCode): string {
 
 /**
  * Formats an amount that is stored in USD into the given display currency.
- * Use for values persisted in USD (quotes, referral balance, revenue).
+ * Use for values persisted in USD (e.g. referral balance).
  */
 export function formatFromUSD(usdAmount: number, currency: CurrencyCode): string {
   return formatPrice(usdAmount, currency);
+}
+
+function isCurrencyCode(value: string): value is CurrencyCode {
+  return value === "USD" || value === "INR" || value === "CAD";
+}
+
+export function toCurrencyCode(value: string | null | undefined): CurrencyCode {
+  return value && isCurrencyCode(value) ? value : "USD";
+}
+
+/**
+ * Converts an amount stored in one currency to another using USD as the pivot.
+ */
+export function convertBetween(
+  amount: number,
+  from: CurrencyCode,
+  to: CurrencyCode
+): number {
+  const usd = amount / currencies[from].rate;
+  return Math.round(usd * currencies[to].rate);
+}
+
+/**
+ * Formats an amount stored in `from` currency for display in `to` currency.
+ * Used for quotes, which store both an amount and the currency it was entered in.
+ */
+export function formatAmount(
+  amount: number,
+  from: CurrencyCode,
+  to: CurrencyCode
+): string {
+  const converted = convertBetween(amount, from, to);
+  const config = currencies[to];
+  return new Intl.NumberFormat(config.locale, {
+    style: "currency",
+    currency: config.code,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(converted);
 }

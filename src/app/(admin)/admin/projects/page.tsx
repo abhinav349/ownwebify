@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, getStatusColor } from "@/lib/utils";
+import { formatAmount, formatBudget, toCurrencyCode } from "@/lib/pricing";
+import { getServerCurrency } from "@/lib/currency-server";
 
 export default async function AdminProjectsPage() {
+  const currency = await getServerCurrency();
+
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -51,7 +54,7 @@ export default async function AdminProjectsPage() {
                         <span className="hidden sm:inline">&middot;</span>
                         <span>{project.projectType}</span>
                         <span className="hidden sm:inline">&middot;</span>
-                        <span>{project.budget}</span>
+                        <span>{formatBudget(project.budget, currency)}</span>
                         <span className="hidden sm:inline">&middot;</span>
                         <span>{formatDate(project.createdAt)}</span>
                       </div>
@@ -60,7 +63,11 @@ export default async function AdminProjectsPage() {
                       <p>{project._count.messages} messages</p>
                       {project.quotes[0] && (
                         <p className="font-medium text-foreground">
-                          ${project.quotes[0].amount.toLocaleString()}
+                          {formatAmount(
+                            project.quotes[0].amount,
+                            toCurrencyCode(project.quotes[0].currency),
+                            currency
+                          )}
                         </p>
                       )}
                     </div>

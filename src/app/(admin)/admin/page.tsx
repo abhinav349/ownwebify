@@ -1,18 +1,31 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderKanban, Users, IndianRupee, Clock } from "lucide-react";
-import { formatFromUSD } from "@/lib/pricing";
+import { FolderKanban, Users, Wallet, Clock } from "lucide-react";
+import { convertBetween, formatAmount, toCurrencyCode } from "@/lib/pricing";
+import { getServerCurrency } from "@/lib/currency-server";
 
 export default async function AdminDashboardPage() {
+  const currency = await getServerCurrency();
+
   const [totalProjects, activeProjects, totalClients, quotes] =
     await Promise.all([
       prisma.project.count(),
       prisma.project.count({ where: { status: "IN_PROGRESS" } }),
       prisma.user.count({ where: { role: "CLIENT" } }),
-      prisma.quote.findMany({ where: { status: "ACCEPTED" } }),
+      // Exclude quotes belonging to cancelled projects from revenue.
+      prisma.quote.findMany({
+        where: {
+          status: "ACCEPTED",
+          project: { status: { not: "CANCELLED" } },
+        },
+        select: { amount: true, currency: true },
+      }),
     ]);
 
-  const totalRevenue = quotes.reduce((sum, q) => sum + q.amount, 0);
+  const totalRevenue = quotes.reduce(
+    (sum, q) => sum + convertBetween(q.amount, toCurrencyCode(q.currency), currency),
+    0
+  );
 
   const recentProjects = await prisma.project.findMany({
     take: 5,
@@ -26,7 +39,7 @@ export default async function AdminDashboardPage() {
     { label: "Total Projects", value: totalProjects, icon: FolderKanban },
     { label: "Active Projects", value: activeProjects, icon: Clock },
     { label: "Total Clients", value: totalClients, icon: Users },
-    { label: "Revenue", value: formatFromUSD(totalRevenue, "INR"), icon: IndianRupee },
+    { label: "Revenue", value: formatAmount(totalRevenue, currency, currency), icon: Wallet },
   ];
 
   return (

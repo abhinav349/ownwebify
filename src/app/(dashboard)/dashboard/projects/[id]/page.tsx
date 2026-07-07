@@ -6,7 +6,7 @@ import { formatDate, getStatusColor } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuoteResponse } from "@/components/forms/quote-response";
 import { MessageThread } from "@/components/shared/message-thread";
-import { formatBudget, formatFromUSD } from "@/lib/pricing";
+import { formatBudget, formatAmount, toCurrencyCode } from "@/lib/pricing";
 import { getServerCurrency } from "@/lib/currency-server";
 
 const statusSteps = ["NEW", "REVIEWING", "QUOTED", "IN_PROGRESS", "COMPLETED"];
@@ -151,7 +151,7 @@ export default async function ClientProjectDetailPage({
                     <div key={quote.id} className="p-4 rounded-lg border">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-2xl font-bold text-primary">
-                          {formatFromUSD(quote.amount, currency)}
+                          {formatAmount(quote.amount, toCurrencyCode(quote.currency), currency)}
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(quote.status)}`}>
                           {quote.status}

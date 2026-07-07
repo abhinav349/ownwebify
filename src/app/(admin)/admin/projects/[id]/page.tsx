@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { formatBudget, formatFromUSD } from "@/lib/pricing";
+import { formatAmount, formatBudget, toCurrencyCode } from "@/lib/pricing";
+import { getServerCurrency } from "@/lib/currency-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusUpdateForm } from "@/components/forms/status-update-form";
@@ -14,6 +15,7 @@ export default async function AdminProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const currency = await getServerCurrency();
 
   const project = await prisma.project.findUnique({
     where: { id },
@@ -60,7 +62,7 @@ export default async function AdminProjectDetailPage({
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Budget</p>
-                  <p className="mt-1">{formatBudget(project.budget, "INR")}</p>
+                  <p className="mt-1">{formatBudget(project.budget, currency)}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Timeline</p>
@@ -144,7 +146,7 @@ export default async function AdminProjectDetailPage({
                   {project.quotes.map((quote) => (
                     <div key={quote.id} className="p-3 rounded-lg border">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold">{formatFromUSD(quote.amount, "INR")}</span>
+                        <span className="font-semibold">{formatAmount(quote.amount, toCurrencyCode(quote.currency), currency)}</span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(quote.status)}`}>
                           {quote.status}
                         </span>

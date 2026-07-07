@@ -67,13 +67,13 @@ export function statusChangeEmailHtml(projectTitle: string, newStatus: string) {
   `;
 }
 
-export function quoteEmailHtml(projectTitle: string, amount: number, description: string) {
+export function quoteEmailHtml(projectTitle: string, amountLabel: string, description: string) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #2563eb;">New Quote Received</h2>
       <p>You have received a quote for "<strong>${projectTitle}</strong>":</p>
       <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 16px 0;">
-        <p style="font-size: 24px; font-weight: bold; color: #2563eb; margin: 0;">$${amount.toLocaleString()}</p>
+        <p style="font-size: 24px; font-weight: bold; color: #2563eb; margin: 0;">${amountLabel}</p>
         <p style="margin-top: 8px; color: #64748b;">${description}</p>
       </div>
       <p style="margin-top: 20px;">
