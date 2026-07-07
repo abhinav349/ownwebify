@@ -92,7 +92,7 @@ const addons = [
 const currencyOptions: CurrencyCode[] = ["USD", "INR", "CAD"];
 
 export default function ServicesPage() {
-  const [currency, setCurrency] = useState<CurrencyCode>("USD");
+  const [currency, setCurrency] = useState<CurrencyCode>("INR");
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function ServicesPage() {
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Professional websites at budget-friendly prices. Every plan includes
-              responsive design, modern tech, and dedicated support — starting at just $99.
+              responsive design, modern tech, and dedicated support — starting at just ₹8,000.
             </p>
 
             {/* Currency Toggle */}
@@ -255,7 +255,7 @@ export default function ServicesPage() {
               <p className="text-sm text-muted-foreground mt-1">
                 Refer a friend and earn{" "}
                 <span className="font-bold text-primary">
-                  {formatPrice(50, currency)}
+                  {formatPrice(5, currency)}
                 </span>{" "}
                 credit. They get <span className="font-bold text-primary">10% off</span> their first project!
               </p>

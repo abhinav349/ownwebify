@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, getStatusColor } from "@/lib/utils";
 import { Plus, Gift, Copy, DollarSign, Users } from "lucide-react";
 import { ReferralSection } from "./referral-section";
+import { formatPrice, referralRewardUSD } from "@/lib/pricing";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -79,7 +80,7 @@ export default async function DashboardPage() {
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Share & Earn:</span>{" "}
               Share your referral code with friends. They get <span className="font-semibold text-primary">10% off</span> their first project, and you earn{" "}
-              <span className="font-semibold text-primary">$50 credit</span> for each successful referral!
+              <span className="font-semibold text-primary">{formatPrice(referralRewardUSD, "INR")} credit</span> for each successful referral!
             </p>
           </div>
         </div>

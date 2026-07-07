@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const currency = getDefaultCurrency(countryCode);
 
   return NextResponse.json({
-    country: countryCode || "US",
+    country: countryCode || "IN",
     currency,
   });
 }

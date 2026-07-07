@@ -44,7 +44,7 @@ export const countryToCurrency: Record<string, CurrencyCode> = {
 
 export const basePricesUSD = [99, 199, 299, 399];
 
-export const referralRewardUSD = 50;
+export const referralRewardUSD = 5;
 
 export function convertPrice(usdAmount: number, currency: CurrencyCode): number {
   return Math.round(usdAmount * currencies[currency].rate);
@@ -67,6 +67,6 @@ export function getReferralReward(currency: CurrencyCode): string {
 }
 
 export function getDefaultCurrency(countryCode: string | null): CurrencyCode {
-  if (!countryCode) return "USD";
-  return countryToCurrency[countryCode.toUpperCase()] || "USD";
+  if (!countryCode) return "INR";
+  return countryToCurrency[countryCode.toUpperCase()] || "INR";
 }

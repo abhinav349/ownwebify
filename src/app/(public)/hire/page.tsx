@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { projectIntakeSchema, type ProjectIntakeFormData } from "@/lib/validations";
+import { type CurrencyCode, currencies, formatPrice } from "@/lib/pricing";
 
 const projectTypes = [
   { value: "landing-page", label: "Landing Page" },
@@ -21,13 +22,15 @@ const projectTypes = [
   { value: "other", label: "Other" },
 ];
 
-const budgetRanges = [
-  { value: "under-100", label: "Under $100" },
-  { value: "100-200", label: "$100 - $200" },
-  { value: "200-300", label: "$200 - $300" },
-  { value: "300-400", label: "$300 - $400" },
-  { value: "400-plus", label: "$400+" },
-];
+function getBudgetRanges(currency: CurrencyCode) {
+  return [
+    { value: "under-100", label: `Under ${formatPrice(100, currency)}` },
+    { value: "100-200", label: `${formatPrice(100, currency)} - ${formatPrice(200, currency)}` },
+    { value: "200-300", label: `${formatPrice(200, currency)} - ${formatPrice(300, currency)}` },
+    { value: "300-400", label: `${formatPrice(300, currency)} - ${formatPrice(400, currency)}` },
+    { value: "400-plus", label: `${formatPrice(400, currency)}+` },
+  ];
+}
 
 const timelines = [
   { value: "asap", label: "ASAP" },
@@ -62,6 +65,20 @@ export default function HirePage() {
   const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [currency, setCurrency] = useState<CurrencyCode>("INR");
+
+  useEffect(() => {
+    fetch("/api/geo")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.currency && currencies[data.currency as CurrencyCode]) {
+          setCurrency(data.currency as CurrencyCode);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const budgetRanges = getBudgetRanges(currency);
 
   const {
     register,

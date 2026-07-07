@@ -17,13 +17,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { OrganizationJsonLd, WebsiteJsonLd, FAQJsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Affordable Website Development | Custom Websites from $99 | OwnWebify",
+  title: "Affordable Website Development | Custom Websites from ₹8,000 | OwnWebify",
   description:
-    "Get a professional, high-performance website at affordable prices. Custom web development starting at just $99. Modern design, fast delivery, SEO optimized, 100% code ownership.",
+    "Get a professional, high-performance website at affordable prices. Custom web development starting at just ₹8,000. Modern design, fast delivery, SEO optimized, 100% code ownership.",
   openGraph: {
-    title: "Affordable Website Development | Custom Websites from $99",
+    title: "Affordable Website Development | Custom Websites from ₹8,000",
     description:
-      "Professional websites built with modern technology at budget-friendly prices. Landing pages from $99, business sites from $199.",
+      "Professional websites built with modern technology at budget-friendly prices. Landing pages from ₹8,000, business sites from ₹17,000.",
     url: "https://ownwebify.com",
   },
 };
@@ -80,7 +80,7 @@ const faqs = [
   {
     question: "How much does it cost to build a website?",
     answer:
-      "Our website development starts at just $99 for a landing page. Business websites start at $199, e-commerce at $299, and custom web applications at $399. All prices are transparent with no hidden fees.",
+      "Our website development starts at just ₹8,000 for a landing page. Business websites start at ₹17,000, e-commerce at ₹25,000, and custom web applications at ₹33,000. All prices are transparent with no hidden fees.",
   },
   {
     question: "How long does it take to build a website?",
@@ -90,7 +90,7 @@ const faqs = [
   {
     question: "Do you offer affordable website development for small businesses?",
     answer:
-      "Yes! We specialize in affordable, professional websites for small businesses and startups. Our pricing starts at $99 and we offer flexible packages to fit any budget.",
+      "Yes! We specialize in affordable, professional websites for small businesses and startups. Our pricing starts at ₹8,000 and we offer flexible packages to fit any budget.",
   },
   {
     question: "What technologies do you use to build websites?",
@@ -105,7 +105,7 @@ const faqs = [
   {
     question: "Do you offer website maintenance and support?",
     answer:
-      "Yes, every project includes 30 days of free post-launch support. We also offer ongoing monthly maintenance plans starting at $39/month for updates, security patches, and performance monitoring.",
+      "Yes, every project includes 30 days of free post-launch support. We also offer ongoing monthly maintenance plans starting at ₹3,300/month for updates, security patches, and performance monitoring.",
   },
 ];
 
@@ -141,7 +141,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              Professional web development starting at just $99. High-converting
+              Professional web development starting at just ₹8,000. High-converting
               digital experiences that turn visitors into customers.
             </p>
 
@@ -391,7 +391,7 @@ export default function HomePage() {
                 Ready to Get Your Affordable Website?
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-lg text-white/80 leading-relaxed">
-                Professional website development starting at $99. Free custom quote within 48 hours — no commitment, no pressure.
+                Professional website development starting at ₹8,000. Free custom quote within 48 hours — no commitment, no pressure.
               </p>
               <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
                 <Link href="/hire">

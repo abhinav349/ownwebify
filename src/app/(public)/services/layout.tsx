@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import { ServiceJsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Web Development Pricing | Affordable Websites from $99",
+  title: "Web Development Pricing | Affordable Websites from ₹8,000",
   description:
-    "Transparent pricing for professional web development. Landing pages from $99, business websites from $199, e-commerce from $299. No hidden fees. Modern tech, fast delivery.",
+    "Transparent pricing for professional web development. Landing pages from ₹8,000, business websites from ₹17,000, e-commerce from ₹25,000. No hidden fees. Modern tech, fast delivery.",
   openGraph: {
     title: "Web Development Pricing - Affordable Packages",
     description:
-      "Professional websites starting at $99. Transparent pricing, no hidden fees. Landing pages, business sites, e-commerce, and custom web apps.",
+      "Professional websites starting at ₹8,000. Transparent pricing, no hidden fees. Landing pages, business sites, e-commerce, and custom web apps.",
     url: "https://ownwebify.com/services",
   },
 };

@@ -15,22 +15,23 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "OwnWebify | Affordable Website Development Starting at $99",
+    default: "OwnWebify | Affordable Website Development Starting at ₹8,000",
     template: "%s | OwnWebify",
   },
   description:
-    "Get a professional, high-performance website at affordable prices. Custom web development starting at just $99. Modern design, fast delivery, 100% code ownership.",
+    "Get a professional, high-performance website at affordable prices. Custom web development starting at just ₹8,000. Modern design, fast delivery, 100% code ownership.",
   keywords: [
     "affordable website development",
     "cheap website design",
     "freelance web developer",
     "budget website builder",
-    "professional website $99",
+    "professional website cheap",
     "web development India",
     "custom website design",
     "small business website",
     "e-commerce website affordable",
     "Next.js developer",
+    "website development Bengaluru",
   ],
   authors: [{ name: "Abhi", url: "https://ownwebify.com/about" }],
   creator: "OwnWebify",
@@ -40,9 +41,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://ownwebify.com",
     siteName: "OwnWebify",
-    title: "OwnWebify | Affordable Website Development Starting at $99",
+    title: "OwnWebify | Affordable Website Development Starting at ₹8,000",
     description:
-      "Professional websites at budget-friendly prices. Custom design, modern tech stack, and lightning-fast performance. Starting at just $99.",
+      "Professional websites at budget-friendly prices. Custom design, modern tech stack, and lightning-fast performance. Starting at just ₹8,000.",
     images: [
       {
         url: "/og-image.png",
@@ -54,9 +55,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OwnWebify | Affordable Website Development Starting at $99",
+    title: "OwnWebify | Affordable Website Development Starting at ₹8,000",
     description:
-      "Professional websites at budget-friendly prices. Starting at just $99.",
+      "Professional websites at budget-friendly prices. Starting at just ₹8,000.",
     images: ["/og-image.png"],
   },
   robots: {
