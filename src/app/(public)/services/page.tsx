@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Sparkles, Star, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { type CurrencyCode, currencies, formatPrice } from "@/lib/pricing";
+import { type CurrencyCode, currencies, formatPrice, formatDisplayPrice } from "@/lib/pricing";
 
 const services = [
   {
@@ -181,14 +181,14 @@ export default function ServicesPage() {
                     </span>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-3xl font-bold">
-                        {formatPrice(service.priceUSD, currency)}
+                        {formatDisplayPrice(service.priceUSD, currency)}
                       </p>
                       <span className="text-sm font-semibold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
                         {Math.round((1 - service.priceUSD / service.originalPriceUSD) * 100)}% OFF
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground line-through">
-                      {formatPrice(service.originalPriceUSD, currency)}
+                      {formatDisplayPrice(service.originalPriceUSD, currency)}
                     </p>
                   </div>
                 </CardHeader>
@@ -247,7 +247,7 @@ export default function ServicesPage() {
                   <span className="text-sm font-medium">{addon.name}</span>
                 </div>
                 <span className="text-sm font-bold text-primary">
-                  {formatPrice(addon.priceUSD, currency)}
+                  {formatDisplayPrice(addon.priceUSD, currency)}
                   {addon.perMonth ? "/mo" : ""}
                 </span>
               </div>

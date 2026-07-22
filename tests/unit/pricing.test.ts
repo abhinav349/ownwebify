@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   convertPrice,
+  convertDisplayPrice,
   formatPrice,
+  formatDisplayPrice,
   getDefaultCurrency,
   getReferralReward,
   currencies,
@@ -120,6 +122,48 @@ describe("getReferralReward", () => {
   });
 });
 
+describe("convertDisplayPrice (PPP-adjusted)", () => {
+  it("returns PPP-adjusted amount for USD (displayRate ≈ 4.16)", () => {
+    expect(convertDisplayPrice(59, "USD")).toBe(Math.round(59 * 4.16));
+    expect(convertDisplayPrice(118, "USD")).toBe(Math.round(118 * 4.16));
+  });
+
+  it("returns same amount as convertPrice for INR (displayRate = market rate)", () => {
+    expect(convertDisplayPrice(59, "INR")).toBe(convertPrice(59, "INR"));
+    expect(convertDisplayPrice(100, "INR")).toBe(8500);
+  });
+
+  it("returns PPP-adjusted amount for CAD (displayRate ≈ 4.79)", () => {
+    expect(convertDisplayPrice(59, "CAD")).toBe(Math.round(59 * 4.79));
+  });
+
+  it("USD display prices are higher than market-rate prices", () => {
+    expect(convertDisplayPrice(100, "USD")).toBeGreaterThan(convertPrice(100, "USD"));
+  });
+
+  it("CAD display prices are higher than market-rate prices", () => {
+    expect(convertDisplayPrice(100, "CAD")).toBeGreaterThan(convertPrice(100, "CAD"));
+  });
+});
+
+describe("formatDisplayPrice (PPP-adjusted)", () => {
+  it("formats PPP-adjusted USD price", () => {
+    const result = formatDisplayPrice(59, "USD");
+    expect(result).toContain("$");
+    expect(result).toContain("245");
+  });
+
+  it("formats INR same as formatPrice (India is anchor market)", () => {
+    expect(formatDisplayPrice(59, "INR")).toBe(formatPrice(59, "INR"));
+  });
+
+  it("formats PPP-adjusted CAD price", () => {
+    const result = formatDisplayPrice(59, "CAD");
+    expect(result).toContain("$");
+    expect(result).toContain("283");
+  });
+});
+
 describe("currency configs", () => {
   it("has 3 currencies defined", () => {
     expect(Object.keys(currencies)).toHaveLength(3);
@@ -131,13 +175,26 @@ describe("currency configs", () => {
       expect(config.symbol).toBeDefined();
       expect(config.name).toBeDefined();
       expect(config.rate).toBeGreaterThan(0);
+      expect(config.displayRate).toBeGreaterThan(0);
       expect(config.locale).toBeDefined();
       expect(config.flag).toBeDefined();
     }
   });
 
-  it("USD rate is 1", () => {
+  it("USD market rate is 1", () => {
     expect(currencies.USD.rate).toBe(1);
+  });
+
+  it("USD display rate reflects PPP adjustment (> 1)", () => {
+    expect(currencies.USD.displayRate).toBeGreaterThan(1);
+  });
+
+  it("INR display rate equals market rate (anchor market)", () => {
+    expect(currencies.INR.displayRate).toBe(currencies.INR.rate);
+  });
+
+  it("CAD display rate is higher than market rate (PPP adjustment)", () => {
+    expect(currencies.CAD.displayRate).toBeGreaterThan(currencies.CAD.rate);
   });
 });
 

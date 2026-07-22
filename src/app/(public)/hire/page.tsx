@@ -16,7 +16,7 @@ import {
   projectDetailsSchema,
   type ProjectIntakeFormData,
 } from "@/lib/validations";
-import { type CurrencyCode, currencies, formatPrice } from "@/lib/pricing";
+import { type CurrencyCode, currencies, formatDisplayPrice } from "@/lib/pricing";
 
 const projectTypes = [
   { value: "landing-page", label: "Landing Page" },
@@ -29,11 +29,11 @@ const projectTypes = [
 
 function getBudgetRanges(currency: CurrencyCode) {
   return [
-    { value: "under-100", label: `Under ${formatPrice(100, currency)}` },
-    { value: "100-200", label: `${formatPrice(100, currency)} - ${formatPrice(200, currency)}` },
-    { value: "200-350", label: `${formatPrice(200, currency)} - ${formatPrice(350, currency)}` },
-    { value: "350-500", label: `${formatPrice(350, currency)} - ${formatPrice(500, currency)}` },
-    { value: "500-plus", label: `${formatPrice(500, currency)}+` },
+    { value: "under-100", label: `Under ${formatDisplayPrice(100, currency)}` },
+    { value: "100-200", label: `${formatDisplayPrice(100, currency)} - ${formatDisplayPrice(200, currency)}` },
+    { value: "200-350", label: `${formatDisplayPrice(200, currency)} - ${formatDisplayPrice(350, currency)}` },
+    { value: "350-500", label: `${formatDisplayPrice(350, currency)} - ${formatDisplayPrice(500, currency)}` },
+    { value: "500-plus", label: `${formatDisplayPrice(500, currency)}+` },
   ];
 }
 

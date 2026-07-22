@@ -4,10 +4,21 @@ export interface CurrencyConfig {
   code: CurrencyCode;
   symbol: string;
   name: string;
-  rate: number; // conversion rate from USD
+  rate: number; // market exchange rate from USD (for real monetary conversions)
+  displayRate: number; // PPP-adjusted rate for service/display pricing
   locale: string;
   flag: string;
 }
+
+// PPP conversion factors (World Bank, 2024):
+//   India  = 20.42 INR per intl $
+//   USA    = 1.00 (baseline)
+//   Canada = 1.15 CAD per intl $
+//
+// Display rates use PPP to show regionally appropriate pricing:
+//   USD displayRate = INR_market / India_PPP × USD_PPP = 85 / 20.42 × 1.00 ≈ 4.16
+//   INR displayRate = 85 (unchanged — India is the anchor market)
+//   CAD displayRate = 85 / 20.42 × 1.15 ≈ 4.79
 
 export const currencies: Record<CurrencyCode, CurrencyConfig> = {
   USD: {
@@ -15,6 +26,7 @@ export const currencies: Record<CurrencyCode, CurrencyConfig> = {
     symbol: "$",
     name: "US Dollar",
     rate: 1,
+    displayRate: 4.16,
     locale: "en-US",
     flag: "🇺🇸",
   },
@@ -23,6 +35,7 @@ export const currencies: Record<CurrencyCode, CurrencyConfig> = {
     symbol: "₹",
     name: "Indian Rupee",
     rate: 85,
+    displayRate: 85,
     locale: "en-IN",
     flag: "🇮🇳",
   },
@@ -31,6 +44,7 @@ export const currencies: Record<CurrencyCode, CurrencyConfig> = {
     symbol: "C$",
     name: "Canadian Dollar",
     rate: 1.36,
+    displayRate: 4.79,
     locale: "en-CA",
     flag: "🇨🇦",
   },
@@ -71,6 +85,28 @@ export function formatPrice(usdAmount: number, currency: CurrencyCode): string {
   }).format(converted);
 }
 
+/** Converts an internal price unit using the PPP-adjusted display rate. */
+export function convertDisplayPrice(amount: number, currency: CurrencyCode): number {
+  return Math.round(amount * currencies[currency].displayRate);
+}
+
+/**
+ * Formats a price using PPP-adjusted display rates.
+ * Use for service/tier pricing shown to visitors (services page, budget ranges).
+ * For real monetary amounts (quotes, referral balance), use formatPrice instead.
+ */
+export function formatDisplayPrice(amount: number, currency: CurrencyCode): string {
+  const converted = convertDisplayPrice(amount, currency);
+  const config = currencies[currency];
+
+  return new Intl.NumberFormat(config.locale, {
+    style: "currency",
+    currency: config.code,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(converted);
+}
+
 export function getReferralReward(currency: CurrencyCode): string {
   return formatPrice(referralRewardUSD, currency);
 }
@@ -93,9 +129,9 @@ export function formatBudget(value: string, currency: CurrencyCode): string {
   const bounds = budgetRangeBoundsUSD[value];
   if (!bounds) return value;
   const [min, max] = bounds;
-  if (min === 0 && max !== null) return `Under ${formatPrice(max, currency)}`;
-  if (max === null) return `${formatPrice(min, currency)}+`;
-  return `${formatPrice(min, currency)} - ${formatPrice(max, currency)}`;
+  if (min === 0 && max !== null) return `Under ${formatDisplayPrice(max, currency)}`;
+  if (max === null) return `${formatDisplayPrice(min, currency)}+`;
+  return `${formatDisplayPrice(min, currency)} - ${formatDisplayPrice(max, currency)}`;
 }
 
 /**
