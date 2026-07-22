@@ -15,7 +15,7 @@ export function OrganizationJsonLd() {
     url: "https://ownwebify.com",
     logo: "https://ownwebify.com/favicon.svg",
     description:
-      "Affordable professional web development services starting at ₹15,000. Custom websites, e-commerce stores, and web applications.",
+      "Affordable professional web development services starting at ₹5,000. Custom websites, e-commerce stores, and web applications.",
     founder: {
       "@type": "Person",
       name: "Abhi",
@@ -36,7 +36,7 @@ export function OrganizationJsonLd() {
       "https://www.instagram.com/ownwebify",
       "https://github.com/abhinav349",
     ],
-    priceRange: "₹15,000 - ₹72,000",
+    priceRange: "₹5,000 - ₹30,000",
   };
 
   return <JsonLd data={data} />;
@@ -49,7 +49,7 @@ export function WebsiteJsonLd() {
     name: "OwnWebify",
     url: "https://ownwebify.com",
     description:
-      "Get affordable, professional websites built with modern technology. Starting at just ₹15,000.",
+      "Get affordable, professional websites built with modern technology. Starting at just ₹5,000.",
     potentialAction: {
       "@type": "SearchAction",
       target: "https://ownwebify.com/services",

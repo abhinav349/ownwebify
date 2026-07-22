@@ -42,7 +42,7 @@ export const countryToCurrency: Record<string, CurrencyCode> = {
   CA: "CAD",
 };
 
-export const basePricesUSD = [175, 349, 599, 849];
+export const basePricesUSD = [59, 118, 235, 353];
 
 export const referralRewardUSD = 5;
 
@@ -82,11 +82,11 @@ export function getDefaultCurrency(countryCode: string | null): CurrencyCode {
 
 // Budget range values (stored in USD terms) mapped to localized display labels.
 export const budgetRangeBoundsUSD: Record<string, [number, number | null]> = {
-  "under-200": [0, 200],
-  "200-400": [200, 400],
-  "400-600": [400, 600],
-  "600-900": [600, 900],
-  "900-plus": [900, null],
+  "under-100": [0, 100],
+  "100-200": [100, 200],
+  "200-350": [200, 350],
+  "350-500": [350, 500],
+  "500-plus": [500, null],
 };
 
 export function formatBudget(value: string, currency: CurrencyCode): string {

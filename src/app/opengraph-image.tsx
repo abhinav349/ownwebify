@@ -62,7 +62,7 @@ export default async function Image() {
             lineHeight: 1.4,
           }}
         >
-          Affordable Website Development Starting at ₹15,000
+          Affordable Website Development Starting at ₹5,000
         </div>
         <div
           style={{

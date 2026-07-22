@@ -10,8 +10,8 @@ import { type CurrencyCode, currencies, formatPrice } from "@/lib/pricing";
 const services = [
   {
     name: "Landing Page",
-    priceUSD: 175,
-    originalPriceUSD: 299,
+    priceUSD: 59,
+    originalPriceUSD: 118,
     priceNote: "one-time",
     description: "A high-converting single page that turns visitors into leads.",
     features: [
@@ -27,8 +27,8 @@ const services = [
   },
   {
     name: "Business Website",
-    priceUSD: 349,
-    originalPriceUSD: 599,
+    priceUSD: 118,
+    originalPriceUSD: 235,
     priceNote: "starting at",
     description: "A complete multi-page site that showcases your brand professionally.",
     features: [
@@ -46,8 +46,8 @@ const services = [
   },
   {
     name: "E-Commerce",
-    priceUSD: 599,
-    originalPriceUSD: 999,
+    priceUSD: 235,
+    originalPriceUSD: 471,
     priceNote: "starting at",
     description: "A full online store with payments, inventory, and order management.",
     features: [
@@ -65,8 +65,8 @@ const services = [
   },
   {
     name: "Web Application",
-    priceUSD: 849,
-    originalPriceUSD: 1499,
+    priceUSD: 353,
+    originalPriceUSD: 706,
     priceNote: "starting at",
     description: "Custom web apps with complex logic, auth, and integrations.",
     features: [
@@ -85,12 +85,12 @@ const services = [
 ];
 
 const addons = [
-  { name: "SEO Audit & Optimization", priceUSD: 79, icon: "🔍" },
-  { name: "Content Writing (per page)", priceUSD: 39, icon: "✍️" },
-  { name: "Logo & Brand Identity", priceUSD: 129, icon: "🎨" },
-  { name: "Monthly Maintenance", priceUSD: 59, icon: "🛡️", perMonth: true },
-  { name: "Performance Optimization", priceUSD: 89, icon: "⚡" },
-  { name: "Accessibility Audit (WCAG)", priceUSD: 99, icon: "♿" },
+  { name: "SEO Audit & Optimization", priceUSD: 29, icon: "🔍" },
+  { name: "Content Writing (per page)", priceUSD: 12, icon: "✍️" },
+  { name: "Logo & Brand Identity", priceUSD: 47, icon: "🎨" },
+  { name: "Monthly Maintenance", priceUSD: 24, icon: "🛡️", perMonth: true },
+  { name: "Performance Optimization", priceUSD: 35, icon: "⚡" },
+  { name: "Accessibility Audit (WCAG)", priceUSD: 35, icon: "♿" },
 ];
 
 const currencyOptions: CurrencyCode[] = ["USD", "INR", "CAD"];

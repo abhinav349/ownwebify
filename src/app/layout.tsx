@@ -6,11 +6,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "OwnWebify | Affordable Website Development Starting at ₹15,000",
+    default: "OwnWebify | Affordable Website Development Starting at ₹5,000",
     template: "%s | OwnWebify",
   },
   description:
-    "Get a professional, high-performance website at affordable prices. Agency-quality web development starting at just ₹15,000. Modern design, fast delivery, 100% code ownership.",
+    "Get a professional, high-performance website at affordable prices. Agency-quality web development starting at just ₹5,000. Modern design, fast delivery, 100% code ownership.",
   keywords: [
     "affordable website development",
     "cheap website design",
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://ownwebify.com",
     siteName: "OwnWebify",
-    title: "OwnWebify | Affordable Website Development Starting at ₹15,000",
+    title: "OwnWebify | Affordable Website Development Starting at ₹5,000",
     description:
-      "Professional websites at budget-friendly prices. Custom design, modern tech stack, and lightning-fast performance. Starting at just ₹15,000.",
+      "Professional websites at budget-friendly prices. Custom design, modern tech stack, and lightning-fast performance. Starting at just ₹5,000.",
     images: [
       {
         url: "/og-image.png",
@@ -46,9 +46,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OwnWebify | Affordable Website Development Starting at ₹15,000",
+    title: "OwnWebify | Affordable Website Development Starting at ₹5,000",
     description:
-      "Professional websites at budget-friendly prices. Starting at just ₹15,000.",
+      "Professional websites at budget-friendly prices. Starting at just ₹5,000.",
     images: ["/og-image.png"],
   },
   robots: {
