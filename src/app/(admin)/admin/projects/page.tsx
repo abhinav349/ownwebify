@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { formatAmount, formatBudget, toCurrencyCode } from "@/lib/pricing";
+import { formatAmount, formatBudget, toCurrencyCode, applyDiscount } from "@/lib/pricing";
 import { getServerCurrency } from "@/lib/currency-server";
 
 export default async function AdminProjectsPage() {
@@ -11,7 +11,14 @@ export default async function AdminProjectsPage() {
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      client: { select: { name: true, email: true, company: true } },
+      client: {
+        select: {
+          name: true,
+          email: true,
+          company: true,
+          referredBy: { select: { name: true } },
+        },
+      },
       quotes: { orderBy: { createdAt: "desc" }, take: 1 },
       _count: { select: { messages: true } },
     },
@@ -45,6 +52,11 @@ export default async function AdminProjectsPage() {
                         <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap ${getStatusColor(project.status)}`}>
                           {project.status.replace("_", " ")}
                         </span>
+                        {project.client.referredBy && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap bg-purple-100 text-purple-800">
+                            Referred
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                         {project.description}
@@ -64,7 +76,7 @@ export default async function AdminProjectsPage() {
                       {project.quotes[0] && (
                         <p className="font-medium text-foreground">
                           {formatAmount(
-                            project.quotes[0].amount,
+                            applyDiscount(project.quotes[0].amount, project.quotes[0].discountPercent),
                             toCurrencyCode(project.quotes[0].currency),
                             currency
                           )}

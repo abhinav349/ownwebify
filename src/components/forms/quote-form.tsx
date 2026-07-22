@@ -7,9 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { type CurrencyCode, currencies } from "@/lib/pricing";
+import { type CurrencyCode, currencies, applyDiscount } from "@/lib/pricing";
 
-export function QuoteForm({ projectId }: { projectId: string }) {
+export function QuoteForm({
+  projectId,
+  referralDiscountPercent = 0,
+}: {
+  projectId: string;
+  referralDiscountPercent?: number;
+}) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +96,13 @@ export function QuoteForm({ projectId }: { projectId: string }) {
         <p className="text-xs text-muted-foreground mt-1">
           Entered in {currencies[currency].name} ({currencies[currency].symbol}).
         </p>
+        {referralDiscountPercent > 0 && amount && !isNaN(parseFloat(amount)) && (
+          <p className="text-xs font-medium text-green-600 mt-1">
+            Referred client: {referralDiscountPercent}% discount will be applied
+            automatically. They&apos;ll pay {currencies[currency].symbol}
+            {applyDiscount(parseFloat(amount), referralDiscountPercent).toLocaleString(undefined, { maximumFractionDigits: 0 })}.
+          </p>
+        )}
       </div>
       <div>
         <Label htmlFor="description">Description</Label>

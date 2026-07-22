@@ -46,6 +46,15 @@ export const basePricesUSD = [175, 349, 599, 849];
 
 export const referralRewardUSD = 5;
 
+// Discount a referred client receives on their first project's quote.
+export const referralDiscountPercent = 10;
+
+/** Returns the payable amount after applying a discount percentage. */
+export function applyDiscount(amount: number, discountPercent: number): number {
+  if (!discountPercent) return amount;
+  return amount * (1 - discountPercent / 100);
+}
+
 export function convertPrice(usdAmount: number, currency: CurrencyCode): number {
   return Math.round(usdAmount * currencies[currency].rate);
 }

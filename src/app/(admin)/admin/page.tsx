@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderKanban, Users, Wallet, Clock } from "lucide-react";
-import { convertBetween, formatAmount, toCurrencyCode } from "@/lib/pricing";
+import { convertBetween, formatAmount, toCurrencyCode, applyDiscount } from "@/lib/pricing";
 import { getServerCurrency } from "@/lib/currency-server";
 
 export default async function AdminDashboardPage() {
@@ -18,12 +18,18 @@ export default async function AdminDashboardPage() {
           status: "ACCEPTED",
           project: { status: { not: "CANCELLED" } },
         },
-        select: { amount: true, currency: true },
+        select: { amount: true, currency: true, discountPercent: true },
       }),
     ]);
 
   const totalRevenue = quotes.reduce(
-    (sum, q) => sum + convertBetween(q.amount, toCurrencyCode(q.currency), currency),
+    (sum, q) =>
+      sum +
+      convertBetween(
+        applyDiscount(q.amount, q.discountPercent),
+        toCurrencyCode(q.currency),
+        currency
+      ),
     0
   );
 

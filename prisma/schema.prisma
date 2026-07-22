@@ -88,8 +88,9 @@ model Quote {
   id          String      @id @default(cuid())
   projectId   String
   project     Project     @relation(fields: [projectId], references: [id])
-  amount      Float
-  currency    String      @default("USD")
+  amount          Float
+  currency        String      @default("USD")
+  discountPercent Float       @default(0)
   description String
   validUntil  DateTime
   status      QuoteStatus @default(PENDING)

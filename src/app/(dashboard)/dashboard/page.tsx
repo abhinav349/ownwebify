@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, getStatusColor } from "@/lib/utils";
 import { Plus, Gift, Wallet, Users } from "lucide-react";
 import { ReferralSection } from "./referral-section";
-import { formatPrice, formatFromUSD, formatAmount, toCurrencyCode, referralRewardUSD } from "@/lib/pricing";
+import { formatPrice, formatFromUSD, formatAmount, toCurrencyCode, applyDiscount, referralRewardUSD } from "@/lib/pricing";
 import { getServerCurrency } from "@/lib/currency-server";
 
 export default async function DashboardPage() {
@@ -157,8 +157,17 @@ export default async function DashboardPage() {
                       <div className="text-left sm:text-right sm:ml-4 pt-2 sm:pt-0 border-t sm:border-t-0">
                         <p className="text-sm text-muted-foreground">Quote</p>
                         <p className="font-semibold">
-                          {formatAmount(project.quotes[0].amount, toCurrencyCode(project.quotes[0].currency), currency)}
+                          {formatAmount(
+                            applyDiscount(project.quotes[0].amount, project.quotes[0].discountPercent),
+                            toCurrencyCode(project.quotes[0].currency),
+                            currency
+                          )}
                         </p>
+                        {project.quotes[0].discountPercent > 0 && (
+                          <p className="text-xs text-green-600">
+                            {project.quotes[0].discountPercent}% referral discount
+                          </p>
+                        )}
                         <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(project.quotes[0].status)}`}>
                           {project.quotes[0].status}
                         </span>

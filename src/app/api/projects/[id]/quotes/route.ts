@@ -3,7 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, quoteEmailHtml } from "@/lib/email";
-import { formatAmount, toCurrencyCode } from "@/lib/pricing";
+import {
+  formatAmount,
+  toCurrencyCode,
+  applyDiscount,
+  referralDiscountPercent,
+} from "@/lib/pricing";
 
 export async function POST(
   request: NextRequest,
@@ -19,11 +24,31 @@ export async function POST(
     const { amount, description, validUntil, currency } = await request.json();
     const quoteCurrency = toCurrencyCode(currency);
 
+    // Determine referral discount: a referred client gets 10% off the quote
+    // for their first project only.
+    const existing = await prisma.project.findUnique({
+      where: { id },
+      select: { clientId: true, client: { select: { referredById: true } } },
+    });
+
+    let discountPercent = 0;
+    if (existing?.client.referredById) {
+      const firstProject = await prisma.project.findFirst({
+        where: { clientId: existing.clientId },
+        orderBy: { createdAt: "asc" },
+        select: { id: true },
+      });
+      if (firstProject?.id === id) {
+        discountPercent = referralDiscountPercent;
+      }
+    }
+
     const quote = await prisma.quote.create({
       data: {
         projectId: id,
         amount,
         currency: quoteCurrency,
+        discountPercent,
         description,
         validUntil: new Date(validUntil),
       },
@@ -36,16 +61,17 @@ export async function POST(
       include: { client: true },
     });
 
-    // Notify client
+    // Notify client (show the discounted total they will pay)
     if (project.client.email) {
+      const payable = applyDiscount(amount, discountPercent);
+      const amountLabel =
+        discountPercent > 0
+          ? `${formatAmount(payable, quoteCurrency, quoteCurrency)} (incl. ${discountPercent}% referral discount)`
+          : formatAmount(amount, quoteCurrency, quoteCurrency);
       await sendEmail({
         to: project.client.email,
         subject: `New Quote for: ${project.title}`,
-        html: quoteEmailHtml(
-          project.title,
-          formatAmount(amount, quoteCurrency, quoteCurrency),
-          description
-        ),
+        html: quoteEmailHtml(project.title, amountLabel, description),
       });
     }
 

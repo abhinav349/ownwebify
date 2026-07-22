@@ -1,7 +1,13 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { formatAmount, formatBudget, toCurrencyCode } from "@/lib/pricing";
+import {
+  formatAmount,
+  formatBudget,
+  toCurrencyCode,
+  applyDiscount,
+  referralDiscountPercent,
+} from "@/lib/pricing";
 import { getServerCurrency } from "@/lib/currency-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +26,9 @@ export default async function AdminProjectDetailPage({
   const project = await prisma.project.findUnique({
     where: { id },
     include: {
-      client: true,
+      client: {
+        include: { referredBy: { select: { name: true, email: true, referralCode: true } } },
+      },
       quotes: { orderBy: { createdAt: "desc" } },
       messages: {
         orderBy: { createdAt: "asc" },
@@ -31,6 +39,19 @@ export default async function AdminProjectDetailPage({
 
   if (!project) {
     notFound();
+  }
+
+  // A referred client gets the discount on their first project's quote only.
+  let quoteDiscountPercent = 0;
+  if (project.client.referredById) {
+    const firstProject = await prisma.project.findFirst({
+      where: { clientId: project.clientId },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    if (firstProject?.id === project.id) {
+      quoteDiscountPercent = referralDiscountPercent;
+    }
   }
 
   return (
@@ -122,6 +143,18 @@ export default async function AdminProjectDetailPage({
               {project.client.company && (
                 <p className="text-sm text-muted-foreground">{project.client.company}</p>
               )}
+              {project.client.referredBy && (
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-xs font-medium text-muted-foreground">Referred by</p>
+                  <p className="text-sm font-medium">{project.client.referredBy.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {project.client.referredBy.email}
+                    {project.client.referredBy.referralCode
+                      ? ` · ${project.client.referredBy.referralCode}`
+                      : ""}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -146,11 +179,29 @@ export default async function AdminProjectDetailPage({
                   {project.quotes.map((quote) => (
                     <div key={quote.id} className="p-3 rounded-lg border">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold">{formatAmount(quote.amount, toCurrencyCode(quote.currency), currency)}</span>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="font-semibold">
+                            {formatAmount(
+                              applyDiscount(quote.amount, quote.discountPercent),
+                              toCurrencyCode(quote.currency),
+                              currency
+                            )}
+                          </span>
+                          {quote.discountPercent > 0 && (
+                            <span className="text-xs text-muted-foreground line-through">
+                              {formatAmount(quote.amount, toCurrencyCode(quote.currency), currency)}
+                            </span>
+                          )}
+                        </div>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${getStatusColor(quote.status)}`}>
                           {quote.status}
                         </span>
                       </div>
+                      {quote.discountPercent > 0 && (
+                        <p className="text-xs font-medium text-green-600 mb-1">
+                          {quote.discountPercent}% referral discount applied
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground line-clamp-2">{quote.description}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         Valid until {formatDate(quote.validUntil)}
@@ -161,7 +212,10 @@ export default async function AdminProjectDetailPage({
               ) : (
                 <p className="text-sm text-muted-foreground mb-4">No quotes sent yet.</p>
               )}
-              <QuoteForm projectId={project.id} />
+              <QuoteForm
+                projectId={project.id}
+                referralDiscountPercent={quoteDiscountPercent}
+              />
             </CardContent>
           </Card>
         </div>
