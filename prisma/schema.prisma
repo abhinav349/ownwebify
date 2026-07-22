@@ -52,6 +52,7 @@ model User {
   messages         Message[]
   referralsMade    Referral[] @relation("ReferrerReferrals")
   referralsUsed    Referral[] @relation("RefereeReferrals")
+  setupTokens      SetupToken[]
 }
 
 model Referral {
@@ -129,6 +130,18 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@index([email, token])
+}
+
+model SetupToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
 }
 
 model PortfolioItem {

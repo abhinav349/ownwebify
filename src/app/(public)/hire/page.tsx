@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,7 +57,6 @@ const guestSteps = [
   { title: "Contact Info", description: "How can I reach you?" },
   { title: "Project Details", description: "Tell me about your project" },
   { title: "Budget & Timeline", description: "When and how much?" },
-  { title: "Verify Email", description: "Confirm your email address" },
 ];
 
 const authedSteps = [
@@ -84,12 +83,6 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [newProjectId, setNewProjectId] = useState<string | null>(null);
-  const [otpCode, setOtpCode] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpError, setOtpError] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>("INR");
 
   const steps = isLoggedIn ? authedSteps : guestSteps;
@@ -112,7 +105,6 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     register,
     handleSubmit,
     trigger,
-    getValues,
     formState: { errors },
   } = useForm<ProjectIntakeFormData>({
     resolver: zodResolver(
@@ -120,66 +112,8 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     ),
   });
 
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  const sendOtp = useCallback(async () => {
-    const email = getValues("email");
-    if (!email) return;
-
-    setOtpLoading(true);
-    setOtpError("");
-    try {
-      const res = await fetch("/api/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setOtpSent(true);
-        setCountdown(60);
-      } else {
-        setOtpError(data.error || "Failed to send code");
-      }
-    } catch {
-      setOtpError("Network error. Please try again.");
-    } finally {
-      setOtpLoading(false);
-    }
-  }, [getValues]);
-
-  const verifyOtp = async () => {
-    const email = getValues("email");
-    if (!email || !otpCode) return;
-
-    setOtpLoading(true);
-    setOtpError("");
-    try {
-      const res = await fetch("/api/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: otpCode }),
-      });
-      const data = await res.json();
-      if (res.ok && data.verified) {
-        setOtpVerified(true);
-      } else {
-        setOtpError(data.error || "Invalid code");
-      }
-    } catch {
-      setOtpError("Network error. Please try again.");
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // Field validation groups differ between guest and logged-in flows.
   const guestFields: (keyof ProjectIntakeFormData)[][] = [
-    ["name", "email", "password"],
+    ["name", "email"],
     ["projectType", "title", "description"],
     ["budget", "timeline"],
   ];
@@ -190,20 +124,9 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
   const fieldsToValidate = isLoggedIn ? authedFields : guestFields;
 
   const nextStep = async () => {
-    // For guests, the last step (index 3) is OTP verification and has no
-    // fields to validate here. For logged-in users the final step is Budget.
     if (currentStep >= fieldsToValidate.length) return;
-
     const isValid = await trigger(fieldsToValidate[currentStep]);
     if (!isValid) return;
-
-    // Guest flow transitions into OTP step after Budget & Timeline.
-    if (!isLoggedIn && currentStep === 2) {
-      setCurrentStep(3);
-      if (!otpSent) sendOtp();
-      return;
-    }
-
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -212,11 +135,6 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
   };
 
   const onSubmit = async (data: ProjectIntakeFormData) => {
-    if (!isLoggedIn && !otpVerified) {
-      setOtpError("Please verify your email first");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/projects", {
@@ -261,19 +179,12 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
               </Button>
             </a>
           ) : (
-            <>
-              <div className="p-4 rounded-xl bg-muted/50 border space-y-2">
-                <p className="text-sm font-medium">Your account is ready!</p>
-                <p className="text-sm text-muted-foreground">
-                  Log in with the email and password you just set to track your project, view quotes, and message me directly.
-                </p>
-              </div>
-              <a href="/login" className="inline-block mt-6">
-                <Button className="rounded-full shadow-md shadow-primary/20">
-                  Go to Dashboard &rarr;
-                </Button>
-              </a>
-            </>
+            <div className="p-4 rounded-xl bg-muted/50 border space-y-2">
+              <p className="text-sm text-muted-foreground">
+                We&apos;ll email you a quote along with a link to set up your account so you can
+                track progress, view quotes, and message us directly.
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -366,22 +277,6 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                     {errors.email && (
                       <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
                     )}
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Create Password *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      {...register("password")}
-                      placeholder="Min 6 characters"
-                      className="mt-1.5"
-                    />
-                    {errors.password && (
-                      <p className="text-sm text-destructive mt-1">{errors.password.message}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      You&apos;ll use this to log in and track your project.
-                    </p>
                   </div>
                   <div>
                     <Label htmlFor="company">Company (optional)</Label>
@@ -509,63 +404,6 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </div>
               )}
 
-              {/* Email Verification (guest only) */}
-              {!isLoggedIn && steps[currentStep].title === "Verify Email" && (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary/10 to-pink-500/10 flex items-center justify-center mx-auto mb-4">
-                      <Mail className="h-8 w-8 text-primary" />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      We sent a 6-digit code to <strong>{getValues("email")}</strong>
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="otp">Verification Code</Label>
-                    <Input
-                      id="otp"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="Enter 6-digit code"
-                      className="mt-1.5 text-center text-2xl tracking-[0.5em] font-mono"
-                      maxLength={6}
-                      disabled={otpVerified}
-                    />
-                    {otpError && (
-                      <p className="text-sm text-destructive mt-1">{otpError}</p>
-                    )}
-                    {otpVerified && (
-                      <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4" /> Email verified successfully
-                      </p>
-                    )}
-                  </div>
-                  {!otpVerified && (
-                    <div className="flex items-center justify-between">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={sendOtp}
-                        disabled={countdown > 0 || otpLoading}
-                      >
-                        {countdown > 0 ? `Resend in ${countdown}s` : "Resend Code"}
-                      </Button>
-                      <Button
-                        type="button"
-                        onClick={verifyOtp}
-                        disabled={otpCode.length !== 6 || otpLoading}
-                      >
-                        {otpLoading ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : null}
-                        Verify
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Navigation Buttons */}
               <div className="flex justify-between pt-4">
                 {currentStep > 0 ? (
@@ -582,7 +420,7 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                     Next
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
-                ) : isLoggedIn ? (
+                ) : (
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
@@ -593,18 +431,7 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                       "Submit Project"
                     )}
                   </Button>
-                ) : otpVerified ? (
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      "Submit Project"
-                    )}
-                  </Button>
-                ) : null}
+                )}
               </div>
             </form>
           </CardContent>

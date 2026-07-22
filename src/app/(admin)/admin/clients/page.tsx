@@ -38,7 +38,18 @@ export default async function AdminClientsPage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold">{client.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold">{client.name}</h3>
+                      {client.emailVerified ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                          Pending
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">{client.email}</p>
                     {client.company && (
                       <p className="text-sm text-muted-foreground">{client.company}</p>

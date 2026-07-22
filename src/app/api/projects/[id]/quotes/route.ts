@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -68,10 +69,25 @@ export async function POST(
         discountPercent > 0
           ? `${formatAmount(payable, quoteCurrency, quoteCurrency)} (incl. ${discountPercent}% referral discount)`
           : formatAmount(amount, quoteCurrency, quoteCurrency);
+
+      let setupUrl: string | undefined;
+      if (!project.client.passwordHash) {
+        const token = randomBytes(32).toString("hex");
+        await prisma.setupToken.create({
+          data: {
+            userId: project.client.id,
+            token,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          },
+        });
+        const base = process.env.NEXTAUTH_URL || "https://ownwebify.com";
+        setupUrl = `${base}/setup-account?token=${token}`;
+      }
+
       await sendEmail({
         to: project.client.email,
         subject: `New Quote for: ${project.title}`,
-        html: quoteEmailHtml(project.title, amountLabel, description),
+        html: quoteEmailHtml(project.title, amountLabel, description, setupUrl),
       });
     }
 

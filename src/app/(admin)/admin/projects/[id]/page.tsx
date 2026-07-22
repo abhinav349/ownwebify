@@ -138,7 +138,18 @@ export default async function AdminProjectDetailPage({
               <CardTitle>Client</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="font-medium">{project.client.name}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium">{project.client.name}</p>
+                {project.client.emailVerified ? (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">
+                    Verified
+                  </span>
+                ) : (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 font-medium">
+                    Pending
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">{project.client.email}</p>
               {project.client.company && (
                 <p className="text-sm text-muted-foreground">{project.client.company}</p>

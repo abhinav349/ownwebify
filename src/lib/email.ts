@@ -67,7 +67,28 @@ export function statusChangeEmailHtml(projectTitle: string, newStatus: string) {
   `;
 }
 
-export function quoteEmailHtml(projectTitle: string, amountLabel: string, description: string) {
+export function quoteEmailHtml(
+  projectTitle: string,
+  amountLabel: string,
+  description: string,
+  setupUrl?: string
+) {
+  const ctaBlock = setupUrl
+    ? `
+      <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #f59e0b;">
+        <p style="margin: 0 0 8px; font-weight: bold; color: #92400e;">Set up your account to view &amp; accept this quote</p>
+        <p style="margin: 0; color: #78350f; font-size: 14px;">Create a password to access your dashboard, track progress, and message us directly.</p>
+      </div>
+      <p style="margin-top: 20px;">
+        <a href="${setupUrl}" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Set Up Account &amp; View Quote</a>
+      </p>
+    `
+    : `
+      <p style="margin-top: 20px;">
+        <a href="${process.env.NEXTAUTH_URL}/dashboard" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Accept or Reject</a>
+      </p>
+    `;
+
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #2563eb;">New Quote Received</h2>
@@ -76,9 +97,7 @@ export function quoteEmailHtml(projectTitle: string, amountLabel: string, descri
         <p style="font-size: 24px; font-weight: bold; color: #2563eb; margin: 0;">${amountLabel}</p>
         <p style="margin-top: 8px; color: #64748b;">${description}</p>
       </div>
-      <p style="margin-top: 20px;">
-        <a href="${process.env.NEXTAUTH_URL}/dashboard" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">Accept or Reject</a>
-      </p>
+      ${ctaBlock}
     </div>
   `;
 }

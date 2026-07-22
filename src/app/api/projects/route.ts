@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { projectIntakeSchema, projectDetailsSchema } from "@/lib/validations";
 import { sendEmail, newProjectEmailHtml } from "@/lib/email";
@@ -60,22 +59,6 @@ export async function POST(request: NextRequest) {
 
     const validatedData = projectIntakeSchema.parse(body);
 
-    const verifiedOtp = await prisma.otpCode.findFirst({
-      where: {
-        email: validatedData.email,
-        verified: true,
-        expiresAt: { gte: new Date(Date.now() - 10 * 60 * 1000) },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    if (!verifiedOtp) {
-      return NextResponse.json(
-        { error: "Email not verified. Please complete OTP verification." },
-        { status: 403 }
-      );
-    }
-
     let user = await prisma.user.findUnique({
       where: { email: validatedData.email },
     });
@@ -83,23 +66,15 @@ export async function POST(request: NextRequest) {
     const isNewUser = !user;
 
     if (!user) {
-      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
       const referralCode = generateReferralCode(validatedData.name);
       user = await prisma.user.create({
         data: {
           email: validatedData.email,
           name: validatedData.name,
           company: validatedData.company || null,
-          passwordHash: hashedPassword,
           role: "CLIENT",
           referralCode,
-          emailVerified: true,
         },
-      });
-    } else if (!user.emailVerified) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: true },
       });
     }
 
