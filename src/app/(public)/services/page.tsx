@@ -123,7 +123,7 @@ export default function ServicesPage() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 bg-green-500/10 text-sm font-semibold text-green-700 mb-6">
               <Sparkles className="h-4 w-4" />
-              Launch Offer — Up to 43% OFF for a limited time
+              Launch Offer — Flat 50% OFF for a limited time
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
               Affordable Web Development{" "}
