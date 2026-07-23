@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GeoPrice } from "@/components/shared/geo-price";
+import { FaqSection } from "@/components/shared/faq-section";
 import { Card, CardContent } from "@/components/ui/card";
 import { OrganizationJsonLd, WebsiteJsonLd, FAQJsonLd } from "@/components/seo/json-ld";
 
@@ -362,19 +363,7 @@ export default function HomePage() {
               Everything you need to know about our affordable web development services.
             </p>
           </div>
-          <div className="space-y-4">
-            {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-2xl border bg-card hover-lift"
-              >
-                <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {faq.answer}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FaqSection />
         </div>
       </section>
 
