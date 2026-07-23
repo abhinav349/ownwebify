@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { projectIntakeSchema, projectDetailsSchema } from "@/lib/validations";
-import { sendEmail, newProjectEmailHtml } from "@/lib/email";
+import { sendEmail, newProjectEmailHtml, projectConfirmationEmailHtml } from "@/lib/email";
 import { referralRewardUSD } from "@/lib/pricing";
 
 function generateReferralCode(name: string): string {
@@ -126,6 +127,28 @@ export async function POST(request: NextRequest) {
       to: adminEmail,
       subject: `New Project Request: ${project.title}`,
       html: newProjectEmailHtml(project.title, user.name, user.email),
+    });
+
+    // Send confirmation email to the client with an account setup link
+    // if they haven't set a password yet.
+    let setupUrl: string | undefined;
+    if (!user.passwordHash) {
+      const token = randomBytes(32).toString("hex");
+      await prisma.setupToken.create({
+        data: {
+          userId: user.id,
+          token,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+      const base = process.env.NEXTAUTH_URL || "https://ownwebify.com";
+      setupUrl = `${base}/setup-account?token=${token}`;
+    }
+
+    await sendEmail({
+      to: user.email,
+      subject: `Project Received: ${project.title}`,
+      html: projectConfirmationEmailHtml(project.title, user.name, setupUrl),
     });
 
     return NextResponse.json(

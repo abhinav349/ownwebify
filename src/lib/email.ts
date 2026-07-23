@@ -102,6 +102,46 @@ export function quoteEmailHtml(
   `;
 }
 
+export function projectConfirmationEmailHtml(
+  projectTitle: string,
+  clientName: string,
+  setupUrl?: string
+) {
+  const setupBlock = setupUrl
+    ? `
+      <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #22c55e;">
+        <p style="margin: 0 0 8px; font-weight: bold; color: #166534;">Set up your account now</p>
+        <p style="margin: 0; color: #15803d; font-size: 14px;">Create a password to access your dashboard where you can track progress, view quotes, and message us directly.</p>
+      </div>
+      <p style="margin-top: 20px;">
+        <a href="${setupUrl}" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Set Up Your Account</a>
+      </p>
+    `
+    : `
+      <p style="margin-top: 20px;">
+        <a href="${process.env.NEXTAUTH_URL}/dashboard" style="background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Go to Dashboard</a>
+      </p>
+    `;
+
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #2563eb;">We've Received Your Project!</h2>
+      <p>Hi ${clientName},</p>
+      <p>Thank you for submitting your project "<strong>${projectTitle}</strong>". We're excited to take a look!</p>
+      <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0;">
+        <p style="margin: 0; color: #334155;"><strong>What happens next?</strong></p>
+        <ul style="color: #64748b; margin: 8px 0 0; padding-left: 20px;">
+          <li>We'll review your requirements carefully</li>
+          <li>You'll receive a custom quote within 48 hours</li>
+          <li>Once approved, we begin building right away</li>
+        </ul>
+      </div>
+      ${setupBlock}
+      <p style="color: #94a3b8; font-size: 13px; margin-top: 24px;">If you have any questions in the meantime, just reply to this email.</p>
+    </div>
+  `;
+}
+
 export function otpEmailHtml(code: string) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
