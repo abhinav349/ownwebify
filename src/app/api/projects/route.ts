@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
           timeline: data.timeline,
           referenceLinks: data.referenceLinks || null,
           howFoundUs: data.howFoundUs || null,
+          features: data.features || [],
           clientId: user.id,
         },
       });
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
         timeline: validatedData.timeline,
         referenceLinks: validatedData.referenceLinks || null,
         howFoundUs: validatedData.howFoundUs || null,
+        features: validatedData.features || [],
         clientId: user.id,
       },
     });

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,76 @@ const projectTypes = [
   { value: "redesign", label: "Website Redesign" },
   { value: "other", label: "Other" },
 ];
+
+const featuresByProjectType: Record<string, string[]> = {
+  "landing-page": [
+    "Hero section with CTA",
+    "Contact / lead capture form",
+    "Testimonials / reviews section",
+    "Pricing section",
+    "Video / media embed",
+    "Analytics setup",
+    "Social media links",
+    "Custom domain + SSL",
+  ],
+  "business-site": [
+    "Blog / news section",
+    "Team / about page",
+    "Testimonials / reviews",
+    "Photo / video gallery",
+    "FAQ section",
+    "Newsletter signup",
+    "Contact form",
+    "Social media integration",
+    "Multi-language support",
+    "Analytics setup",
+    "Custom domain + SSL",
+  ],
+  ecommerce: [
+    "Product catalog",
+    "Shopping cart & checkout",
+    "Payment gateway (Stripe / Razorpay)",
+    "Inventory management",
+    "Order tracking & notifications",
+    "Customer accounts",
+    "Discount / coupon system",
+    "Shipping calculator",
+    "Product reviews / ratings",
+    "Wishlist",
+    "Analytics setup",
+    "Custom domain + SSL",
+  ],
+  "web-app": [
+    "User authentication (login/signup)",
+    "Admin dashboard",
+    "Database design",
+    "API integrations",
+    "Real-time notifications",
+    "File uploads",
+    "Role-based access control",
+    "Search functionality",
+    "Analytics setup",
+    "Custom domain + SSL",
+  ],
+  redesign: [
+    "Keep existing content",
+    "New branding / visual identity",
+    "Improve mobile responsiveness",
+    "SEO improvements",
+    "Performance optimization",
+    "Add new features",
+    "Content migration",
+    "Analytics setup",
+  ],
+  other: [
+    "Contact form",
+    "User authentication",
+    "Database / data management",
+    "API integrations",
+    "Analytics setup",
+    "Custom domain + SSL",
+  ],
+};
 
 function getBudgetRanges(currency: CurrencyCode) {
   return [
@@ -56,11 +126,13 @@ const referralSources = [
 const guestSteps = [
   { title: "Contact Info", description: "How can I reach you?" },
   { title: "Project Details", description: "Tell me about your project" },
+  { title: "Features", description: "What do you need?" },
   { title: "Budget & Timeline", description: "When and how much?" },
 ];
 
 const authedSteps = [
   { title: "Project Details", description: "Tell me about your project" },
+  { title: "Features", description: "What do you need?" },
   { title: "Budget & Timeline", description: "When and how much?" },
 ];
 
@@ -105,28 +177,49 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     register,
     handleSubmit,
     trigger,
+    watch,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<ProjectIntakeFormData>({
     resolver: zodResolver(
       (isLoggedIn ? projectDetailsSchema : projectIntakeSchema) as typeof projectIntakeSchema
     ),
+    defaultValues: { features: [] },
   });
+
+  const selectedProjectType = watch("projectType");
+  const selectedFeatures = watch("features") || [];
+  const availableFeatures = featuresByProjectType[selectedProjectType] || [];
+
+  const toggleFeature = (feature: string) => {
+    const current = getValues("features") || [];
+    const next = current.includes(feature)
+      ? current.filter((f) => f !== feature)
+      : [...current, feature];
+    setValue("features", next);
+  };
 
   const guestFields: (keyof ProjectIntakeFormData)[][] = [
     ["name", "email"],
     ["projectType", "title", "description"],
+    [],
     ["budget", "timeline"],
   ];
   const authedFields: (keyof ProjectIntakeFormData)[][] = [
     ["projectType", "title", "description"],
+    [],
     ["budget", "timeline"],
   ];
   const fieldsToValidate = isLoggedIn ? authedFields : guestFields;
 
   const nextStep = async () => {
     if (currentStep >= fieldsToValidate.length) return;
-    const isValid = await trigger(fieldsToValidate[currentStep]);
-    if (!isValid) return;
+    const fields = fieldsToValidate[currentStep];
+    if (fields.length > 0) {
+      const isValid = await trigger(fields);
+      if (!isValid) return;
+    }
     setCurrentStep((prev) => prev + 1);
   };
 
@@ -356,6 +449,56 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                       Comma-separated URLs of sites you like
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Feature Checklist */}
+              {steps[currentStep].title === "Features" && (
+                <div className="space-y-4">
+                  {availableFeatures.length > 0 ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Select the features you need. This is optional and helps me prepare a more accurate quote.
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {availableFeatures.map((feature) => {
+                          const isSelected = selectedFeatures.includes(feature);
+                          return (
+                            <button
+                              key={feature}
+                              type="button"
+                              onClick={() => toggleFeature(feature)}
+                              className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border text-sm text-left transition-all ${
+                                isSelected
+                                  ? "border-primary bg-primary/5 text-foreground shadow-sm"
+                                  : "border-border hover:border-primary/40 text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <div
+                                className={`h-4.5 w-4.5 rounded flex items-center justify-center shrink-0 transition-colors ${
+                                  isSelected
+                                    ? "bg-primary text-primary-foreground"
+                                    : "border border-muted-foreground/30"
+                                }`}
+                              >
+                                {isSelected && <Check className="h-3 w-3" />}
+                              </div>
+                              <span>{feature}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {selectedFeatures.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {selectedFeatures.length} feature{selectedFeatures.length !== 1 ? "s" : ""} selected
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Please select a project type in the previous step to see relevant features.
+                    </p>
+                  )}
                 </div>
               )}
 

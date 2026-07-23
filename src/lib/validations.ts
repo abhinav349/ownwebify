@@ -12,6 +12,7 @@ export const projectIntakeSchema = z.object({
   referenceLinks: z.string().optional(),
   howFoundUs: z.string().optional(),
   referralCode: z.string().optional(),
+  features: z.array(z.string()).optional(),
 });
 
 export type ProjectIntakeFormData = z.infer<typeof projectIntakeSchema>;
@@ -26,6 +27,7 @@ export const projectDetailsSchema = z.object({
   description: z.string().min(20, "Please provide at least 20 characters describing your project"),
   referenceLinks: z.string().optional(),
   howFoundUs: z.string().optional(),
+  features: z.array(z.string()).optional(),
 });
 
 export type ProjectDetailsFormData = z.infer<typeof projectDetailsSchema>;

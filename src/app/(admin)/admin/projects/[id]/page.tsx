@@ -106,6 +106,21 @@ export default async function AdminProjectDetailPage({
                   <p className="mt-1 capitalize">{project.howFoundUs.replace("-", " ")}</p>
                 </div>
               )}
+              {project.features.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Requested Features</p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {project.features.map((feature) => (
+                      <span
+                        key={feature}
+                        className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium"
+                      >
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
