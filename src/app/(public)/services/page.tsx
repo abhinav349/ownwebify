@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Sparkles, Star, Globe } from "lucide-react";
+import { ArrowRight, Check, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { type CurrencyCode, currencies, formatPrice, formatDisplayPrice } from "@/lib/pricing";
@@ -93,8 +93,6 @@ const addons = [
   { name: "Accessibility Audit (WCAG)", priceUSD: 35, icon: "♿" },
 ];
 
-const currencyOptions: CurrencyCode[] = ["USD", "INR", "CAD"];
-
 export default function ServicesPage() {
   const [currency, setCurrency] = useState<CurrencyCode>("INR");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -133,24 +131,6 @@ export default function ServicesPage() {
               Agency-quality websites at a fraction of the price. Every plan includes
               responsive design, modern tech, and dedicated support — transparent pricing, no hidden fees.
             </p>
-
-            {/* Currency Toggle */}
-            <div className="mt-8 inline-flex items-center gap-2 p-1.5 rounded-full border bg-card shadow-sm">
-              <Globe className="h-4 w-4 text-muted-foreground ml-2" />
-              {currencyOptions.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    currency === c
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {currencies[c].flag} {c}
-                </button>
-              ))}
-            </div>
           </div>
 
           <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
