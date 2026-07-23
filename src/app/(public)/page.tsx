@@ -13,6 +13,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { GeoPrice } from "@/components/shared/geo-price";
 import { Card, CardContent } from "@/components/ui/card";
 import { OrganizationJsonLd, WebsiteJsonLd, FAQJsonLd } from "@/components/seo/json-ld";
 
@@ -141,7 +142,7 @@ export default function HomePage() {
             </h1>
 
             <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed animate-slide-up" style={{ animationDelay: "0.2s" }}>
-              Agency-quality web development starting at just ₹5,000. High-converting
+              Agency-quality web development starting at just <GeoPrice amount={59} />. High-converting
               digital experiences that turn visitors into customers.
             </p>
 
@@ -391,7 +392,7 @@ export default function HomePage() {
                 Ready to Get Your Affordable Website?
               </h2>
               <p className="mx-auto mt-6 max-w-xl text-lg text-white/80 leading-relaxed">
-                Agency-quality website development starting at ₹5,000. Free custom quote within 48 hours — no commitment, no pressure.
+                Agency-quality website development starting at <GeoPrice amount={59} />. Free custom quote within 48 hours — no commitment, no pressure.
               </p>
               <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
                 <Link href="/hire">
