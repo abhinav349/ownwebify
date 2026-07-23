@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowRight, Check, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { type CurrencyCode, currencies, formatPrice, formatDisplayPrice } from "@/lib/pricing";
+import { formatPrice, formatDisplayPrice } from "@/lib/pricing";
+import { useCurrency } from "@/hooks/use-currency";
 
 const services = [
   {
@@ -94,20 +95,10 @@ const addons = [
 ];
 
 export default function ServicesPage() {
-  const [currency, setCurrency] = useState<CurrencyCode>("INR");
+  const currency = useCurrency();
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/geo")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.currency && currencies[data.currency as CurrencyCode]) {
-          setCurrency(data.currency as CurrencyCode);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setIsLoaded(true));
-  }, []);
+  useEffect(() => { setIsLoaded(true); }, [currency]);
 
   return (
     <div className="overflow-hidden">

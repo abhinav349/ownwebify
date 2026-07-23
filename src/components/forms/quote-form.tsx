@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { type CurrencyCode, currencies, applyDiscount } from "@/lib/pricing";
+
+const ADMIN_CURRENCY: CurrencyCode = "INR";
 
 export function QuoteForm({
   projectId,
@@ -22,18 +24,7 @@ export function QuoteForm({
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [validUntil, setValidUntil] = useState("");
-  const [currency, setCurrency] = useState<CurrencyCode>("INR");
-
-  useEffect(() => {
-    fetch("/api/geo")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.currency && currencies[data.currency as CurrencyCode]) {
-          setCurrency(data.currency as CurrencyCode);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const currency = ADMIN_CURRENCY;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

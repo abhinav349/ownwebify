@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
@@ -16,7 +16,8 @@ import {
   projectDetailsSchema,
   type ProjectIntakeFormData,
 } from "@/lib/validations";
-import { type CurrencyCode, currencies, formatDisplayPrice } from "@/lib/pricing";
+import { type CurrencyCode, formatDisplayPrice } from "@/lib/pricing";
+import { useCurrency } from "@/hooks/use-currency";
 
 const projectTypes = [
   { value: "landing-page", label: "Landing Page" },
@@ -155,21 +156,10 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [newProjectId, setNewProjectId] = useState<string | null>(null);
-  const [currency, setCurrency] = useState<CurrencyCode>("INR");
+  const currency = useCurrency();
 
   const steps = isLoggedIn ? authedSteps : guestSteps;
   const lastStep = steps.length - 1;
-
-  useEffect(() => {
-    fetch("/api/geo")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.currency && currencies[data.currency as CurrencyCode]) {
-          setCurrency(data.currency as CurrencyCode);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const budgetRanges = getBudgetRanges(currency);
 

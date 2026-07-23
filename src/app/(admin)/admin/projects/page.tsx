@@ -2,11 +2,12 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { formatAmount, formatBudget, toCurrencyCode, applyDiscount } from "@/lib/pricing";
-import { getServerCurrency } from "@/lib/currency-server";
+import { type CurrencyCode, formatAmount, formatBudget, toCurrencyCode, applyDiscount } from "@/lib/pricing";
+
+const ADMIN_CURRENCY: CurrencyCode = "INR";
 
 export default async function AdminProjectsPage() {
-  const currency = await getServerCurrency();
+  const currency = ADMIN_CURRENCY;
 
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: "desc" },

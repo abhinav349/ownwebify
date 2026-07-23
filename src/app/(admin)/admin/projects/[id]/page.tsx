@@ -2,13 +2,13 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatDate, getStatusColor } from "@/lib/utils";
 import {
+  type CurrencyCode,
   formatAmount,
   formatBudget,
   toCurrencyCode,
   applyDiscount,
   referralDiscountPercent,
 } from "@/lib/pricing";
-import { getServerCurrency } from "@/lib/currency-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusUpdateForm } from "@/components/forms/status-update-form";
@@ -21,7 +21,7 @@ export default async function AdminProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const currency = await getServerCurrency();
+  const currency: CurrencyCode = "INR";
 
   const project = await prisma.project.findUnique({
     where: { id },

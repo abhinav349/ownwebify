@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderKanban, Users, Wallet, Clock } from "lucide-react";
-import { convertBetween, formatAmount, toCurrencyCode, applyDiscount } from "@/lib/pricing";
-import { getServerCurrency } from "@/lib/currency-server";
+import { type CurrencyCode, convertBetween, formatAmount, toCurrencyCode, applyDiscount } from "@/lib/pricing";
+
+const ADMIN_CURRENCY: CurrencyCode = "INR";
 
 export default async function AdminDashboardPage() {
-  const currency = await getServerCurrency();
+  const currency = ADMIN_CURRENCY;
 
   const [totalProjects, activeProjects, totalClients, quotes] =
     await Promise.all([
