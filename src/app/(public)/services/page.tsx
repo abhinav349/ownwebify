@@ -189,6 +189,12 @@ export default function ServicesPage() {
               </Card>
             ))}
           </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-8 max-w-xl mx-auto">
+            Prices cover design &amp; development. Domain (~{formatPrice(15, currency)}/yr)
+            and hosting (~{formatPrice(10, currency)}/mo) are billed separately — we&apos;ll
+            help you set everything up.
+          </p>
         </div>
       </section>
 
