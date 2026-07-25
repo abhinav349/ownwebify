@@ -40,8 +40,8 @@ export default function RestaurantDemoPage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a0a] via-[#2d0f0f] to-[#1a0a0a]" />
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-900/20 rounded-full blur-[128px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-rose-900/15 rounded-full blur-[128px]" />
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-900/20 rounded-full blur-[128px] parallax-slow" />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-rose-900/15 rounded-full blur-[128px] parallax-fast" />
         </div>
         <div className="text-center px-6 max-w-4xl">
           <div className="flex items-center justify-center gap-2 mb-8">
@@ -50,20 +50,20 @@ export default function RestaurantDemoPage() {
             ))}
             <span className="text-xs text-amber-400/80 uppercase tracking-[0.3em] ml-2">Michelin Starred</span>
           </div>
-          <h1 className="text-5xl md:text-8xl font-serif text-amber-50 leading-[1.1]">
+          <h1 className="text-5xl md:text-8xl font-serif text-amber-50 leading-[1.1] reveal-up">
             A Culinary
             <br />
             <em className="text-amber-400 italic">Journey</em>
           </h1>
-          <p className="mt-8 text-lg text-amber-200/60 max-w-lg mx-auto leading-relaxed font-light">
+          <p className="mt-8 text-lg text-amber-200/60 max-w-lg mx-auto leading-relaxed font-light reveal-up" style={{ animationDelay: "0.15s" }}>
             Where tradition meets innovation. An intimate dining experience
             celebrating the finest ingredients and time-honored techniques.
           </p>
-          <div className="mt-12 flex items-center justify-center gap-6">
-            <button className="px-10 py-4 bg-gradient-to-r from-amber-600 to-amber-500 text-white font-medium tracking-wider uppercase text-sm hover:from-amber-500 hover:to-amber-400 transition-all shadow-2xl shadow-amber-600/20 rounded-sm">
+          <div className="mt-12 flex items-center justify-center gap-6 reveal-up" style={{ animationDelay: "0.3s" }}>
+            <button className="px-10 py-4 bg-gradient-to-r from-amber-600 to-amber-500 text-white font-medium tracking-wider uppercase text-sm hover:from-amber-500 hover:to-amber-400 transition-all shadow-2xl shadow-amber-600/20 rounded-sm hover:scale-105 hover:-translate-y-1">
               Reserve a Table
             </button>
-            <button className="px-10 py-4 border border-amber-400/30 text-amber-300 font-medium tracking-wider uppercase text-sm hover:border-amber-400/60 transition-all rounded-sm">
+            <button className="px-10 py-4 border border-amber-400/30 text-amber-300 font-medium tracking-wider uppercase text-sm hover:border-amber-400/60 transition-all rounded-sm hover:scale-105">
               View Menu
             </button>
           </div>
@@ -158,14 +158,14 @@ export default function RestaurantDemoPage() {
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <div className="aspect-[4/5] rounded-sm bg-gradient-to-br from-amber-900/30 to-rose-900/20 border border-amber-800/30 flex items-center justify-center">
+            <div className="relative perspective">
+              <div className="aspect-[4/5] rounded-sm bg-gradient-to-br from-amber-900/30 to-rose-900/20 border border-amber-800/30 flex items-center justify-center animate-float-3d">
                 <div className="text-center">
                   <Flame className="h-20 w-20 text-amber-400/30 mx-auto" />
                   <p className="mt-4 text-amber-200/40 font-serif italic">The Art of Fire</p>
                 </div>
               </div>
-              <div className="absolute -bottom-6 -right-6 p-6 bg-[#1a0a0a] border border-amber-800/30 rounded-sm">
+              <div className="absolute -bottom-6 -right-6 p-6 bg-[#1a0a0a] border border-amber-800/30 rounded-sm reveal-up animate-float" style={{ animationDelay: "1s" }}>
                 <p className="text-xs text-amber-400 uppercase tracking-wider">Open Kitchen</p>
                 <p className="text-sm text-amber-100 mt-1">Watch the magic unfold</p>
               </div>
@@ -181,11 +181,11 @@ export default function RestaurantDemoPage() {
             <p className="text-xs text-amber-400 uppercase tracking-[0.3em] mb-4">Press & Reviews</p>
             <h2 className="text-4xl font-serif text-amber-50">What They Say</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 perspective stagger">
             {reviews.map((review) => (
               <div
                 key={review.author}
-                className="p-8 border border-amber-900/20 rounded-sm hover:border-amber-400/20 transition-colors"
+                className="p-8 border border-amber-900/20 rounded-sm tilt-card reveal-up"
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(review.rating)].map((_, i) => (

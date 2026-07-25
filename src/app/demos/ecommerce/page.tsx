@@ -106,12 +106,12 @@ export default function EcommerceDemoPage() {
               View All <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 perspective stagger">
             {products.map((product) => (
-              <div key={product.name} className="group cursor-pointer">
+              <div key={product.name} className="group cursor-pointer card-3d reveal-up">
                 <div className="aspect-[3/4] bg-gray-100 rounded-sm relative overflow-hidden mb-4">
                   <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-gray-200 flex items-center justify-center">
-                    <ShoppingBag className="h-10 w-10 text-gray-300" />
+                    <ShoppingBag className="h-10 w-10 text-gray-300 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6" />
                   </div>
                   {product.tag && (
                     <span className="absolute top-3 left-3 px-2.5 py-1 bg-white text-[10px] uppercase tracking-wider font-medium text-gray-700">
@@ -143,11 +143,11 @@ export default function EcommerceDemoPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-3">Browse By</p>
             <h2 className="text-3xl font-light text-gray-900 tracking-tight">Collections</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 perspective stagger">
             {collections.map((col) => (
               <div
                 key={col.name}
-                className="aspect-[3/4] bg-gradient-to-b from-gray-200 to-gray-300 rounded-sm relative overflow-hidden group cursor-pointer"
+                className="aspect-[3/4] bg-gradient-to-b from-gray-200 to-gray-300 rounded-sm relative overflow-hidden group cursor-pointer tilt-card reveal-up"
               >
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
@@ -164,8 +164,8 @@ export default function EcommerceDemoPage() {
       <section id="about" className="py-24">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-sm flex items-center justify-center">
-              <div className="text-center">
+            <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-sm flex items-center justify-center perspective reveal-left">
+              <div className="text-center animate-float-3d">
                 <p className="text-6xl font-light text-gray-300 italic">V&T</p>
                 <p className="text-xs text-gray-400 uppercase tracking-[0.3em] mt-4">Since 2019</p>
               </div>

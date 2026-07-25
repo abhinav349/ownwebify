@@ -42,9 +42,9 @@ export default function SalonDemoPage() {
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-100/60 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-100/40 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-rose-100/50 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-pink-100/60 rounded-full blur-3xl parallax-slow" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-100/40 rounded-full blur-3xl parallax-fast" />
+          <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] bg-rose-100/50 rounded-full blur-3xl parallax-slow" />
         </div>
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -53,22 +53,22 @@ export default function SalonDemoPage() {
                 <Heart className="h-4 w-4 fill-pink-400 text-pink-400" />
                 Voted #1 Salon 2025
               </div>
-              <h1 className="text-5xl md:text-7xl font-bold text-gray-900 leading-[1.1]">
+              <h1 className="text-5xl md:text-7xl font-bold text-gray-900 leading-[1.1] reveal-left" style={{ animationDelay: "0.1s" }}>
                 Glow From
                 <br />
                 <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                   The Inside Out
                 </span>
               </h1>
-              <p className="mt-8 text-lg text-gray-500 leading-relaxed max-w-md">
+              <p className="mt-8 text-lg text-gray-500 leading-relaxed max-w-md reveal-left" style={{ animationDelay: "0.2s" }}>
                 Your sanctuary for beauty and self-care. Expert stylists, premium products,
                 and an atmosphere designed to make you feel extraordinary.
               </p>
-              <div className="mt-10 flex items-center gap-4">
-                <button className="px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-400 hover:to-purple-400 transition-all shadow-xl shadow-pink-500/20 hover:-translate-y-0.5">
+              <div className="mt-10 flex items-center gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
+                <button className="px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-400 hover:to-purple-400 transition-all shadow-xl shadow-pink-500/20 hover:-translate-y-1 hover:scale-105">
                   Book Appointment
                 </button>
-                <button className="px-8 py-4 rounded-full border-2 border-pink-300 text-pink-600 font-semibold hover:bg-pink-50 transition-all">
+                <button className="px-8 py-4 rounded-full border-2 border-pink-300 text-pink-600 font-semibold hover:bg-pink-50 transition-all hover:scale-105">
                   View Services
                 </button>
               </div>
@@ -88,10 +88,10 @@ export default function SalonDemoPage() {
                 </div>
               </div>
             </div>
-            <div className="relative">
-              <div className="aspect-[4/5] rounded-[2rem] bg-gradient-to-br from-pink-100 via-purple-50 to-rose-100 border border-pink-200/50 p-8 flex items-center justify-center shadow-2xl shadow-pink-200/30">
+            <div className="relative perspective">
+              <div className="aspect-[4/5] rounded-[2rem] bg-gradient-to-br from-pink-100 via-purple-50 to-rose-100 border border-pink-200/50 p-8 flex items-center justify-center shadow-2xl shadow-pink-200/30 animate-float-3d">
                 <div className="text-center">
-                  <div className="h-32 w-32 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mx-auto shadow-2xl shadow-pink-400/30">
+                  <div className="h-32 w-32 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mx-auto shadow-2xl shadow-pink-400/30 animate-glow" style={{ animationDuration: "3s" }}>
                     <Scissors className="h-16 w-16 text-white" />
                   </div>
                   <p className="mt-6 text-xl font-bold text-gray-900">Premium Beauty</p>
@@ -126,11 +126,11 @@ export default function SalonDemoPage() {
               From signature blowouts to complete transformations, we&apos;ve got you covered.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 perspective stagger">
             {services.map((service) => (
               <div
                 key={service.name}
-                className="p-6 rounded-2xl border border-pink-100 bg-gradient-to-br from-white to-pink-50/50 hover:shadow-lg hover:shadow-pink-100/50 hover:border-pink-200 transition-all group"
+                className="p-6 rounded-2xl border border-pink-100 bg-gradient-to-br from-white to-pink-50/50 card-3d group reveal-up"
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs text-purple-500 font-medium bg-purple-50 px-2.5 py-1 rounded-full">
@@ -157,10 +157,10 @@ export default function SalonDemoPage() {
               Our Dream Team
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto perspective stagger">
             {team.map((member) => (
-              <div key={member.name} className="text-center group">
-                <div className="aspect-square rounded-2xl bg-gradient-to-br from-pink-200 via-purple-100 to-rose-200 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-pink-200/50 transition-all">
+              <div key={member.name} className="text-center group reveal-up">
+                <div className="aspect-square rounded-2xl bg-gradient-to-br from-pink-200 via-purple-100 to-rose-200 flex items-center justify-center mb-4 tilt-card">
                   <Users className="h-12 w-12 text-pink-400" />
                 </div>
                 <h3 className="font-semibold text-gray-900">{member.name}</h3>

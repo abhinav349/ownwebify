@@ -48,14 +48,14 @@ export default function PhotographyDemoPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             <div className="lg:col-span-5">
               <p className="text-xs text-gray-400 uppercase tracking-[0.3em] mb-6">Photography Studio</p>
-              <h1 className="text-5xl md:text-7xl font-extralight text-gray-900 leading-[1.15]">
+              <h1 className="text-5xl md:text-7xl font-extralight text-gray-900 leading-[1.15] reveal-left" style={{ animationDelay: "0.1s" }}>
                 Capturing
                 <br />
                 <em className="italic font-normal">Light</em> &
                 <br />
                 <em className="italic font-normal">Emotion</em>
               </h1>
-              <p className="mt-8 text-gray-500 leading-relaxed max-w-sm">
+              <p className="mt-8 text-gray-500 leading-relaxed max-w-sm reveal-left" style={{ animationDelay: "0.2s" }}>
                 Minimalist photography that speaks volumes through restraint.
                 Every frame is a study in light, shadow, and human connection.
               </p>
@@ -68,21 +68,21 @@ export default function PhotographyDemoPage() {
                 </a>
               </div>
             </div>
-            <div className="lg:col-span-7">
-              <div className="grid grid-cols-3 gap-3">
+            <div className="lg:col-span-7 perspective">
+              <div className="grid grid-cols-3 gap-3 stagger">
                 <div className="space-y-3">
-                  <div className="aspect-[3/4] bg-gray-100 rounded-sm" />
-                  <div className="aspect-square bg-gray-200 rounded-sm" />
+                  <div className="aspect-[3/4] bg-gray-100 rounded-sm tilt-card reveal-up" />
+                  <div className="aspect-square bg-gray-200 rounded-sm tilt-card reveal-up" />
                 </div>
                 <div className="space-y-3 mt-8">
-                  <div className="aspect-square bg-gray-900 rounded-sm flex items-center justify-center">
+                  <div className="aspect-square bg-gray-900 rounded-sm flex items-center justify-center tilt-card reveal-up">
                     <Camera className="h-8 w-8 text-gray-600" />
                   </div>
-                  <div className="aspect-[3/4] bg-gray-100 rounded-sm" />
+                  <div className="aspect-[3/4] bg-gray-100 rounded-sm tilt-card reveal-up" />
                 </div>
                 <div className="space-y-3 mt-4">
-                  <div className="aspect-[3/4] bg-gray-200 rounded-sm" />
-                  <div className="aspect-square bg-gray-100 rounded-sm" />
+                  <div className="aspect-[3/4] bg-gray-200 rounded-sm tilt-card reveal-up" />
+                  <div className="aspect-square bg-gray-100 rounded-sm tilt-card reveal-up" />
                 </div>
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function PhotographyDemoPage() {
             <p className="text-xs text-gray-400 uppercase tracking-[0.3em] mb-3">Selected Work</p>
             <h2 className="text-3xl font-extralight text-gray-900">Portfolio</h2>
           </div>
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3 perspective">
             {portfolio.map((item, i) => (
               <div
                 key={item.title}
@@ -105,7 +105,7 @@ export default function PhotographyDemoPage() {
                   i % 3 === 0 ? "from-gray-200 to-gray-300" :
                   i % 3 === 1 ? "from-gray-100 to-gray-200" :
                   "from-gray-800 to-gray-900"
-                } rounded-sm relative overflow-hidden group cursor-pointer break-inside-avoid`}
+                } rounded-sm relative overflow-hidden group cursor-pointer break-inside-avoid card-3d`}
               >
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
                   <div className="p-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -157,8 +157,8 @@ export default function PhotographyDemoPage() {
       <section id="about" className="py-24 bg-gray-900 text-white">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="aspect-[4/5] bg-gray-800 rounded-sm flex items-center justify-center">
-              <Camera className="h-20 w-20 text-gray-600" />
+            <div className="aspect-[4/5] bg-gray-800 rounded-sm flex items-center justify-center perspective reveal-left">
+              <Camera className="h-20 w-20 text-gray-600 animate-float-3d" />
             </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-[0.3em] mb-4">About</p>

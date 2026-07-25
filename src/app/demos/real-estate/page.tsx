@@ -53,13 +53,13 @@ export default function RealEstateDemoPage() {
       <section className="pt-24">
         <div className="relative min-h-[85vh] bg-gradient-to-br from-blue-950 via-blue-900 to-teal-900 flex items-center overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-teal-500/10 rounded-full blur-[128px]" />
+          <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-teal-500/10 rounded-full blur-[128px] parallax-slow" />
           <div className="mx-auto max-w-7xl px-6 py-20 relative z-10">
             <div className="max-w-2xl">
               <p className="text-teal-300 text-sm font-medium uppercase tracking-wider mb-6">
                 New York&apos;s Premier Real Estate
               </p>
-              <h1 className="text-5xl md:text-7xl font-bold text-white leading-[1.1]">
+              <h1 className="text-5xl md:text-7xl font-bold text-white leading-[1.1] reveal-left" style={{ animationDelay: "0.1s" }}>
                 Find Your
                 <br />
                 <span className="text-teal-400">Dream Home</span>
@@ -109,11 +109,11 @@ export default function RealEstateDemoPage() {
               View All Properties <ArrowRight className="h-4 w-4" />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 perspective stagger">
             {properties.map((property) => (
               <div
                 key={property.name}
-                className="rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl hover:shadow-blue-900/5 transition-all group cursor-pointer"
+                className="rounded-xl border border-gray-100 overflow-hidden card-3d group cursor-pointer reveal-up"
               >
                 <div className="aspect-[4/3] bg-gradient-to-br from-blue-100 to-teal-50 relative flex items-center justify-center">
                   <Building2 className="h-12 w-12 text-blue-200" />
@@ -186,11 +186,11 @@ export default function RealEstateDemoPage() {
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center">
+            <div className="grid grid-cols-2 gap-4 perspective">
+              <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center tilt-card reveal-left">
                 <Building2 className="h-16 w-16 text-blue-300/30" />
               </div>
-              <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-teal-700 to-teal-600 flex items-center justify-center mt-8">
+              <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-teal-700 to-teal-600 flex items-center justify-center mt-8 tilt-card reveal-right">
                 <MapPin className="h-16 w-16 text-teal-200/30" />
               </div>
             </div>
@@ -205,11 +205,11 @@ export default function RealEstateDemoPage() {
             <p className="text-sm font-medium text-teal-600 uppercase tracking-wider mb-3">Testimonials</p>
             <h2 className="text-3xl font-bold text-gray-900">What Our Clients Say</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto perspective stagger">
             {testimonials.map((item) => (
               <div
                 key={item.author}
-                className="p-8 rounded-xl border border-gray-100 bg-white hover:shadow-lg transition-shadow"
+                className="p-8 rounded-xl border border-gray-100 bg-white tilt-card reveal-up"
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (

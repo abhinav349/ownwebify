@@ -67,31 +67,32 @@ export default function FitnessDemoPage() {
       <section className="relative min-h-screen flex items-center overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#1a2e05_0%,#0a0a0a_60%)]" />
-          <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-lime-400/5 rounded-full blur-[128px]" />
+          <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] bg-lime-400/5 rounded-full blur-[128px] parallax-slow" />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-lime-400/3 rounded-full blur-[100px] parallax-fast" />
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:6rem_6rem]" />
         </div>
         <div className="mx-auto max-w-7xl px-6 py-32">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400 text-sm font-bold uppercase tracking-wider mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-lime-400/10 border border-lime-400/20 text-lime-400 text-sm font-bold uppercase tracking-wider mb-8 reveal-left">
               <Flame className="h-4 w-4" />
               No Excuses. Just Results.
             </div>
-            <h1 className="text-6xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter">
+            <h1 className="text-6xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter reveal-left" style={{ animationDelay: "0.1s" }}>
               Push Your
               <br />
               <span className="text-lime-400">Limits</span>
               <br />
               Every Day
             </h1>
-            <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-lg">
+            <p className="mt-8 text-xl text-gray-400 leading-relaxed max-w-lg reveal-left" style={{ animationDelay: "0.2s" }}>
               State-of-the-art equipment. World-class trainers. A community that
               pushes you to be your best. This is where champions are built.
             </p>
-            <div className="mt-10 flex items-center gap-4 flex-wrap">
-              <button className="px-10 py-5 bg-lime-400 text-black font-black uppercase tracking-wider text-sm hover:bg-lime-300 transition-all shadow-2xl shadow-lime-400/20 hover:-translate-y-0.5 rounded-lg">
+            <div className="mt-10 flex items-center gap-4 flex-wrap reveal-left" style={{ animationDelay: "0.3s" }}>
+              <button className="px-10 py-5 bg-lime-400 text-black font-black uppercase tracking-wider text-sm hover:bg-lime-300 transition-all shadow-2xl shadow-lime-400/20 hover:-translate-y-1 hover:scale-105 rounded-lg">
                 Start Free Trial <ArrowRight className="inline ml-2 h-4 w-4" />
               </button>
-              <button className="px-10 py-5 border-2 border-gray-700 text-white font-bold uppercase tracking-wider text-sm hover:border-lime-400/50 hover:text-lime-400 transition-all rounded-lg">
+              <button className="px-10 py-5 border-2 border-gray-700 text-white font-bold uppercase tracking-wider text-sm hover:border-lime-400/50 hover:text-lime-400 transition-all hover:scale-105 rounded-lg">
                 View Schedule
               </button>
             </div>
@@ -127,7 +128,7 @@ export default function FitnessDemoPage() {
             {classes.map((cls) => (
               <div
                 key={cls.name}
-                className="flex items-center justify-between p-5 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-lime-400/30 hover:bg-gray-900 transition-all group"
+                className="flex items-center justify-between p-5 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-lime-400/30 hover:bg-gray-900 transition-all group card-3d"
               >
                 <div className="flex items-center gap-5">
                   <span className="text-sm font-mono text-lime-400 w-20">{cls.time}</span>
@@ -162,15 +163,16 @@ export default function FitnessDemoPage() {
               Choose Your Plan
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto perspective stagger">
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`p-8 rounded-2xl border ${
+                className={`p-8 rounded-2xl border tilt-card reveal-up ${
                   plan.popular
-                    ? "border-lime-400/50 bg-lime-400/5 shadow-xl shadow-lime-400/10 scale-105 relative"
+                    ? "border-lime-400/50 bg-lime-400/5 shadow-xl shadow-lime-400/10 scale-105 relative animate-glow"
                     : "border-gray-800 bg-gray-900/30"
                 }`}
+                style={plan.popular ? { animationDuration: "3s", boxShadow: "0 0 30px rgba(163,230,53,0.15)" } : {}}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-lime-400 text-black text-xs font-black uppercase rounded-full">

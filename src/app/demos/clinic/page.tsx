@@ -87,8 +87,8 @@ export default function ClinicDemoPage() {
         <div className="relative py-24 overflow-hidden">
           <div className="absolute inset-0 -z-10">
             <div className="absolute inset-0 bg-gradient-to-br from-sky-50 via-white to-emerald-50" />
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-100/50 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-100/40 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-100/50 rounded-full blur-3xl parallax-slow" />
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-100/40 rounded-full blur-3xl parallax-fast" />
           </div>
           <div className="mx-auto max-w-7xl px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -97,22 +97,22 @@ export default function ClinicDemoPage() {
                   <Shield className="h-4 w-4" />
                   Trusted by 25,000+ Patients
                 </div>
-                <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-[1.1]">
+                <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-[1.1] reveal-left" style={{ animationDelay: "0.1s" }}>
                   Your Health,
                   <br />
                   <span className="bg-gradient-to-r from-sky-600 to-emerald-600 bg-clip-text text-transparent">
                     Our Priority
                   </span>
                 </h1>
-                <p className="mt-8 text-lg text-gray-500 leading-relaxed max-w-md">
+                <p className="mt-8 text-lg text-gray-500 leading-relaxed max-w-md reveal-left" style={{ animationDelay: "0.2s" }}>
                   Compassionate, comprehensive healthcare for you and your family.
                   From routine check-ups to specialized care — all under one roof.
                 </p>
-                <div className="mt-10 flex items-center gap-4 flex-wrap">
-                  <button className="px-8 py-4 bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-sky-400 hover:to-emerald-400 transition-all shadow-xl shadow-sky-500/20 hover:-translate-y-0.5">
+                <div className="mt-10 flex items-center gap-4 flex-wrap reveal-left" style={{ animationDelay: "0.3s" }}>
+                  <button className="px-8 py-4 bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-sky-400 hover:to-emerald-400 transition-all shadow-xl shadow-sky-500/20 hover:-translate-y-1 hover:scale-105">
                     Book Appointment
                   </button>
-                  <button className="px-8 py-4 border-2 border-sky-200 text-sky-700 font-semibold rounded-xl hover:bg-sky-50 transition-all">
+                  <button className="px-8 py-4 border-2 border-sky-200 text-sky-700 font-semibold rounded-xl hover:bg-sky-50 transition-all hover:scale-105">
                     Call Us Now
                   </button>
                 </div>
@@ -127,10 +127,10 @@ export default function ClinicDemoPage() {
                   </div>
                 </div>
               </div>
-              <div className="relative">
-                <div className="aspect-square rounded-3xl bg-gradient-to-br from-sky-100 via-white to-emerald-100 border border-sky-200/50 p-8 flex items-center justify-center shadow-2xl shadow-sky-200/30">
+              <div className="relative perspective">
+                <div className="aspect-square rounded-3xl bg-gradient-to-br from-sky-100 via-white to-emerald-100 border border-sky-200/50 p-8 flex items-center justify-center shadow-2xl shadow-sky-200/30 animate-float-3d">
                   <div className="text-center">
-                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-sky-500 to-emerald-500 flex items-center justify-center mx-auto shadow-2xl shadow-sky-500/20">
+                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-sky-500 to-emerald-500 flex items-center justify-center mx-auto shadow-2xl shadow-sky-500/20 animate-glow" style={{ animationDuration: "3s" }}>
                       <Stethoscope className="h-16 w-16 text-white" />
                     </div>
                     <p className="mt-6 text-xl font-bold text-gray-900">Expert Care</p>
@@ -180,11 +180,11 @@ export default function ClinicDemoPage() {
               Everything you need for your health and wellness, from routine visits to specialized treatment.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 perspective stagger">
             {services.map((service) => (
               <div
                 key={service.name}
-                className="p-7 rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/50 hover:shadow-lg hover:shadow-sky-100/50 hover:border-sky-200 transition-all group"
+                className="p-7 rounded-2xl border border-sky-100 bg-gradient-to-br from-white to-sky-50/50 card-3d group reveal-up"
               >
                 <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-500/10 to-emerald-500/10 flex items-center justify-center mb-4 group-hover:from-sky-500/20 group-hover:to-emerald-500/20 transition-colors">
                   <service.icon className="h-6 w-6 text-sky-600" />
@@ -211,10 +211,10 @@ export default function ClinicDemoPage() {
               Meet Our Specialists
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto perspective stagger">
             {doctors.map((doctor) => (
-              <div key={doctor.name} className="text-center group">
-                <div className="aspect-square rounded-2xl bg-gradient-to-br from-sky-100 to-emerald-100 flex items-center justify-center mb-4 group-hover:shadow-lg group-hover:shadow-sky-100/50 transition-all border border-sky-100">
+              <div key={doctor.name} className="text-center group reveal-up">
+                <div className="aspect-square rounded-2xl bg-gradient-to-br from-sky-100 to-emerald-100 flex items-center justify-center mb-4 tilt-card border border-sky-100">
                   <Users className="h-12 w-12 text-sky-300" />
                 </div>
                 <h3 className="font-semibold text-gray-900 text-sm">{doctor.name}</h3>

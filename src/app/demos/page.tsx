@@ -107,18 +107,19 @@ export default function DemosIndexPage() {
       </header>
 
       {/* Hero */}
-      <section className="px-6 pt-12 pb-20">
+      <section className="px-6 pt-12 pb-20 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-purple-400/10 rounded-full blur-[128px] -z-10 parallax-slow" />
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold text-purple-600 uppercase tracking-wider mb-4">
+          <p className="text-sm font-semibold text-purple-600 uppercase tracking-wider mb-4 reveal-up">
             Live Demos
           </p>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 reveal-up" style={{ animationDelay: "0.1s" }}>
             Websites That Speak{" "}
             <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Your Industry
             </span>
           </h1>
-          <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed reveal-up" style={{ animationDelay: "0.2s" }}>
             Every business is unique. Explore these live demos to see how we craft
             tailored designs for different industries — each with its own personality.
           </p>
@@ -127,17 +128,18 @@ export default function DemosIndexPage() {
 
       {/* Demo Grid */}
       <section className="px-6 pb-24">
-        <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 perspective stagger">
           {demos.map((demo) => (
             <Link
               key={demo.slug}
               href={`/demos/${demo.slug}`}
-              className="group relative overflow-hidden rounded-2xl border bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="group relative overflow-hidden rounded-2xl border bg-white shadow-sm tilt-card reveal-up"
             >
               {/* Preview gradient */}
               <div className={`h-40 bg-gradient-to-br ${demo.gradient} flex items-center justify-center relative overflow-hidden`}>
-                <demo.icon className="h-12 w-12 text-white/90" />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                <demo.icon className="h-12 w-12 text-white/90 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-12" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                <div className="absolute inset-0 shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               {/* Info */}
               <div className="p-5">
@@ -151,7 +153,7 @@ export default function DemosIndexPage() {
                   {demo.description}
                 </p>
                 <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-purple-600">
-                  View Demo <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" />
+                  View Demo <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-2 transition-transform duration-300" />
                 </div>
               </div>
             </Link>

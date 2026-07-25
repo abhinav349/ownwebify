@@ -42,40 +42,40 @@ export default function CafeDemoPage() {
       {/* Hero */}
       <section className="relative pt-32 pb-24 overflow-hidden">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-amber-200/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-100/50 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-0 w-[600px] h-[600px] bg-amber-200/30 rounded-full blur-3xl parallax-slow" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-100/50 rounded-full blur-3xl parallax-fast" />
         </div>
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 text-sm font-medium mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 text-sm font-medium mb-8 reveal-left">
                 <Leaf className="h-4 w-4" />
                 100% Ethically Sourced Beans
               </div>
-              <h1 className="text-5xl md:text-7xl font-bold text-amber-950 leading-[1.1]">
+              <h1 className="text-5xl md:text-7xl font-bold text-amber-950 leading-[1.1] reveal-left" style={{ animationDelay: "0.1s" }}>
                 Where Every
                 <br />
                 <span className="text-amber-700">Sip Tells</span>
                 <br />
                 A Story
               </h1>
-              <p className="mt-8 text-lg text-amber-800/70 leading-relaxed max-w-md">
+              <p className="mt-8 text-lg text-amber-800/70 leading-relaxed max-w-md reveal-left" style={{ animationDelay: "0.2s" }}>
                 Handcrafted coffee from single-origin beans, roasted in-house daily.
                 A sanctuary for those who appreciate the art of a perfect cup.
               </p>
-              <div className="mt-10 flex items-center gap-4">
-                <button className="px-8 py-4 rounded-full bg-amber-800 text-white font-semibold hover:bg-amber-700 transition-all shadow-xl shadow-amber-800/20 hover:shadow-amber-800/30 hover:-translate-y-0.5">
+              <div className="mt-10 flex items-center gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
+                <button className="px-8 py-4 rounded-full bg-amber-800 text-white font-semibold hover:bg-amber-700 transition-all shadow-xl shadow-amber-800/20 hover:shadow-amber-800/30 hover:-translate-y-1 hover:scale-105">
                   Explore Menu
                 </button>
-                <button className="px-8 py-4 rounded-full border-2 border-amber-800 text-amber-800 font-semibold hover:bg-amber-800 hover:text-white transition-all">
+                <button className="px-8 py-4 rounded-full border-2 border-amber-800 text-amber-800 font-semibold hover:bg-amber-800 hover:text-white transition-all hover:scale-105">
                   Find Us
                 </button>
               </div>
             </div>
-            <div className="relative">
-              <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-amber-200 via-amber-100 to-yellow-50 border border-amber-200 p-8 flex items-center justify-center shadow-2xl shadow-amber-200/50">
+            <div className="relative perspective">
+              <div className="aspect-square rounded-[3rem] bg-gradient-to-br from-amber-200 via-amber-100 to-yellow-50 border border-amber-200 p-8 flex items-center justify-center shadow-2xl shadow-amber-200/50 animate-float-3d">
                 <div className="text-center">
-                  <div className="h-40 w-40 rounded-full bg-gradient-to-br from-amber-700 to-amber-500 flex items-center justify-center mx-auto shadow-2xl shadow-amber-700/30">
+                  <div className="h-40 w-40 rounded-full bg-gradient-to-br from-amber-700 to-amber-500 flex items-center justify-center mx-auto shadow-2xl shadow-amber-700/30 animate-glow" style={{ animationDuration: "3s" }}>
                     <Coffee className="h-20 w-20 text-white" />
                   </div>
                   <p className="mt-8 text-2xl font-bold text-amber-900">Freshly Roasted</p>
@@ -88,7 +88,7 @@ export default function CafeDemoPage() {
                   <p className="text-sm text-amber-600 mt-2">2,400+ Happy Customers</p>
                 </div>
               </div>
-              <div className="absolute -bottom-4 -left-4 px-5 py-3 rounded-2xl bg-white shadow-xl border border-amber-100">
+              <div className="absolute -bottom-4 -left-4 px-5 py-3 rounded-2xl bg-white shadow-xl border border-amber-100 reveal-up animate-float" style={{ animationDelay: "1s" }}>
                 <p className="text-xs text-amber-600 font-medium">Today&apos;s Special</p>
                 <p className="text-sm font-bold text-amber-900">Honey Lavender Latte</p>
               </div>
@@ -123,11 +123,11 @@ export default function CafeDemoPage() {
               Every drink is handcrafted by our expert baristas using beans roasted fresh each morning.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto perspective stagger">
             {menuItems.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-6 rounded-2xl bg-white border border-amber-100 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100/50 transition-all group"
+                className="flex items-center justify-between p-6 rounded-2xl bg-white border border-amber-100 card-3d group reveal-up"
               >
                 <div>
                   <h3 className="font-semibold text-amber-900 group-hover:text-amber-700 transition-colors">
@@ -202,19 +202,19 @@ export default function CafeDemoPage() {
               Come Say Hello
             </h2>
           </div>
-          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-8 rounded-2xl bg-white border border-amber-100 text-center hover:shadow-lg transition-shadow">
-              <MapPin className="h-8 w-8 text-amber-700 mx-auto mb-4" />
+          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 perspective stagger">
+            <div className="p-8 rounded-2xl bg-white border border-amber-100 text-center tilt-card reveal-up group">
+              <MapPin className="h-8 w-8 text-amber-700 mx-auto mb-4 transition-transform group-hover:scale-125 group-hover:-rotate-12 duration-500" />
               <h3 className="font-semibold text-amber-900">Location</h3>
               <p className="mt-2 text-sm text-amber-600">123 Bean Street, Brewtown, CA 90210</p>
             </div>
-            <div className="p-8 rounded-2xl bg-white border border-amber-100 text-center hover:shadow-lg transition-shadow">
-              <Clock className="h-8 w-8 text-amber-700 mx-auto mb-4" />
+            <div className="p-8 rounded-2xl bg-white border border-amber-100 text-center tilt-card reveal-up group">
+              <Clock className="h-8 w-8 text-amber-700 mx-auto mb-4 transition-transform group-hover:scale-125 group-hover:rotate-12 duration-500" />
               <h3 className="font-semibold text-amber-900">Hours</h3>
               <p className="mt-2 text-sm text-amber-600">Mon-Fri: 6am - 8pm<br />Weekends: 7am - 9pm</p>
             </div>
-            <div className="p-8 rounded-2xl bg-white border border-amber-100 text-center hover:shadow-lg transition-shadow">
-              <Phone className="h-8 w-8 text-amber-700 mx-auto mb-4" />
+            <div className="p-8 rounded-2xl bg-white border border-amber-100 text-center tilt-card reveal-up group">
+              <Phone className="h-8 w-8 text-amber-700 mx-auto mb-4 transition-transform group-hover:scale-125 group-hover:-rotate-12 duration-500" />
               <h3 className="font-semibold text-amber-900">Contact</h3>
               <p className="mt-2 text-sm text-amber-600">(555) 123-BREW<br />hello@brewandbean.co</p>
             </div>
