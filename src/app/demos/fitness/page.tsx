@@ -1,4 +1,5 @@
 import { Dumbbell, Zap, Timer, Users, Trophy, Heart, ArrowRight, Flame } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const plans = [
   {
@@ -60,6 +61,16 @@ export default function FitnessDemoPage() {
               Free Trial
             </button>
           </div>
+          <MobileNav
+            links={[
+              { href: "#classes", label: "Classes" },
+              { href: "#pricing", label: "Pricing" },
+              { href: "#join", label: "Join" },
+            ]}
+            cta={{ label: "Free Trial", className: "bg-lime-400 text-black font-bold uppercase" }}
+            className="text-white"
+            linkClassName="text-gray-300"
+          />
         </div>
       </nav>
 
@@ -77,7 +88,7 @@ export default function FitnessDemoPage() {
               <Flame className="h-4 w-4" />
               No Excuses. Just Results.
             </div>
-            <h1 className="text-6xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter reveal-left" style={{ animationDelay: "0.1s" }}>
+            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter reveal-left" style={{ animationDelay: "0.1s" }}>
               Push Your
               <br />
               <span className="text-lime-400">Limits</span>

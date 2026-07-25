@@ -1,4 +1,5 @@
 import { Building2, MapPin, Bed, Bath, Maximize, Phone, Mail, Star, ArrowRight, Search, TrendingUp } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const properties = [
   { name: "Skyline Penthouse", location: "Downtown, Manhattan", price: "$4.2M", beds: 4, baths: 3, sqft: "3,200", tag: "Featured" },
@@ -46,6 +47,17 @@ export default function RealEstateDemoPage() {
               List Property
             </button>
           </div>
+          <MobileNav
+            links={[
+              { href: "#listings", label: "Listings" },
+              { href: "#about", label: "About" },
+              { href: "#testimonials", label: "Reviews" },
+              { href: "#contact", label: "Contact" },
+            ]}
+            cta={{ label: "List Property", className: "bg-blue-900 text-white" }}
+            className="text-gray-700"
+            linkClassName="text-gray-700"
+          />
         </div>
       </nav>
 
@@ -70,21 +82,21 @@ export default function RealEstateDemoPage() {
               </p>
 
               {/* Search Bar */}
-              <div className="mt-10 p-2 bg-white rounded-xl shadow-2xl shadow-black/20 flex items-center gap-2 max-w-xl">
+              <div className="mt-10 p-2 bg-white rounded-xl shadow-2xl shadow-black/20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-xl">
                 <div className="flex-1 flex items-center gap-3 px-4">
-                  <Search className="h-5 w-5 text-gray-400" />
+                  <Search className="h-5 w-5 text-gray-400 shrink-0" />
                   <input
                     type="text"
                     placeholder="Search by location, type, or price..."
                     className="w-full py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none"
                   />
                 </div>
-                <button className="px-6 py-3 bg-blue-900 text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors">
+                <button className="px-6 py-3 bg-blue-900 text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors shrink-0">
                   Search
                 </button>
               </div>
 
-              <div className="mt-12 grid grid-cols-4 gap-8">
+              <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
                 {stats.map((stat) => (
                   <div key={stat.label}>
                     <p className="text-2xl font-bold text-white">{stat.value}</p>
@@ -176,12 +188,12 @@ export default function RealEstateDemoPage() {
                 Our team of expert agents combines deep market knowledge with personalized
                 service, ensuring every client finds exactly what they&apos;re looking for.
               </p>
-              <div className="mt-8 flex items-center gap-4">
-                <button className="px-8 py-4 bg-blue-900 text-white font-medium rounded-lg hover:bg-blue-800 transition-colors shadow-lg shadow-blue-900/20">
+              <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <button className="w-full sm:w-auto px-8 py-4 bg-blue-900 text-white font-medium rounded-lg hover:bg-blue-800 transition-colors shadow-lg shadow-blue-900/20">
                   Schedule Consultation
                 </button>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-teal-600" />
+                  <TrendingUp className="h-5 w-5 text-teal-600 shrink-0" />
                   <span className="text-sm text-gray-600 font-medium">#1 Rated Agency 2025</span>
                 </div>
               </div>

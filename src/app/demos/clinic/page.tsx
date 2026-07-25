@@ -1,4 +1,5 @@
 import { Stethoscope, Heart, Clock, Phone, MapPin, Shield, Users, Calendar, ArrowRight, CheckCircle } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const services = [
   {
@@ -79,6 +80,16 @@ export default function ClinicDemoPage() {
               Book Appointment
             </button>
           </div>
+          <MobileNav
+            links={[
+              { href: "#services", label: "Services" },
+              { href: "#doctors", label: "Doctors" },
+              { href: "#about", label: "About" },
+            ]}
+            cta={{ label: "Book Appointment", className: "bg-gradient-to-r from-sky-500 to-emerald-500 text-white rounded-xl" }}
+            className="text-gray-700"
+            linkClassName="text-gray-700"
+          />
         </div>
       </nav>
 
@@ -108,7 +119,7 @@ export default function ClinicDemoPage() {
                   Compassionate, comprehensive healthcare for you and your family.
                   From routine check-ups to specialized care — all under one roof.
                 </p>
-                <div className="mt-10 flex items-center gap-4 flex-wrap reveal-left" style={{ animationDelay: "0.3s" }}>
+                <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
                   <button className="px-8 py-4 bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-semibold rounded-xl hover:from-sky-400 hover:to-emerald-400 transition-all shadow-xl shadow-sky-500/20 hover:-translate-y-1 hover:scale-105">
                     Book Appointment
                   </button>

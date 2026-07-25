@@ -1,4 +1,5 @@
 import { Coffee, MapPin, Clock, Phone, Star, Leaf, Heart } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const menuItems = [
   { name: "Ethiopian Single Origin", price: "$5.50", desc: "Fruity, bright with blueberry notes" },
@@ -36,6 +37,16 @@ export default function CafeDemoPage() {
               Order Online
             </button>
           </div>
+          <MobileNav
+            links={[
+              { href: "#menu", label: "Menu" },
+              { href: "#about", label: "Our Story" },
+              { href: "#visit", label: "Visit Us" },
+            ]}
+            cta={{ label: "Order Online", className: "bg-amber-800 text-white rounded-full" }}
+            className="text-amber-800"
+            linkClassName="text-amber-800"
+          />
         </div>
       </nav>
 
@@ -63,7 +74,7 @@ export default function CafeDemoPage() {
                 Handcrafted coffee from single-origin beans, roasted in-house daily.
                 A sanctuary for those who appreciate the art of a perfect cup.
               </p>
-              <div className="mt-10 flex items-center gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
+              <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
                 <button className="px-8 py-4 rounded-full bg-amber-800 text-white font-semibold hover:bg-amber-700 transition-all shadow-xl shadow-amber-800/20 hover:shadow-amber-800/30 hover:-translate-y-1 hover:scale-105">
                   Explore Menu
                 </button>

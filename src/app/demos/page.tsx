@@ -99,7 +99,7 @@ export default function DemosIndexPage() {
           </Link>
           <Link
             href="/hire"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg"
+            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-full bg-gray-900 text-white text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors shadow-lg whitespace-nowrap"
           >
             Start Your Project <ArrowRight className="h-4 w-4" />
           </Link>

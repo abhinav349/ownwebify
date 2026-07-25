@@ -1,4 +1,5 @@
 import { Camera, ArrowRight, Mail, Award, Eye, AtSign } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const portfolio = [
   { title: "Golden Hour", category: "Portrait", aspect: "aspect-[3/4]" },
@@ -38,6 +39,16 @@ export default function PhotographyDemoPage() {
             <a href="#about" className="text-xs text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-[0.15em]">About</a>
             <a href="#contact" className="text-xs text-gray-500 hover:text-gray-900 transition-colors uppercase tracking-[0.15em]">Contact</a>
           </div>
+          <MobileNav
+            links={[
+              { href: "#work", label: "Work" },
+              { href: "#services", label: "Services" },
+              { href: "#about", label: "About" },
+              { href: "#contact", label: "Contact" },
+            ]}
+            className="text-gray-700"
+            linkClassName="text-gray-600 uppercase tracking-wider text-xs"
+          />
         </div>
         <div className="h-px bg-gray-100" />
       </nav>
@@ -135,7 +146,7 @@ export default function PhotographyDemoPage() {
             {services.map((service) => (
               <div
                 key={service.name}
-                className="flex items-center justify-between py-8 border-b border-gray-100 group hover:border-gray-300 transition-colors cursor-pointer"
+                className="flex flex-col sm:flex-row sm:items-center justify-between py-8 border-b border-gray-100 group hover:border-gray-300 transition-colors cursor-pointer gap-2"
               >
                 <div>
                   <h3 className="text-xl font-light text-gray-900 group-hover:tracking-wider transition-all">
@@ -143,7 +154,7 @@ export default function PhotographyDemoPage() {
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">{service.desc}</p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 shrink-0">
                   <span className="text-sm font-medium text-gray-900">{service.price}</span>
                   <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-1 transition-all" />
                 </div>

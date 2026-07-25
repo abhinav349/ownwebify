@@ -1,4 +1,5 @@
 import { Scissors, Sparkles, Clock, Phone, MapPin, Star, Heart, Users } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const services = [
   { name: "Signature Blowout", price: "$75", duration: "45 min", desc: "Luxurious wash, conditioning treatment & styled blowout" },
@@ -36,6 +37,16 @@ export default function SalonDemoPage() {
               Book Now
             </button>
           </div>
+          <MobileNav
+            links={[
+              { href: "#services", label: "Services" },
+              { href: "#team", label: "Team" },
+              { href: "#contact", label: "Contact" },
+            ]}
+            cta={{ label: "Book Now", className: "bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full" }}
+            className="text-gray-700"
+            linkClassName="text-gray-700"
+          />
         </div>
       </nav>
 
@@ -64,7 +75,7 @@ export default function SalonDemoPage() {
                 Your sanctuary for beauty and self-care. Expert stylists, premium products,
                 and an atmosphere designed to make you feel extraordinary.
               </p>
-              <div className="mt-10 flex items-center gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
+              <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 reveal-left" style={{ animationDelay: "0.3s" }}>
                 <button className="px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold hover:from-pink-400 hover:to-purple-400 transition-all shadow-xl shadow-pink-500/20 hover:-translate-y-1 hover:scale-105">
                   Book Appointment
                 </button>
@@ -189,17 +200,17 @@ export default function SalonDemoPage() {
           <button className="mt-10 px-10 py-4 rounded-full bg-white text-pink-600 font-semibold hover:bg-white/90 transition-all shadow-2xl hover:-translate-y-0.5">
             Book Your Visit
           </button>
-          <div className="mt-12 flex items-center justify-center gap-8 text-sm text-white/70">
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-white/70">
             <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
+              <MapPin className="h-4 w-4 shrink-0" />
               <span>88 Rose Lane, Beauty District</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-4 w-4 shrink-0" />
               <span>Tue-Sat 9am - 7pm</span>
             </div>
             <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
+              <Phone className="h-4 w-4 shrink-0" />
               <span>(555) 456-GLOW</span>
             </div>
           </div>

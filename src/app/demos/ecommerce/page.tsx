@@ -1,4 +1,5 @@
 import { ShoppingBag, Heart, Star, Truck, RotateCcw, Shield, ArrowRight, Search } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const products = [
   { name: "Cashmere Overcoat", price: "$890", category: "Outerwear", tag: "New" },
@@ -30,12 +31,21 @@ export default function EcommerceDemoPage() {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <span className="text-2xl font-light tracking-[0.3em] text-gray-900 uppercase">Velvet & Thread</span>
+          <span className="text-lg sm:text-2xl font-light tracking-[0.15em] sm:tracking-[0.3em] text-gray-900 uppercase">Velvet & Thread</span>
           <div className="hidden md:flex items-center gap-10">
             <a href="#shop" className="text-xs text-gray-600 hover:text-gray-900 transition-colors uppercase tracking-[0.2em]">Shop</a>
             <a href="#collections" className="text-xs text-gray-600 hover:text-gray-900 transition-colors uppercase tracking-[0.2em]">Collections</a>
             <a href="#about" className="text-xs text-gray-600 hover:text-gray-900 transition-colors uppercase tracking-[0.2em]">Story</a>
           </div>
+          <MobileNav
+            links={[
+              { href: "#shop", label: "Shop" },
+              { href: "#collections", label: "Collections" },
+              { href: "#about", label: "Story" },
+            ]}
+            className="text-gray-700"
+            linkClassName="text-gray-700 uppercase tracking-wider text-xs"
+          />
           <div className="flex items-center gap-4">
             <Search className="h-4 w-4 text-gray-600 cursor-pointer hover:text-gray-900" />
             <Heart className="h-4 w-4 text-gray-600 cursor-pointer hover:text-gray-900" />
@@ -184,17 +194,17 @@ export default function EcommerceDemoPage() {
                 We partner with artisans across Italy, Portugal, and India to create garments
                 that honor traditional craftsmanship while embracing modern design.
               </p>
-              <div className="mt-8 flex items-center gap-8">
+              <div className="mt-8 flex flex-wrap items-center gap-6 sm:gap-8">
                 <div>
                   <p className="text-2xl font-light text-gray-900">100%</p>
                   <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Sustainable</p>
                 </div>
-                <div className="h-8 w-px bg-gray-200" />
+                <div className="hidden sm:block h-8 w-px bg-gray-200" />
                 <div>
                   <p className="text-2xl font-light text-gray-900">40+</p>
                   <p className="text-xs text-gray-500 uppercase tracking-wider mt-1">Countries</p>
                 </div>
-                <div className="h-8 w-px bg-gray-200" />
+                <div className="hidden sm:block h-8 w-px bg-gray-200" />
                 <div>
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (

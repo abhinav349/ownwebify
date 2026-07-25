@@ -25,10 +25,10 @@ export default function DemosLayout({
       {/* Floating "Built by OwnWebify" badge */}
       <Link
         href="/"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/80 backdrop-blur-md text-white text-xs font-medium shadow-xl hover:bg-black/90 transition-all hover:scale-105 border border-white/10"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-full bg-black/80 backdrop-blur-md text-white text-[10px] sm:text-xs font-medium shadow-xl hover:bg-black/90 transition-all hover:scale-105 border border-white/10"
       >
-        <Logo size={18} />
-        Built by OwnWebify
+        <Logo size={16} />
+        <span className="hidden sm:inline">Built by</span> OwnWebify
       </Link>
     </div>
   );

@@ -1,4 +1,5 @@
 import { UtensilsCrossed, Star, Clock, Wine, Flame, Award, MapPin, Phone } from "lucide-react";
+import { MobileNav } from "@/components/demos/mobile-nav";
 
 const courses = [
   { name: "Truffle Burrata", price: "$22", category: "Starter", desc: "With heirloom tomatoes & aged balsamic" },
@@ -33,6 +34,16 @@ export default function RestaurantDemoPage() {
               Reserve
             </button>
           </div>
+          <MobileNav
+            links={[
+              { href: "#menu", label: "Menu" },
+              { href: "#about", label: "About" },
+              { href: "#reviews", label: "Reviews" },
+            ]}
+            cta={{ label: "Reserve", className: "border border-amber-400/50 text-amber-300" }}
+            className="text-amber-200"
+            linkClassName="text-amber-200/80"
+          />
         </div>
       </nav>
 
@@ -59,15 +70,15 @@ export default function RestaurantDemoPage() {
             Where tradition meets innovation. An intimate dining experience
             celebrating the finest ingredients and time-honored techniques.
           </p>
-          <div className="mt-12 flex items-center justify-center gap-6 reveal-up" style={{ animationDelay: "0.3s" }}>
-            <button className="px-10 py-4 bg-gradient-to-r from-amber-600 to-amber-500 text-white font-medium tracking-wider uppercase text-sm hover:from-amber-500 hover:to-amber-400 transition-all shadow-2xl shadow-amber-600/20 rounded-sm hover:scale-105 hover:-translate-y-1">
+          <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 reveal-up" style={{ animationDelay: "0.3s" }}>
+            <button className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-amber-600 to-amber-500 text-white font-medium tracking-wider uppercase text-sm hover:from-amber-500 hover:to-amber-400 transition-all shadow-2xl shadow-amber-600/20 rounded-sm hover:scale-105 hover:-translate-y-1">
               Reserve a Table
             </button>
-            <button className="px-10 py-4 border border-amber-400/30 text-amber-300 font-medium tracking-wider uppercase text-sm hover:border-amber-400/60 transition-all rounded-sm hover:scale-105">
+            <button className="w-full sm:w-auto px-10 py-4 border border-amber-400/30 text-amber-300 font-medium tracking-wider uppercase text-sm hover:border-amber-400/60 transition-all rounded-sm hover:scale-105">
               View Menu
             </button>
           </div>
-          <div className="mt-20 flex items-center justify-center gap-12 text-center">
+          <div className="mt-20 flex items-center justify-center gap-6 sm:gap-12 text-center">
             <div>
               <Wine className="h-6 w-6 text-amber-400/60 mx-auto mb-2" />
               <p className="text-xs text-amber-200/50 uppercase tracking-wider">200+ Wines</p>
@@ -212,7 +223,7 @@ export default function RestaurantDemoPage() {
           <p className="mt-6 text-amber-200/60 leading-relaxed">
             Join us for an evening of extraordinary cuisine. Reservations recommended.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-8 text-sm text-amber-300/70">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-amber-300/70">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>Tue - Sun, 6pm - 11pm</span>

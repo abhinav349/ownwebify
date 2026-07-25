@@ -341,3 +341,28 @@ body {
   border-radius: inherit;
   z-index: -1;
 }
+
+/* Disable 3D hover transforms on touch devices (they cause sticky hover) */
+@media (hover: none) {
+  .tilt-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .card-3d:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-float-delayed, .animate-float-3d,
+  .animate-glow, .parallax-slow, .parallax-fast, .shimmer,
+  .reveal-up, .reveal-left, .reveal-right, .reveal-scale,
+  .animate-gradient, .animate-pulse-glow {
+    animation: none !important;
+  }
+  .tilt-card, .card-3d {
+    transition: none !important;
+  }
+}
