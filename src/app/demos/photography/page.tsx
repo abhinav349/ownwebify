@@ -48,6 +48,7 @@ export default function PhotographyDemoPage() {
             ]}
             className="text-gray-700"
             linkClassName="text-gray-600 uppercase tracking-wider text-xs"
+            menuClassName="bg-white border-gray-100"
           />
         </div>
         <div className="h-px bg-gray-100" />

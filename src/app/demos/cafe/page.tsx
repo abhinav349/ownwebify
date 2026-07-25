@@ -46,6 +46,7 @@ export default function CafeDemoPage() {
             cta={{ label: "Order Online", className: "bg-amber-800 text-white rounded-full" }}
             className="text-amber-800"
             linkClassName="text-amber-800"
+            menuClassName="bg-[#FDF8F0] border-amber-200/50"
           />
         </div>
       </nav>

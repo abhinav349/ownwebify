@@ -45,6 +45,7 @@ export default function EcommerceDemoPage() {
             ]}
             className="text-gray-700"
             linkClassName="text-gray-700 uppercase tracking-wider text-xs"
+            menuClassName="bg-white border-gray-100"
           />
           <div className="flex items-center gap-4">
             <Search className="h-4 w-4 text-gray-600 cursor-pointer hover:text-gray-900" />

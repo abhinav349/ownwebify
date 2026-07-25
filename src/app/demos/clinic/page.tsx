@@ -89,6 +89,7 @@ export default function ClinicDemoPage() {
             cta={{ label: "Book Appointment", className: "bg-gradient-to-r from-sky-500 to-emerald-500 text-white rounded-xl" }}
             className="text-gray-700"
             linkClassName="text-gray-700"
+            menuClassName="bg-white border-sky-100"
           />
         </div>
       </nav>

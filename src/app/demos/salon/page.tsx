@@ -46,6 +46,7 @@ export default function SalonDemoPage() {
             cta={{ label: "Book Now", className: "bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full" }}
             className="text-gray-700"
             linkClassName="text-gray-700"
+            menuClassName="bg-[#FFF9FB] border-pink-100"
           />
         </div>
       </nav>

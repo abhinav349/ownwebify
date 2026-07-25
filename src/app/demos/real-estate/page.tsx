@@ -57,6 +57,7 @@ export default function RealEstateDemoPage() {
             cta={{ label: "List Property", className: "bg-blue-900 text-white" }}
             className="text-gray-700"
             linkClassName="text-gray-700"
+            menuClassName="bg-white border-gray-100"
           />
         </div>
       </nav>

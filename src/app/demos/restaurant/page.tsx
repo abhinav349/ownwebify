@@ -43,6 +43,7 @@ export default function RestaurantDemoPage() {
             cta={{ label: "Reserve", className: "border border-amber-400/50 text-amber-300" }}
             className="text-amber-200"
             linkClassName="text-amber-200/80"
+            menuClassName="bg-[#1a0a0a] border-amber-900/20"
           />
         </div>
       </nav>

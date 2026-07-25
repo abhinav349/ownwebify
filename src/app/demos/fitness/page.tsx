@@ -70,6 +70,7 @@ export default function FitnessDemoPage() {
             cta={{ label: "Free Trial", className: "bg-lime-400 text-black font-bold uppercase" }}
             className="text-white"
             linkClassName="text-gray-300"
+            menuClassName="bg-[#0a0a0a] border-lime-400/10"
           />
         </div>
       </nav>
