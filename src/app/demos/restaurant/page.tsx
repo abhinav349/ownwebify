@@ -55,7 +55,7 @@ export default function RestaurantDemoPage() {
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-900/20 rounded-full blur-[128px] parallax-slow" />
           <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-rose-900/15 rounded-full blur-[128px] parallax-fast" />
         </div>
-        <div className="text-center px-6 max-w-4xl">
+        <div className="text-center px-6 pt-20 max-w-4xl">
           <div className="flex items-center justify-center gap-2 mb-8">
             {[...Array(3)].map((_, i) => (
               <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
