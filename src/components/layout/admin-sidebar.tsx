@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Home,
+  Crosshair,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
@@ -22,6 +23,7 @@ const navigation = [
   { name: "Dashboard", href: "/admin", icon: BarChart3 },
   { name: "Projects", href: "/admin/projects", icon: FolderKanban },
   { name: "Clients", href: "/admin/clients", icon: Users },
+  { name: "Lead Finder", href: "/admin/leads", icon: Crosshair },
   { name: "Portfolio", href: "/admin/portfolio", icon: Image },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];

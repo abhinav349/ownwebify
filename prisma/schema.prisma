@@ -159,3 +159,27 @@ model PortfolioItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  INTERESTED
+  NOT_INTERESTED
+  CONVERTED
+}
+
+model Lead {
+  id            String     @id @default(cuid())
+  businessName  String
+  address       String
+  phone         String?
+  category      String?
+  placeId       String     @unique
+  rating        Float?
+  userRatings   Int?
+  status        LeadStatus @default(NEW)
+  notes         String?
+  searchQuery   String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
