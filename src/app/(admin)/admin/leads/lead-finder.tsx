@@ -76,6 +76,10 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
       setError(null);
 
       try {
+        if (isLoadMore) {
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+
         const res = await fetch("/api/admin/leads/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -99,7 +103,12 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
         }
         setNextPageToken(data.nextPageToken);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Search failed");
+        if (!isLoadMore || places.length === 0) {
+          setError(err instanceof Error ? err.message : "Search failed");
+        }
+        if (isLoadMore) {
+          setNextPageToken(null);
+        }
       } finally {
         setLoading(false);
         setLoadingMore(false);
