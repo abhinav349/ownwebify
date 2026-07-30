@@ -154,9 +154,14 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
     [lastQuery]
   );
 
-  const saveAllWithoutWebsite = useCallback(async () => {
-    const toSave = places.filter(
-      (p) => !p.website && !savedSet.has(p.placeId)
+  const saveAllFiltered = useCallback(async () => {
+    const currentFiltered = places.filter((p) => {
+      if (filterMode === "no-website") return !p.website;
+      if (filterMode === "has-website") return !!p.website;
+      return true;
+    });
+    const toSave = currentFiltered.filter(
+      (p) => !savedSet.has(p.placeId)
     );
     if (!toSave.length) return;
 
@@ -191,7 +196,7 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
         return next;
       });
     }
-  }, [places, savedSet, lastQuery]);
+  }, [places, savedSet, lastQuery, filterMode]);
 
   const filtered = places.filter((p) => {
     if (filterMode === "no-website") return !p.website;
@@ -201,8 +206,8 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
 
   const noWebsiteCount = places.filter((p) => !p.website).length;
   const hasWebsiteCount = places.filter((p) => !!p.website).length;
-  const unsavedNoWebsite = places.filter(
-    (p) => !p.website && !savedSet.has(p.placeId)
+  const unsavedFiltered = filtered.filter(
+    (p) => !savedSet.has(p.placeId)
   ).length;
 
   return (
@@ -328,15 +333,15 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
                 </button>
               </div>
 
-              {unsavedNoWebsite > 0 && (
+              {unsavedFiltered > 0 && (
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={saveAllWithoutWebsite}
+                  onClick={saveAllFiltered}
                   disabled={saving.size > 0}
                 >
                   <Save className="h-3.5 w-3.5 mr-1.5" />
-                  Save All ({unsavedNoWebsite})
+                  Save All ({unsavedFiltered})
                 </Button>
               )}
             </div>
@@ -434,9 +439,10 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
                             </Button>
                           </a>
                         )}
-                        {!place.website && !isSaved && (
+                        {!isSaved ? (
                           <Button
                             size="sm"
+                            variant={place.website ? "outline" : "default"}
                             onClick={() => saveLead(place)}
                             disabled={isSaving}
                           >
@@ -447,7 +453,7 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
                             )}
                             Save Lead
                           </Button>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </CardContent>
