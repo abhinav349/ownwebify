@@ -74,3 +74,49 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ saved, failed });
 }
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const { id, status, notes } = body as {
+    id: string;
+    status?: string;
+    notes?: string;
+  };
+
+  if (!id) {
+    return NextResponse.json({ error: "Lead ID required" }, { status: 400 });
+  }
+
+  const data: Record<string, unknown> = {};
+  if (status !== undefined) data.status = status;
+  if (notes !== undefined) data.notes = notes;
+
+  const lead = await prisma.lead.update({
+    where: { id },
+    data,
+  });
+
+  return NextResponse.json({ lead });
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = (await req.json()) as { id: string };
+
+  if (!id) {
+    return NextResponse.json({ error: "Lead ID required" }, { status: 400 });
+  }
+
+  await prisma.lead.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
+}

@@ -4,12 +4,6 @@ import { LeadFinder } from "./lead-finder";
 export default async function AdminLeadsPage() {
   const savedLeads = await prisma.lead.findMany({
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      placeId: true,
-      businessName: true,
-      status: true,
-    },
   });
 
   return (

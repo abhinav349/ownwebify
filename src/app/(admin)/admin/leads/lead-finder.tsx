@@ -13,6 +13,10 @@ import {
   Loader2,
   CheckCircle2,
   Filter,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  StickyNote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,8 +39,24 @@ interface SavedLead {
   id: string;
   placeId: string;
   businessName: string;
+  address: string;
+  phone: string | null;
+  category: string | null;
+  rating: number | null;
+  userRatings: number | null;
   status: string;
+  notes: string | null;
+  searchQuery: string | null;
+  createdAt: string;
 }
+
+const LEAD_STATUSES = [
+  { value: "NEW", label: "New", color: "bg-blue-100 text-blue-800" },
+  { value: "CONTACTED", label: "Contacted", color: "bg-yellow-100 text-yellow-800" },
+  { value: "INTERESTED", label: "Interested", color: "bg-green-100 text-green-800" },
+  { value: "NOT_INTERESTED", label: "Not Interested", color: "bg-gray-100 text-gray-800" },
+  { value: "CONVERTED", label: "Converted", color: "bg-purple-100 text-purple-800" },
+];
 
 type FilterMode = "all" | "no-website" | "has-website";
 
@@ -49,14 +69,18 @@ const QUERY_SUGGESTIONS = [
   "boutiques in Jayanagar, Bangalore",
 ];
 
-export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
+export function LeadFinder({ savedLeads: initialLeads }: { savedLeads: SavedLead[] }) {
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<Set<string>>(new Set());
+  const [leads, setLeads] = useState<SavedLead[]>(initialLeads);
   const [savedSet, setSavedSet] = useState<Set<string>>(
-    () => new Set(savedLeads.map((l) => l.placeId))
+    () => new Set(initialLeads.map((l) => l.placeId))
   );
+  const [expandedLead, setExpandedLead] = useState<string | null>(null);
+  const [updatingLead, setUpdatingLead] = useState<Set<string>>(new Set());
+  const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -486,47 +510,293 @@ export function LeadFinder({ savedLeads }: { savedLeads: SavedLead[] }) {
         </>
       )}
 
-      {/* Saved leads summary */}
-      {savedLeads.length > 0 && !places.length && (
+      {/* Saved leads */}
+      {leads.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              Saved Leads ({savedLeads.length})
+              Saved Leads ({leads.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {savedLeads.slice(0, 10).map((lead) => (
-                <div
-                  key={lead.id}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                >
-                  <span className="font-medium text-sm">
-                    {lead.businessName}
-                  </span>
-                  <Badge
-                    variant="secondary"
-                    className={
-                      lead.status === "NEW"
-                        ? "bg-blue-100 text-blue-800"
-                        : lead.status === "CONTACTED"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : lead.status === "INTERESTED"
-                        ? "bg-green-100 text-green-800"
-                        : lead.status === "CONVERTED"
-                        ? "bg-purple-100 text-purple-800"
-                        : "bg-gray-100 text-gray-800"
-                    }
-                  >
-                    {lead.status}
-                  </Badge>
-                </div>
-              ))}
-              {savedLeads.length > 10 && (
-                <p className="text-sm text-muted-foreground text-center pt-2">
-                  and {savedLeads.length - 10} more...
-                </p>
-              )}
+            <div className="space-y-3">
+              {leads.map((lead) => {
+                const isExpanded = expandedLead === lead.id;
+                const isUpdating = updatingLead.has(lead.id);
+                const statusInfo = LEAD_STATUSES.find(
+                  (s) => s.value === lead.status
+                ) ?? LEAD_STATUSES[0];
+
+                return (
+                  <div key={lead.id} className="rounded-lg border">
+                    <button
+                      onClick={() =>
+                        setExpandedLead(isExpanded ? null : lead.id)
+                      }
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-sm">
+                            {lead.businessName}
+                          </span>
+                          {lead.category && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[11px]"
+                            >
+                              {lead.category}
+                            </Badge>
+                          )}
+                          <Badge
+                            variant="secondary"
+                            className={`text-[11px] ${statusInfo.color}`}
+                          >
+                            {statusInfo.label}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {lead.address}
+                        </p>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
+
+                    {isExpanded && (
+                      <div className="px-4 pb-4 space-y-4 border-t pt-4">
+                        {/* Details */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="h-4 w-4 shrink-0" />
+                            <span>{lead.address}</span>
+                          </div>
+                          {lead.phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              <a
+                                href={`tel:${lead.phone}`}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {lead.phone}
+                              </a>
+                            </div>
+                          )}
+                          {lead.rating != null && (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Star className="h-4 w-4 shrink-0 text-yellow-500 fill-yellow-500" />
+                              <span>
+                                {lead.rating}
+                                {lead.userRatings != null &&
+                                  ` (${lead.userRatings} reviews)`}
+                              </span>
+                            </div>
+                          )}
+                          {lead.searchQuery && (
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <Search className="h-4 w-4 shrink-0" />
+                              <span>Found via: {lead.searchQuery}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Status update */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="flex-1">
+                            <label className="text-xs font-medium text-muted-foreground mb-1 block">
+                              Status
+                            </label>
+                            <select
+                              value={lead.status}
+                              disabled={isUpdating}
+                              onChange={async (e) => {
+                                const newStatus = e.target.value;
+                                setUpdatingLead((prev) =>
+                                  new Set(prev).add(lead.id)
+                                );
+                                try {
+                                  const res = await fetch(
+                                    "/api/admin/leads",
+                                    {
+                                      method: "PATCH",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        id: lead.id,
+                                        status: newStatus,
+                                      }),
+                                    }
+                                  );
+                                  if (res.ok) {
+                                    setLeads((prev) =>
+                                      prev.map((l) =>
+                                        l.id === lead.id
+                                          ? { ...l, status: newStatus }
+                                          : l
+                                      )
+                                    );
+                                  }
+                                } finally {
+                                  setUpdatingLead((prev) => {
+                                    const next = new Set(prev);
+                                    next.delete(lead.id);
+                                    return next;
+                                  });
+                                }
+                              }}
+                              className="flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm"
+                            >
+                              {LEAD_STATUSES.map((s) => (
+                                <option key={s.value} value={s.value}>
+                                  {s.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                            <StickyNote className="h-3 w-3" />
+                            Notes
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={
+                              editingNotes[lead.id] ?? lead.notes ?? ""
+                            }
+                            onChange={(e) =>
+                              setEditingNotes((prev) => ({
+                                ...prev,
+                                [lead.id]: e.target.value,
+                              }))
+                            }
+                            placeholder="Add notes about this lead..."
+                            className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                          {editingNotes[lead.id] !== undefined &&
+                            editingNotes[lead.id] !==
+                              (lead.notes ?? "") && (
+                              <Button
+                                size="sm"
+                                className="mt-2"
+                                disabled={isUpdating}
+                                onClick={async () => {
+                                  setUpdatingLead((prev) =>
+                                    new Set(prev).add(lead.id)
+                                  );
+                                  try {
+                                    const res = await fetch(
+                                      "/api/admin/leads",
+                                      {
+                                        method: "PATCH",
+                                        headers: {
+                                          "Content-Type":
+                                            "application/json",
+                                        },
+                                        body: JSON.stringify({
+                                          id: lead.id,
+                                          notes: editingNotes[lead.id],
+                                        }),
+                                      }
+                                    );
+                                    if (res.ok) {
+                                      setLeads((prev) =>
+                                        prev.map((l) =>
+                                          l.id === lead.id
+                                            ? {
+                                                ...l,
+                                                notes:
+                                                  editingNotes[lead.id],
+                                              }
+                                            : l
+                                        )
+                                      );
+                                      setEditingNotes((prev) => {
+                                        const next = { ...prev };
+                                        delete next[lead.id];
+                                        return next;
+                                      });
+                                    }
+                                  } finally {
+                                    setUpdatingLead((prev) => {
+                                      const next = new Set(prev);
+                                      next.delete(lead.id);
+                                      return next;
+                                    });
+                                  }
+                                }}
+                              >
+                                {isUpdating ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                                ) : (
+                                  <Save className="h-3.5 w-3.5 mr-1" />
+                                )}
+                                Save Notes
+                              </Button>
+                            )}
+                        </div>
+
+                        {/* Delete */}
+                        <div className="flex justify-end pt-2 border-t">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={isUpdating}
+                            onClick={async () => {
+                              if (
+                                !confirm(
+                                  `Remove "${lead.businessName}" from saved leads?`
+                                )
+                              )
+                                return;
+                              setUpdatingLead((prev) =>
+                                new Set(prev).add(lead.id)
+                              );
+                              try {
+                                const res = await fetch(
+                                  "/api/admin/leads",
+                                  {
+                                    method: "DELETE",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({ id: lead.id }),
+                                  }
+                                );
+                                if (res.ok) {
+                                  setLeads((prev) =>
+                                    prev.filter((l) => l.id !== lead.id)
+                                  );
+                                  setSavedSet((prev) => {
+                                    const next = new Set(prev);
+                                    next.delete(lead.placeId);
+                                    return next;
+                                  });
+                                }
+                              } finally {
+                                setUpdatingLead((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(lead.id);
+                                  return next;
+                                });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                            Remove Lead
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
