@@ -3,7 +3,7 @@ import { LeadFinder } from "./lead-finder";
 
 export default async function AdminLeadsPage() {
   const savedLeads = await prisma.lead.findMany({
-    orderBy: { createdAt: "desc" },
+    select: { placeId: true },
   });
 
   return (
@@ -15,7 +15,7 @@ export default async function AdminLeadsPage() {
           potential clients.
         </p>
       </div>
-      <LeadFinder savedLeads={savedLeads} />
+      <LeadFinder savedPlaceIds={savedLeads.map((l) => l.placeId)} />
     </div>
   );
 }
