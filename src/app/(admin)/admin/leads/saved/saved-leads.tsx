@@ -15,6 +15,8 @@ import {
   StickyNote,
   ArrowLeft,
   Filter,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +30,8 @@ interface SavedLead {
   address: string;
   phone: string | null;
   category: string | null;
+  website: string | null;
+  mapsUrl: string | null;
   rating: number | null;
   userRatings: number | null;
   status: string;
@@ -228,6 +232,16 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                       >
                         {statusInfo.label}
                       </Badge>
+                      {lead.website ? (
+                        <Badge className="bg-green-100 text-green-800 border-green-200 text-[11px]">
+                          <Globe className="h-3 w-3 mr-1" />
+                          Has Website
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-[11px]">
+                          No Website
+                        </Badge>
+                      )}
                       {lead.notes && (
                         <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
@@ -265,12 +279,9 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
 
                 {isExpanded && (
                   <CardContent className="pt-0 pb-5 space-y-5 border-t mx-4 sm:mx-5 pt-5">
-                    {/* Contact info */}
-                    {lead.phone && (
-                      <div>
-                        <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                          Contact
-                        </label>
+                    {/* Links & contact */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {lead.phone && (
                         <a
                           href={`tel:${lead.phone}`}
                           className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium"
@@ -278,8 +289,32 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                           <Phone className="h-4 w-4" />
                           {lead.phone}
                         </a>
-                      </div>
-                    )}
+                      )}
+                      {lead.website && (
+                        <a
+                          href={lead.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium truncate"
+                        >
+                          <Globe className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{lead.website}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
+                      )}
+                      {lead.mapsUrl && (
+                        <a
+                          href={lead.mapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium"
+                        >
+                          <MapPin className="h-4 w-4" />
+                          View on Google Maps
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
 
                     {lead.searchQuery && (
                       <div className="text-sm text-muted-foreground flex items-center gap-1.5">

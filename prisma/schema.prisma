@@ -175,6 +175,8 @@ model Lead {
   phone         String?
   category      String?
   placeId       String     @unique
+  website       String?
+  mapsUrl       String?
   rating        Float?
   userRatings   Int?
   status        LeadStatus @default(NEW)

@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
       address: string;
       phone?: string | null;
       category?: string | null;
+      website?: string | null;
+      mapsUrl?: string | null;
       rating?: number | null;
       userRatings?: number | null;
     }[];
@@ -52,6 +54,8 @@ export async function POST(req: NextRequest) {
           address: b.address,
           phone: b.phone ?? null,
           category: b.category ?? null,
+          website: b.website ?? null,
+          mapsUrl: b.mapsUrl ?? null,
           rating: b.rating ?? null,
           userRatings: b.userRatings ?? null,
         },
@@ -61,6 +65,8 @@ export async function POST(req: NextRequest) {
           address: b.address,
           phone: b.phone ?? null,
           category: b.category ?? null,
+          website: b.website ?? null,
+          mapsUrl: b.mapsUrl ?? null,
           rating: b.rating ?? null,
           userRatings: b.userRatings ?? null,
           searchQuery: searchQuery ?? null,
