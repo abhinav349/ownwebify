@@ -5,6 +5,16 @@ import { authOptions } from "@/lib/auth";
 const PLACES_API_URL =
   "https://places.googleapis.com/v1/places:searchText";
 
+// Google's Text Search (New) caps pageSize at 20 per call and requires the
+// original textQuery to be resent on every pageToken continuation request -
+// omitting it (as this route used to) makes Google reject the "load more"
+// call outright. There's also a documented short delay needed before a
+// freshly-issued pageToken becomes valid.
+const GOOGLE_PAGE_SIZE = 20;
+const BATCH_TARGET = 50;
+const PAGE_TOKEN_DELAY_MS = 2000;
+const MAX_CHAINED_CALLS = 5;
+
 interface PlaceResult {
   id: string;
   displayName?: { text: string };
@@ -15,6 +25,60 @@ interface PlaceResult {
   rating?: number;
   userRatingCount?: number;
   googleMapsUri?: string;
+}
+
+const FIELD_MASK = [
+  "places.id",
+  "places.displayName",
+  "places.formattedAddress",
+  "places.internationalPhoneNumber",
+  "places.websiteUri",
+  "places.primaryTypeDisplayName",
+  "places.rating",
+  "places.userRatingCount",
+  "places.googleMapsUri",
+  "nextPageToken",
+].join(",");
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchPage(
+  apiKey: string,
+  textQuery: string,
+  pageToken: string | undefined
+): Promise<{ places: PlaceResult[]; nextPageToken?: string }> {
+  const requestBody: Record<string, unknown> = {
+    textQuery,
+    pageSize: GOOGLE_PAGE_SIZE,
+  };
+  if (pageToken) {
+    requestBody.pageToken = pageToken;
+  }
+
+  const res = await fetch(PLACES_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": FIELD_MASK,
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("Places API error:", errText);
+    throw new Error(`places_api_${res.status}`);
+  }
+
+  const data = (await res.json()) as {
+    places?: PlaceResult[];
+    nextPageToken?: string;
+  };
+
+  return { places: data.places ?? [], nextPageToken: data.nextPageToken };
 }
 
 export async function POST(req: NextRequest) {
@@ -37,7 +101,7 @@ export async function POST(req: NextRequest) {
     pageToken?: string;
   };
 
-  if (!query && !pageToken) {
+  if (!query) {
     return NextResponse.json(
       { error: "Search query is required" },
       { status: 400 }
@@ -45,55 +109,28 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const requestBody: Record<string, unknown> = {
-      pageSize: 20,
-    };
+    const collected: PlaceResult[] = [];
+    let token = pageToken;
+    let nextPageToken: string | undefined;
 
-    if (pageToken) {
-      requestBody.pageToken = pageToken;
-    }
-    if (query) {
-      requestBody.textQuery = query;
-    }
+    // Chain Google's 20-per-call pages together into one ~50-result batch.
+    // Google caps every query at 60 total results, so a later batch may
+    // come back shorter than 50 with nextPageToken null - that's expected,
+    // not an error.
+    for (let i = 0; i < MAX_CHAINED_CALLS && collected.length < BATCH_TARGET; i++) {
+      if (token) {
+        await delay(PAGE_TOKEN_DELAY_MS);
+      }
 
-    const fieldMask = [
-      "places.id",
-      "places.displayName",
-      "places.formattedAddress",
-      "places.internationalPhoneNumber",
-      "places.websiteUri",
-      "places.primaryTypeDisplayName",
-      "places.rating",
-      "places.userRatingCount",
-      "places.googleMapsUri",
-      "nextPageToken",
-    ].join(",");
+      const page = await fetchPage(apiKey, query, token);
+      collected.push(...page.places);
+      nextPageToken = page.nextPageToken;
+      token = nextPageToken;
 
-    const res = await fetch(PLACES_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": fieldMask,
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Places API error:", errText);
-      return NextResponse.json(
-        { error: "Failed to search places" },
-        { status: res.status }
-      );
+      if (!nextPageToken) break;
     }
 
-    const data = (await res.json()) as {
-      places?: PlaceResult[];
-      nextPageToken?: string;
-    };
-
-    const places = (data.places ?? []).map((p) => ({
+    const places = collected.map((p) => ({
       placeId: p.id,
       name: p.displayName?.text ?? "Unknown",
       address: p.formattedAddress ?? "",
@@ -107,15 +144,15 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       places,
-      nextPageToken: data.nextPageToken ?? null,
+      nextPageToken: nextPageToken ?? null,
       total: places.length,
       withoutWebsite: places.filter((p) => !p.website).length,
     });
   } catch (err) {
     console.error("Places search error:", err);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { error: "Failed to search places" },
+      { status: 502 }
     );
   }
 }

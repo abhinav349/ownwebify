@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   Search,
   Globe,
@@ -57,6 +57,11 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
   const [filterMode, setFilterMode] = useState<FilterMode>("no-website");
   const [lastQuery, setLastQuery] = useState("");
 
+  const placesCountRef = useRef(0);
+  useEffect(() => {
+    placesCountRef.current = places.length;
+  }, [places]);
+
   const search = useCallback(
     async (pageToken?: string) => {
       const isLoadMore = !!pageToken;
@@ -70,15 +75,15 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
       setError(null);
 
       try {
-        if (isLoadMore) {
-          await new Promise((r) => setTimeout(r, 2000));
-        }
-
+        // Google requires the same textQuery on every pageToken
+        // continuation request, so "load more" reuses the query that
+        // produced this result set rather than the (possibly since-edited)
+        // search box value.
         const res = await fetch("/api/admin/leads/search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            query: isLoadMore ? undefined : query,
+            query: isLoadMore ? lastQuery : query,
             pageToken: pageToken ?? undefined,
           }),
         });
@@ -97,7 +102,7 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
         }
         setNextPageToken(data.nextPageToken);
       } catch (err) {
-        if (!isLoadMore || places.length === 0) {
+        if (!isLoadMore || placesCountRef.current === 0) {
           setError(err instanceof Error ? err.message : "Search failed");
         }
         if (isLoadMore) {
@@ -108,7 +113,7 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
         setLoadingMore(false);
       }
     },
-    [query]
+    [query, lastQuery]
   );
 
   const saveLead = useCallback(
@@ -475,9 +480,13 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                 disabled={loadingMore}
               >
                 {loadingMore ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
-                Load More Results
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading more...
+                  </>
+                ) : (
+                  "Load 50 More Results"
+                )}
               </Button>
             </div>
           )}
