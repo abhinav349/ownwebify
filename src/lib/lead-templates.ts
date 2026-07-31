@@ -22,9 +22,9 @@ function whatsappPitch(
   demoCaption: string
 ): string {
   return [
-    `Hi! 👋 This is OwnWebify — we design websites for businesses like ${name}.`,
+    `Hi! This is OwnWebify - we design websites for businesses like ${name}.`,
     hook,
-    `Here's a live example — ${demoCaption}: ${demoLink(demoSlug)}`,
+    `Here's a live example - ${demoCaption}: ${demoLink(demoSlug)}`,
     `We could build something like this for ${name}, live in about a week. Want to see what it'd look like for you?`,
   ].join("\n\n");
 }
@@ -42,7 +42,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and most people now check online before picking a cafe to visit.`,
+        `We noticed ${name} doesn't have a website yet - and most people now check online before picking a cafe to visit.`,
         "cafe",
         "a cafe site we designed"
       ),
@@ -60,7 +60,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and most diners now check online before picking where to eat.`,
+        `We noticed ${name} doesn't have a website yet - and most diners now check online before picking where to eat.`,
         "restaurant",
         "a fine-dining site we designed"
       ),
@@ -78,7 +78,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and clients increasingly check online before booking an appointment.`,
+        `We noticed ${name} doesn't have a website yet - and clients increasingly check online before booking an appointment.`,
         "salon",
         "a salon site we designed"
       ),
@@ -96,7 +96,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and most people check online before choosing where to train.`,
+        `We noticed ${name} doesn't have a website yet - and most people check online before choosing where to train.`,
         "fitness",
         "a gym site we designed"
       ),
@@ -114,7 +114,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and patients often look up a clinic online before booking.`,
+        `We noticed ${name} doesn't have a website yet - and patients often look up a clinic online before booking.`,
         "clinic",
         "a clinic site we designed"
       ),
@@ -132,7 +132,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and shoppers increasingly browse online before visiting a store.`,
+        `We noticed ${name} doesn't have a website yet - and shoppers increasingly browse online before visiting a store.`,
         "ecommerce",
         "a fashion storefront we designed"
       ),
@@ -150,7 +150,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and clients almost always want to see a portfolio before booking a shoot.`,
+        `We noticed ${name} doesn't have a website yet - and clients almost always want to see a portfolio before booking a shoot.`,
         "photography",
         "a photography portfolio we designed"
       ),
@@ -168,7 +168,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have its own website yet — right now you're likely paying commission on every booking platform stay.`,
+        `We noticed ${name} doesn't have its own website yet - right now you're likely paying commission on every booking platform stay.`,
         undefined,
         "recent work from our portfolio"
       ),
@@ -186,7 +186,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and clients often research a firm online before reaching out.`,
+        `We noticed ${name} doesn't have a website yet - and clients often research a firm online before reaching out.`,
         undefined,
         "recent work from our portfolio"
       ),
@@ -204,7 +204,7 @@ const TEMPLATE_SETS: TemplateSet[] = [
       ],
       whatsappMessage: whatsappPitch(
         name,
-        `We noticed ${name} doesn't have a website yet — and buyers usually start their search online.`,
+        `We noticed ${name} doesn't have a website yet - and buyers usually start their search online.`,
         "real-estate",
         "a real estate site we designed"
       ),
@@ -222,7 +222,7 @@ const DEFAULT_TEMPLATE = (name: string): LeadTemplate => ({
   ],
   whatsappMessage: whatsappPitch(
     name,
-    `We noticed ${name} doesn't have a website yet — and most customers now search online before visiting or calling a business.`,
+    `We noticed ${name} doesn't have a website yet - and most customers now search online before visiting or calling a business.`,
     undefined,
     "recent work from our portfolio"
   ),

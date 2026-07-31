@@ -1,5 +1,10 @@
 /* Styles scoped to /demos/* only — never imported by the root app. */
 
+html:has(.demo-page),
+body:has(.demo-page) {
+  overscroll-behavior-y: none;
+}
+
 .demo-page {
   font-family: var(--font-sans);
 }
