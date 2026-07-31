@@ -9,18 +9,61 @@ interface TemplateSet {
   template: (businessName: string) => LeadTemplate;
 }
 
+const DEMO_BASE_URL = "https://ownwebify.com/demos";
+
+function demoLink(slug?: string): string {
+  return slug ? `${DEMO_BASE_URL}/${slug}` : DEMO_BASE_URL;
+}
+
+function whatsappPitch(
+  name: string,
+  hook: string,
+  demoSlug: string | undefined,
+  demoCaption: string
+): string {
+  return [
+    `Hi! 👋 This is OwnWebify — we design websites for businesses like ${name}.`,
+    hook,
+    `Here's a live example — ${demoCaption}: ${demoLink(demoSlug)}`,
+    `We could build something like this for ${name}, live in about a week. Want to see what it'd look like for you?`,
+  ].join("\n\n");
+}
+
 const TEMPLATE_SETS: TemplateSet[] = [
   {
-    keywords: ["restaurant", "cafe", "coffee", "bakery", "food", "diner", "bar", "pub"],
+    keywords: ["cafe", "coffee", "bakery"],
+    template: (name) => ({
+      subject: `A website that brings more regulars to ${name}`,
+      emailBody: [
+        `Hi ${name} team,`,
+        `I came across ${name} while looking at local spots and noticed you don't have a website yet. A lot of coffee lovers search online before deciding where to go, and a simple site with your menu, hours, and location can turn that browsing into visits.`,
+        `We build fast, mobile-friendly websites for cafes — menu pages, hours, location, and photo galleries — usually live within a week.`,
+        `Would you be open to a quick chat about what this could look like for ${name}?`,
+      ],
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and most people now check online before picking a cafe to visit.`,
+        "cafe",
+        "a cafe site we designed"
+      ),
+    }),
+  },
+  {
+    keywords: ["restaurant", "diner", "bar", "pub", "food", "eatery"],
     template: (name) => ({
       subject: `A website that brings more diners to ${name}`,
       emailBody: [
         `Hi ${name} team,`,
         `I came across ${name} while looking at local spots and noticed you don't have a website yet. A lot of hungry customers search online before deciding where to eat, and a simple site with your menu, hours, and location can turn that browsing into bookings and takeout orders.`,
-        `We build fast, mobile-friendly websites for restaurants and cafes — menu pages, online ordering links, Google Maps integration, and photo galleries — usually live within a week.`,
+        `We build fast, mobile-friendly websites for restaurants — menu pages, online ordering links, Google Maps integration, and photo galleries — usually live within a week.`,
         `Would you be open to a quick chat about what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build simple, fast websites for restaurants & cafes (menu, hours, location, online ordering links) that help bring in more customers. Would you be open to a quick chat about this?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and most diners now check online before picking where to eat.`,
+        "restaurant",
+        "a fine-dining site we designed"
+      ),
     }),
   },
   {
@@ -33,7 +76,12 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We design simple, elegant websites for salons and spas with service menus, an online booking link, and a photo gallery of your work — typically live within a week.`,
         `Would you like to see what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build simple websites for salons & spas (services, pricing, booking link, photo gallery) to help you get discovered online. Want to see what it could look like?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and clients increasingly check online before booking an appointment.`,
+        "salon",
+        "a salon site we designed"
+      ),
     }),
   },
   {
@@ -46,7 +94,12 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We build clean, mobile-friendly websites for gyms and fitness studios — class schedules, trainer profiles, membership info, and contact/booking details — live within a week.`,
         `Open to a quick chat about what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build simple websites for gyms & fitness studios (class schedule, membership plans, location) to help bring in more members. Would you be open to a quick chat?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and most people check online before choosing where to train.`,
+        "fitness",
+        "a gym site we designed"
+      ),
     }),
   },
   {
@@ -59,7 +112,12 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We build clean, professional websites for clinics and practices — services offered, doctor bios, appointment booking, and location — usually live within a week.`,
         `Would you be open to a quick chat about what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build professional websites for clinics (services, doctor profiles, appointment booking) to help new patients find and trust you online. Open to a quick chat?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and patients often look up a clinic online before booking.`,
+        "clinic",
+        "a clinic site we designed"
+      ),
     }),
   },
   {
@@ -72,7 +130,30 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We build clean, mobile-friendly websites for boutiques and retail stores — product galleries, store hours, location, and social links — live within a week.`,
         `Would you like to see what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build simple websites for stores & boutiques (product gallery, hours, location) to help you reach more customers online. Want to see what it could look like?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and shoppers increasingly browse online before visiting a store.`,
+        "ecommerce",
+        "a fashion storefront we designed"
+      ),
+    }),
+  },
+  {
+    keywords: ["photographer", "photography", "photo studio"],
+    template: (name) => ({
+      subject: `A portfolio site that does justice to ${name}'s work`,
+      emailBody: [
+        `Hi ${name} team,`,
+        `I noticed ${name} doesn't have a website yet. Clients booking a photographer almost always want to see a portfolio first — a clean gallery site makes your best work the first thing they see.`,
+        `We build elegant, image-first websites for photographers — galleries, packages, and a contact/booking form — usually live within a week.`,
+        `Would you be open to a quick chat about what this could look like for ${name}?`,
+      ],
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and clients almost always want to see a portfolio before booking a shoot.`,
+        "photography",
+        "a photography portfolio we designed"
+      ),
     }),
   },
   {
@@ -85,7 +166,12 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We build clean, mobile-friendly websites for hotels and stays — room galleries, amenities, location, and direct enquiry forms — live within a week.`,
         `Would you be open to a quick chat about what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have its own website yet. We build simple websites for hotels & stays (rooms, amenities, direct booking enquiry) to help you get more direct bookings and avoid commission. Open to a quick chat?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have its own website yet — right now you're likely paying commission on every booking platform stay.`,
+        undefined,
+        "recent work from our portfolio"
+      ),
     }),
   },
   {
@@ -98,7 +184,12 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We build clean, professional websites for law practices — practice areas, attorney bios, and a contact form — usually live within a week.`,
         `Would you be open to a quick chat about what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build professional websites for law practices (practice areas, bios, contact form) to help build credibility and bring in new enquiries. Open to a quick chat?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and clients often research a firm online before reaching out.`,
+        undefined,
+        "recent work from our portfolio"
+      ),
     }),
   },
   {
@@ -111,7 +202,12 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We build clean, mobile-friendly websites for real estate and construction businesses — listing galleries, project details, and enquiry forms — live within a week.`,
         `Would you like to see what this could look like for ${name}?`,
       ],
-      whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build simple websites for real estate businesses (listings, projects, enquiry form) to help you reach more direct leads. Want to see what it could look like?`,
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet — and buyers usually start their search online.`,
+        "real-estate",
+        "a real estate site we designed"
+      ),
     }),
   },
 ];
@@ -124,7 +220,12 @@ const DEFAULT_TEMPLATE = (name: string): LeadTemplate => ({
     `We build fast, mobile-friendly websites — usually live within a week — tailored to what your business needs.`,
     `Would you be open to a quick chat about what this could look like for ${name}?`,
   ],
-  whatsappMessage: `Hi! I noticed ${name} doesn't have a website yet. We build simple, professional websites that help local businesses get found online and bring in more customers. Would you be open to a quick chat about this?`,
+  whatsappMessage: whatsappPitch(
+    name,
+    `We noticed ${name} doesn't have a website yet — and most customers now search online before visiting or calling a business.`,
+    undefined,
+    "recent work from our portfolio"
+  ),
 });
 
 export function getLeadTemplate(
