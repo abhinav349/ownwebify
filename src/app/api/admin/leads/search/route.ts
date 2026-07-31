@@ -5,13 +5,21 @@ import { authOptions } from "@/lib/auth";
 const PLACES_API_URL =
   "https://places.googleapis.com/v1/places:searchText";
 
-// Google's Text Search (New) caps pageSize at 20 per call and requires the
-// original textQuery to be resent on every pageToken continuation request -
-// omitting it (as this route used to) makes Google reject the "load more"
-// call outright. There's also a documented short delay needed before a
-// freshly-issued pageToken becomes valid.
+// Google's Text Search (New) caps pageSize at 20 per call, caps every query
+// at 60 results total, and requires the original textQuery to be resent on
+// every pageToken continuation request - omitting it (as this route used
+// to) makes Google reject the "load more" call outright. There's also a
+// documented short delay needed before a freshly-issued pageToken becomes
+// valid.
+//
+// BATCH_TARGET must stay a multiple of GOOGLE_PAGE_SIZE that's comfortably
+// under the 60-per-query ceiling: at 50 (needing 3 chained 20-result hops),
+// the very first click already exhausts all 60 available results, so
+// "Load More" never has anything left to show. 40 (2 hops) leaves the last
+// ~20 for a real second click in the common case where a query has more
+// than 40 total matches.
 const GOOGLE_PAGE_SIZE = 20;
-const BATCH_TARGET = 50;
+const BATCH_TARGET = 40;
 const PAGE_TOKEN_DELAY_MS = 2000;
 const MAX_CHAINED_CALLS = 5;
 

@@ -485,7 +485,7 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                     Loading more...
                   </>
                 ) : (
-                  "Load 50 More Results"
+                  "Load More Results"
                 )}
               </Button>
             </div>
