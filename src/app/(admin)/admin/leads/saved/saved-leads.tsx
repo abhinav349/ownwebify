@@ -17,11 +17,16 @@ import {
   Filter,
   Globe,
   ExternalLink,
+  Mail,
+  MessageCircle,
+  Send,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getLeadTemplate, buildWhatsAppLink } from "@/lib/lead-templates";
 
 interface SavedLead {
   id: string;
@@ -29,6 +34,7 @@ interface SavedLead {
   businessName: string;
   address: string;
   phone: string | null;
+  email: string | null;
   category: string | null;
   website: string | null;
   mapsUrl: string | null;
@@ -37,6 +43,7 @@ interface SavedLead {
   status: string;
   notes: string | null;
   searchQuery: string | null;
+  emailSentAt: string | null;
   createdAt: string;
 }
 
@@ -55,11 +62,14 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
   const [updatingLead, setUpdatingLead] = useState<Set<string>>(new Set());
   const [editingNotes, setEditingNotes] = useState<Record<string, string>>({});
+  const [editingEmail, setEditingEmail] = useState<Record<string, string>>({});
+  const [sendingEmail, setSendingEmail] = useState<Set<string>>(new Set());
+  const [emailError, setEmailError] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
   const updateLead = useCallback(
-    async (id: string, data: { status?: string; notes?: string }) => {
+    async (id: string, data: { status?: string; notes?: string; email?: string }) => {
       setUpdatingLead((prev) => new Set(prev).add(id));
       try {
         const res = await fetch("/api/admin/leads", {
@@ -78,6 +88,13 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
               return next;
             });
           }
+          if (data.email !== undefined) {
+            setEditingEmail((prev) => {
+              const next = { ...prev };
+              delete next[id];
+              return next;
+            });
+          }
         }
       } finally {
         setUpdatingLead((prev) => {
@@ -89,6 +106,41 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
     },
     []
   );
+
+  const sendLeadEmail = useCallback(async (lead: SavedLead) => {
+    setSendingEmail((prev) => new Set(prev).add(lead.id));
+    setEmailError((prev) => {
+      const next = { ...prev };
+      delete next[lead.id];
+      return next;
+    });
+    try {
+      const res = await fetch("/api/admin/leads/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: lead.id }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === lead.id ? { ...l, ...data.lead } : l))
+        );
+      } else {
+        setEmailError((prev) => ({
+          ...prev,
+          [lead.id]: data.error || "Failed to send email",
+        }));
+      }
+    } catch {
+      setEmailError((prev) => ({ ...prev, [lead.id]: "Failed to send email" }));
+    } finally {
+      setSendingEmail((prev) => {
+        const next = new Set(prev);
+        next.delete(lead.id);
+        return next;
+      });
+    }
+  }, []);
 
   const deleteLead = useCallback(async (lead: SavedLead) => {
     if (!confirm(`Remove "${lead.businessName}" from saved leads?`)) return;
@@ -245,6 +297,12 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                       {lead.notes && (
                         <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
+                      {lead.emailSentAt && (
+                        <Badge className="bg-green-100 text-green-800 border-green-200 text-[11px]">
+                          <Mail className="h-3 w-3 mr-1" />
+                          Emailed
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm text-muted-foreground mt-1">
                       <span className="flex items-center gap-1 truncate">
@@ -288,6 +346,23 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                         >
                           <Phone className="h-4 w-4" />
                           {lead.phone}
+                        </a>
+                      )}
+                      {lead.phone && (
+                        <a
+                          href={buildWhatsAppLink(
+                            lead.phone,
+                            getLeadTemplate(lead.businessName, lead.category)
+                              .whatsappMessage,
+                            lead.address
+                          )}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm text-green-600 hover:underline font-medium"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          Message on WhatsApp
+                          <ExternalLink className="h-3 w-3" />
                         </a>
                       )}
                       {lead.website && (
@@ -348,6 +423,71 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                           </button>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Email outreach */}
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground mb-1.5 flex items-center gap-1">
+                        <Mail className="h-3 w-3" />
+                        Email
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Input
+                          type="email"
+                          value={editingEmail[lead.id] ?? lead.email ?? ""}
+                          onChange={(e) =>
+                            setEditingEmail((prev) => ({
+                              ...prev,
+                              [lead.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="Add an email address to enable outreach"
+                          className="sm:max-w-xs"
+                        />
+                        {editingEmail[lead.id] !== undefined &&
+                          editingEmail[lead.id] !== (lead.email ?? "") && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              disabled={isUpdating}
+                              onClick={() =>
+                                updateLead(lead.id, {
+                                  email: editingEmail[lead.id],
+                                })
+                              }
+                            >
+                              {isUpdating ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                              ) : (
+                                <Save className="h-3.5 w-3.5 mr-1" />
+                              )}
+                              Save Email
+                            </Button>
+                          )}
+                        <Button
+                          size="sm"
+                          disabled={!lead.email || sendingEmail.has(lead.id)}
+                          onClick={() => sendLeadEmail(lead)}
+                        >
+                          {sendingEmail.has(lead.id) ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                          ) : (
+                            <Send className="h-3.5 w-3.5 mr-1" />
+                          )}
+                          Send Outreach Email
+                        </Button>
+                      </div>
+                      {lead.emailSentAt && (
+                        <p className="text-xs text-green-700 flex items-center gap-1 mt-1.5">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Sent {new Date(lead.emailSentAt).toLocaleString()}
+                        </p>
+                      )}
+                      {emailError[lead.id] && (
+                        <p className="text-xs text-destructive mt-1.5">
+                          {emailError[lead.id]}
+                        </p>
+                      )}
                     </div>
 
                     {/* Notes */}

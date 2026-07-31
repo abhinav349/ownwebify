@@ -155,6 +155,19 @@ export function otpEmailHtml(code: string) {
   `;
 }
 
+export function leadOutreachEmailHtml(paragraphs: string[]) {
+  const body = paragraphs
+    .map((p) => `<p style="color: #334155; line-height: 1.6;">${p}</p>`)
+    .join("");
+
+  return `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+      ${body}
+      <p style="margin-top: 24px; color: #64748b; font-size: 13px;">— OwnWebify</p>
+    </div>
+  `;
+}
+
 export function newMessageEmailHtml(projectTitle: string, senderName: string, messagePreview: string) {
   return `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">

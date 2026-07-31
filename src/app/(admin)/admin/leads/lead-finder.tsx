@@ -37,10 +37,10 @@ type FilterMode = "all" | "no-website" | "has-website";
 const QUERY_SUGGESTIONS = [
   "restaurants in Koramangala, Bangalore",
   "salons in HSR Layout, Bangalore",
-  "gyms in Indiranagar, Bangalore",
-  "dentists in Whitefield, Bangalore",
-  "cafes in JP Nagar, Bangalore",
-  "boutiques in Jayanagar, Bangalore",
+  "gyms in Toronto, Canada",
+  "dentists in Austin, Texas",
+  "cafes in Vancouver, Canada",
+  "boutiques in Brooklyn, New York",
 ];
 
 export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {

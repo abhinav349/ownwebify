@@ -9,7 +9,7 @@ interface PlaceResult {
   id: string;
   displayName?: { text: string };
   formattedAddress?: string;
-  nationalPhoneNumber?: string;
+  internationalPhoneNumber?: string;
   websiteUri?: string;
   primaryTypeDisplayName?: { text: string };
   rating?: number;
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       "places.id",
       "places.displayName",
       "places.formattedAddress",
-      "places.nationalPhoneNumber",
+      "places.internationalPhoneNumber",
       "places.websiteUri",
       "places.primaryTypeDisplayName",
       "places.rating",
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       placeId: p.id,
       name: p.displayName?.text ?? "Unknown",
       address: p.formattedAddress ?? "",
-      phone: p.nationalPhoneNumber ?? null,
+      phone: p.internationalPhoneNumber ?? null,
       website: p.websiteUri ?? null,
       category: p.primaryTypeDisplayName?.text ?? null,
       rating: p.rating ?? null,

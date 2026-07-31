@@ -173,6 +173,7 @@ model Lead {
   businessName  String
   address       String
   phone         String?
+  email         String?
   category      String?
   placeId       String     @unique
   website       String?
@@ -182,6 +183,7 @@ model Lead {
   status        LeadStatus @default(NEW)
   notes         String?
   searchQuery   String?
+  emailSentAt   DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }

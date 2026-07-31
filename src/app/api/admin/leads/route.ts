@@ -88,10 +88,11 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, status, notes } = body as {
+  const { id, status, notes, email } = body as {
     id: string;
     status?: string;
     notes?: string;
+    email?: string;
   };
 
   if (!id) {
@@ -101,6 +102,7 @@ export async function PATCH(req: NextRequest) {
   const data: Record<string, unknown> = {};
   if (status !== undefined) data.status = status;
   if (notes !== undefined) data.notes = notes;
+  if (email !== undefined) data.email = email || null;
 
   const lead = await prisma.lead.update({
     where: { id },
