@@ -22,7 +22,7 @@ function whatsappPitch(
   demoCaption: string
 ): string {
   return [
-    `Hi! This is OwnWebify - we design websites for businesses like ${name}.`,
+    `Hi! 👋 This is OwnWebify - we design websites for businesses like ${name}.`,
     hook,
     `Here's a live example - ${demoCaption}: ${demoLink(demoSlug)}`,
     `We could build something like this for ${name}, live in about a week. Want to see what it'd look like for you?`,
