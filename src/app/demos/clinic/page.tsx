@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/clinic/hero";
 import { Offerings } from "@/components/demos/clinic/offerings";
 import { Doctors } from "@/components/demos/clinic/doctors";
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
   title: "CarePlus Medical | Healthcare Clinic — Website Demo",
   description:
     "A calm, trustworthy healthcare clinic demo site with soothing teal tones, physician profiles, and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/clinic" },
   openGraph: {
     title: "CarePlus Medical - Healthcare Clinic Website Demo",
     description: "Cinematic demo website for a healthcare clinic, built by OwnWebify.",
@@ -47,6 +49,12 @@ export default function ClinicDemoPage() {
       className={`demo-page min-h-screen bg-[#0a1210] text-[#eaf3f0] ${outfit.variable} ${manrope.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#0a1210" } as CSSProperties}
     >
+      <DemoSeo
+        name="CarePlus Medical"
+        type="Healthcare Clinic"
+        slug="clinic"
+        description="A healthcare clinic website demo with services, physician profiles, appointment booking, and cinematic scroll storytelling in a calm teal palette."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav

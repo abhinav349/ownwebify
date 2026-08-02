@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/fitness/hero";
 import { Offerings } from "@/components/demos/fitness/offerings";
 import { Pricing } from "@/components/demos/fitness/pricing";
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
   title: "IronPulse | Gym & Fitness — Website Demo",
   description:
     "A bold, energetic gym demo site with neon accents on dark, class schedules, membership plans, and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/fitness" },
   openGraph: {
     title: "IronPulse - Gym & Fitness Website Demo",
     description: "Cinematic demo website for a gym & fitness studio, built by OwnWebify.",
@@ -47,6 +49,12 @@ export default function FitnessDemoPage() {
       className={`demo-page min-h-screen bg-[#0b0c09] text-[#eef2e8] ${bebas.variable} ${inter.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#0b0c09" } as CSSProperties}
     >
+      <DemoSeo
+        name="IronPulse"
+        type="Gym & Fitness Studio"
+        slug="fitness"
+        description="A gym and fitness studio website demo with class schedules, membership pricing, and cinematic scroll storytelling in neon-on-black."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav

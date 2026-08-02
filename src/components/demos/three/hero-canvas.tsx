@@ -5,9 +5,12 @@ import { Canvas } from "@react-three/fiber";
 import type { MotionValue } from "motion/react";
 import { SceneParticles } from "@/components/demos/three/scene-particles";
 import { SceneOrb } from "@/components/demos/three/scene-orb";
+import { SceneWave } from "@/components/demos/three/scene-wave";
+import { SceneGrid } from "@/components/demos/three/scene-grid";
+import { SceneRings } from "@/components/demos/three/scene-rings";
 
 type HeroCanvasProps = {
-  variant?: "particles" | "orb";
+  variant?: "particles" | "orb" | "wave" | "grid" | "rings";
   color?: string;
   scrollProgress?: MotionValue<number>;
 };
@@ -25,9 +28,11 @@ export default function HeroCanvas({
       className="!absolute inset-0"
     >
       <Suspense fallback={null}>
-        {variant === "orb" ? (
-          <SceneOrb color={color} />
-        ) : (
+        {variant === "orb" && <SceneOrb color={color} />}
+        {variant === "wave" && <SceneWave color={color} />}
+        {variant === "grid" && <SceneGrid color={color} />}
+        {variant === "rings" && <SceneRings color={color} />}
+        {variant === "particles" && (
           <SceneParticles color={color} scrollProgress={scrollProgress} />
         )}
       </Suspense>

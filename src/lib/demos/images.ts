@@ -71,4 +71,32 @@ export const demoImages = {
     care: photo("1538108149393-fbbd81895907", "Doctor holding a stethoscope"),
     interior: photo("1666214280391-8ff5bd3c0bf0", "Calm, modern medical clinic interior"),
   },
+  hotel: {
+    hero: photo("1571003123894-1f0594d2b5d9", "Luxurious hotel bedroom with soft ambient lighting"),
+    lobby: photo("1566073771259-6a8506099945", "Elegant hotel lobby interior"),
+    room: photo("1611892440504-42a792e24d32", "Well-appointed hotel guest room"),
+    pool: photo("1520250497591-112f2f40a3f4", "Resort pool at dusk"),
+    exterior: photo("1590490360182-c33d57733427", "Boutique hotel exterior"),
+  },
+  lawFirm: {
+    hero: photo("1521737604893-d14cc237f11d", "Modern law office building exterior"),
+    desk: photo("1589829085413-56de8ae18c73", "Attorney's desk with legal documents"),
+    library: photo("1521791136064-7986c2920216", "Law library with rows of bound volumes"),
+    meeting: photo("1450101499163-c8848c66ca85", "Professionals shaking hands after a meeting"),
+    consult: photo("1568992687947-868a62a9f521", "Lawyer consulting with a client"),
+  },
+  interiorDesign: {
+    hero: photo("1618221195710-dd6b41faaea6", "Warmly styled modern living room interior"),
+    moodboard: photo("1618220179428-22790b461013", "Curated interior design mood board"),
+    detail: photo("1615874959474-d609969a20ed", "Close-up detail of designer furniture"),
+    furniture: photo("1615529182904-14819c35db37", "Elegant furniture piece in a styled room"),
+    architecture: photo("1618219740975-d40978bb7378", "Modern interior architecture with clean lines"),
+  },
+  spa: {
+    hero: photo("1540555700478-4be289fbecef", "Spa treatment stones arranged for a massage"),
+    treatment: photo("1600334129128-685c5582fd35", "Calm spa treatment room"),
+    candles: photo("1544161515-4ab6ce6db874", "Zen candles and spa ambiance"),
+    relax: photo("1519415510236-718bdfcd89c8", "Person relaxing during a spa treatment"),
+    detail: photo("1583417319070-4a69db38a482", "Close-up detail of spa amenities"),
+  },
 } as const;

@@ -5,12 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
 import type { Points as PointsImpl } from "three";
 import type { MotionValue } from "motion/react";
-
-/** Deterministic pseudo-random in [0, 1) — avoids calling Math.random during render. */
-function hashRandom(seed: number) {
-  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
-  return x - Math.floor(x);
-}
+import { hashRandom } from "@/components/demos/three/utils";
 
 function useScrollValue(mv?: MotionValue<number>) {
   const ref = useRef(0);

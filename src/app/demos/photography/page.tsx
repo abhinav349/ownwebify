@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/photography/hero";
 import { Gallery } from "@/components/demos/photography/gallery";
 import { Offerings } from "@/components/demos/photography/offerings";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   title: "Lens & Light | Photography Studio — Website Demo",
   description:
     "An artistic minimal photography portfolio demo site in monochrome, with editorial galleries and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/photography" },
   openGraph: {
     title: "Lens & Light - Photography Studio Website Demo",
     description: "Cinematic demo website for a photography studio, built by OwnWebify.",
@@ -47,6 +49,12 @@ export default function PhotographyDemoPage() {
       className={`demo-page min-h-screen bg-[#0d0d0d] text-[#efefef] ${instrumentSerif.variable} ${inter.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#0d0d0d" } as CSSProperties}
     >
+      <DemoSeo
+        name="Lens & Light"
+        type="Photography Studio"
+        slug="photography"
+        description="A photography studio portfolio website demo with galleries, service tiers, and cinematic scroll storytelling in monochrome."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav

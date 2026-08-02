@@ -40,7 +40,7 @@ export function Hero() {
           className="object-cover opacity-45"
         />
       ) : (
-        <HeroCanvas variant="particles" color={ACCENT} scrollProgress={scrollYProgress} />
+        <HeroCanvas variant="grid" color={ACCENT} scrollProgress={scrollYProgress} />
       )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f14] via-[#0a0f14]/10 to-[#0a0f14]/50 pointer-events-none" />

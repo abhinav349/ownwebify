@@ -5,13 +5,24 @@ import { SmoothScrollProvider } from "@/components/demos/providers/smooth-scroll
 import "./demos.css";
 
 export const metadata: Metadata = {
-  title: "Website Portfolio | Demo Sites for Cafes, Restaurants, Salons & More",
+  title: "Website Portfolio | 12 Live Demo Sites by Industry",
   description:
-    "Browse our portfolio of affordable website designs. Demo sites for cafes, restaurants, salons, gyms, e-commerce, real estate, photography studios, and clinics.",
+    "Browse 12 live website demos by industry — cafes, restaurants, salons, spas, gyms, e-commerce, real estate, photography, clinics, hotels, law firms, and interior design studios. Affordable custom websites from OwnWebify.",
+  keywords: [
+    "website design examples",
+    "small business website examples",
+    "restaurant website design",
+    "salon website design",
+    "hotel website design",
+    "law firm website design",
+    "interior design website",
+    "affordable website portfolio",
+  ],
+  alternates: { canonical: "https://ownwebify.com/demos" },
   openGraph: {
-    title: "Website Portfolio - OwnWebify",
+    title: "Website Portfolio - 12 Live Demos by Industry | OwnWebify",
     description:
-      "See examples of professional websites we build. Affordable designs for every industry.",
+      "See examples of professional websites we build. Affordable, cinematic designs for every industry.",
     url: "https://ownwebify.com/demos",
   },
 };

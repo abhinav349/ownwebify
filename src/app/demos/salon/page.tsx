@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/salon/hero";
 import { Offerings } from "@/components/demos/salon/offerings";
 import { Story } from "@/components/demos/salon/story";
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
   title: "Glow Studio | Beauty Salon — Website Demo",
   description:
     "A premium beauty salon demo site with a soft feminine aesthetic, service menu, stylist team, and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/salon" },
   openGraph: {
     title: "Glow Studio - Beauty Salon Website Demo",
     description: "Cinematic demo website for a beauty salon, built by OwnWebify.",
@@ -48,6 +50,12 @@ export default function SalonDemoPage() {
       className={`demo-page min-h-screen bg-[#180f12] text-[#f6ecee] ${playfair.variable} ${jost.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#180f12" } as CSSProperties}
     >
+      <DemoSeo
+        name="Glow Studio"
+        type="Beauty Salon"
+        slug="salon"
+        description="A beauty salon website demo with a service menu, stylist profiles, and cinematic scroll storytelling in a soft blush palette."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav

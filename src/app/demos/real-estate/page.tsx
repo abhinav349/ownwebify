@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/real-estate/hero";
 import { Offerings } from "@/components/demos/real-estate/offerings";
 import { Story } from "@/components/demos/real-estate/story";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   title: "Skyline Properties | Real Estate — Website Demo",
   description:
     "A professional real estate demo site with a trustworthy navy & gold palette, curated listings, and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/real-estate" },
   openGraph: {
     title: "Skyline Properties - Real Estate Website Demo",
     description: "Cinematic demo website for a real estate agency, built by OwnWebify.",
@@ -47,6 +49,12 @@ export default function RealEstateDemoPage() {
       className={`demo-page min-h-screen bg-[#0a0f14] text-[#eef1f3] ${fraunces.variable} ${inter.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#0a0f14" } as CSSProperties}
     >
+      <DemoSeo
+        name="Skyline Properties"
+        type="Real Estate Agency"
+        slug="real-estate"
+        description="A real estate agency website demo with property listings, agent credibility, and cinematic scroll storytelling in a navy and gold palette."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav

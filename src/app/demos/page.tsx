@@ -12,6 +12,10 @@ import {
   Building2,
   Camera,
   Stethoscope,
+  Hotel,
+  Scale,
+  Sofa,
+  Flower2,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { CreativeWorkJsonLd } from "@/components/seo/json-ld";
@@ -105,6 +109,42 @@ const demos = [
     accent: "#4fd1c5",
     image: demoImages.clinic.hero,
     description: "Calm and trustworthy clinic with soothing teal tones.",
+  },
+  {
+    slug: "hotel",
+    name: "Aurelia Bay Resort",
+    type: "Boutique Hotel",
+    icon: Hotel,
+    accent: "#e8a87c",
+    image: demoImages.hotel.hero,
+    description: "Coastal boutique hotel in warm terracotta, built for direct bookings.",
+  },
+  {
+    slug: "law-firm",
+    name: "Whitmore & Cole",
+    type: "Law Firm",
+    icon: Scale,
+    accent: "#9fb3c8",
+    image: demoImages.lawFirm.hero,
+    description: "Authoritative legal practice site in a cool slate palette.",
+  },
+  {
+    slug: "interior-design",
+    name: "Studio Loam",
+    type: "Interior Design",
+    icon: Sofa,
+    accent: "#c9a87c",
+    image: demoImages.interiorDesign.hero,
+    description: "Material-led design studio portfolio in warm clay tones.",
+  },
+  {
+    slug: "spa",
+    name: "Willow & Stone",
+    type: "Spa & Wellness",
+    icon: Flower2,
+    accent: "#9fb89a",
+    image: demoImages.spa.hero,
+    description: "Calm wellness retreat with a sage palette and treatment menu.",
   },
 ];
 

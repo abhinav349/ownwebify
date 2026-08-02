@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/cafe/hero";
 import { Offerings } from "@/components/demos/cafe/offerings";
 import { Story } from "@/components/demos/cafe/story";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   title: "Brew & Bean | Artisan Coffee Roasters — Website Demo",
   description:
     "A cozy artisan coffee shop demo site with warm earthy tones, single-origin coffee, and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/cafe" },
   openGraph: {
     title: "Brew & Bean - Coffee Shop Website Demo",
     description: "Cinematic demo website for an artisan coffee shop, built by OwnWebify.",
@@ -47,6 +49,12 @@ export default function CafeDemoPage() {
       className={`demo-page min-h-screen bg-[#120d0a] text-[#f3ece1] ${fraunces.variable} ${workSans.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#120d0a" } as CSSProperties}
     >
+      <DemoSeo
+        name="Brew & Bean"
+        type="Coffee Shop"
+        slug="cafe"
+        description="An artisan coffee shop website demo with a menu, story section, and cinematic scroll storytelling in a warm amber palette."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav

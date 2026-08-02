@@ -40,7 +40,7 @@ export function Hero() {
           className="object-cover opacity-35 grayscale"
         />
       ) : (
-        <HeroCanvas variant="particles" color={ACCENT} scrollProgress={scrollYProgress} />
+        <HeroCanvas variant="rings" color={ACCENT} scrollProgress={scrollYProgress} />
       )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-[#0d0d0d]/50 pointer-events-none" />

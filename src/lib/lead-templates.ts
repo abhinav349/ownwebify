@@ -67,13 +67,31 @@ const TEMPLATE_SETS: TemplateSet[] = [
     }),
   },
   {
-    keywords: ["salon", "spa", "beauty", "barber", "nail", "hair"],
+    keywords: ["spa", "wellness", "massage", "ayurveda", "retreat"],
+    template: (name) => ({
+      subject: `Help more people discover ${name} online`,
+      emailBody: [
+        `Hi ${name} team,`,
+        `I noticed ${name} doesn't have a website yet. People looking for a spa or wellness retreat almost always browse online first — a calm, well-photographed website with your treatment menu and booking details is often what decides where they go.`,
+        `We design serene, image-led websites for spas and wellness studios — treatment menus, pricing, and an online booking link — typically live within a week.`,
+        `Would you like to see what this could look like for ${name}?`,
+      ],
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet - and guests almost always browse online before booking a treatment.`,
+        "spa",
+        "a spa & wellness site we designed"
+      ),
+    }),
+  },
+  {
+    keywords: ["salon", "beauty", "barber", "nail", "hair"],
     template: (name) => ({
       subject: `Get ${name} discovered online with a simple website`,
       emailBody: [
         `Hi ${name} team,`,
-        `I noticed ${name} doesn't have a website yet. Most people now search online and check reviews before booking a salon or spa appointment — a clean website with your services, pricing, and booking details helps you stand out and get found.`,
-        `We design simple, elegant websites for salons and spas with service menus, an online booking link, and a photo gallery of your work — typically live within a week.`,
+        `I noticed ${name} doesn't have a website yet. Most people now search online and check reviews before booking a salon appointment — a clean website with your services, pricing, and booking details helps you stand out and get found.`,
+        `We design simple, elegant websites for salons with service menus, an online booking link, and a photo gallery of your work — typically live within a week.`,
         `Would you like to see what this could look like for ${name}?`,
       ],
       whatsappMessage: whatsappPitch(
@@ -81,6 +99,24 @@ const TEMPLATE_SETS: TemplateSet[] = [
         `We noticed ${name} doesn't have a website yet - and clients increasingly check online before booking an appointment.`,
         "salon",
         "a salon site we designed"
+      ),
+    }),
+  },
+  {
+    keywords: ["interior design", "interior designer", "architect", "renovation", "decor"],
+    template: (name) => ({
+      subject: `A portfolio site that does justice to ${name}'s work`,
+      emailBody: [
+        `Hi ${name} team,`,
+        `I noticed ${name} doesn't have a website yet. Clients choosing an interior designer or architect want to see completed work before they ever make contact — a proper project portfolio is usually what turns a browser into an enquiry.`,
+        `We build image-led websites for design studios — project galleries, service tiers, and an enquiry form — usually live within a week.`,
+        `Would you be open to a quick chat about what this could look like for ${name}?`,
+      ],
+      whatsappMessage: whatsappPitch(
+        name,
+        `We noticed ${name} doesn't have a website yet - and clients almost always want to see completed projects before enquiring.`,
+        "interior-design",
+        "a design studio portfolio we built"
       ),
     }),
   },
@@ -169,8 +205,8 @@ const TEMPLATE_SETS: TemplateSet[] = [
       whatsappMessage: whatsappPitch(
         name,
         `We noticed ${name} doesn't have its own website yet - right now you're likely paying commission on every booking platform stay.`,
-        undefined,
-        "recent work from our portfolio"
+        "hotel",
+        "a boutique hotel site we designed"
       ),
     }),
   },
@@ -187,8 +223,8 @@ const TEMPLATE_SETS: TemplateSet[] = [
       whatsappMessage: whatsappPitch(
         name,
         `We noticed ${name} doesn't have a website yet - and clients often research a firm online before reaching out.`,
-        undefined,
-        "recent work from our portfolio"
+        "law-firm",
+        "a law firm site we designed"
       ),
     }),
   },

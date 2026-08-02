@@ -8,6 +8,7 @@ import { DemoCta } from "@/components/demos/shared/demo-cta";
 import { DemoCursor } from "@/components/demos/shared/cursor";
 import { Testimonials } from "@/components/demos/shared/testimonials";
 import { Marquee } from "@/components/demos/shared/marquee";
+import { DemoSeo } from "@/components/demos/shared/demo-seo";
 import { Hero } from "@/components/demos/restaurant/hero";
 import { Offerings } from "@/components/demos/restaurant/offerings";
 import { Story } from "@/components/demos/restaurant/story";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   title: "Saffron Table | Fine Dining — Website Demo",
   description:
     "An elegant fine dining demo site with a luxurious burgundy & gold palette, tasting menu, and a scroll-driven cinematic experience.",
+  alternates: { canonical: "https://ownwebify.com/demos/restaurant" },
   openGraph: {
     title: "Saffron Table - Fine Dining Website Demo",
     description: "Cinematic demo website for a fine dining restaurant, built by OwnWebify.",
@@ -47,6 +49,12 @@ export default function RestaurantDemoPage() {
       className={`demo-page min-h-screen bg-[#1a0a0a] text-[#f4ece2] ${cormorant.variable} ${manrope.variable}`}
       style={{ "--accent": ACCENT, "--bg": "#1a0a0a" } as CSSProperties}
     >
+      <DemoSeo
+        name="Saffron Table"
+        type="Fine Dining Restaurant"
+        slug="restaurant"
+        description="A fine dining restaurant website demo with a tasting menu, reservations, and cinematic scroll storytelling in a burgundy and gold palette."
+      />
       <div className="demo-grain" />
       <DemoCursor accent={ACCENT} />
       <DemoNav
