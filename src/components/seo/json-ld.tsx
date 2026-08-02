@@ -1,3 +1,8 @@
+import { currencies } from "@/lib/pricing";
+
+/** Same PPP-adjusted INR display rate the site's pricing UI uses. */
+const INR_PER_USD = currencies.INR.displayRate;
+
 export function JsonLd({ data }: { data: Record<string, unknown> }) {
   return (
     <script
@@ -10,22 +15,48 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    // ProfessionalService (a LocalBusiness subtype) rather than plain
+    // Organization: this is a service business people search for by
+    // location + service, and it lets areaServed/priceRange carry weight.
+    "@type": "ProfessionalService",
+    "@id": "https://ownwebify.com/#organization",
     name: "OwnWebify",
     url: "https://ownwebify.com",
-    logo: "https://ownwebify.com/favicon.svg",
+    // Google's logo guidelines only accept raster (jpg/png/gif) - the previous
+    // favicon.svg silently made this field unusable. /logo.png is generated.
+    logo: {
+      "@type": "ImageObject",
+      url: "https://ownwebify.com/logo.png",
+      width: 512,
+      height: 512,
+    },
+    image: "https://ownwebify.com/logo.png",
     description:
       "Affordable professional web development services starting at ₹5,000. Custom websites, e-commerce stores, and web applications.",
     founder: {
       "@type": "Person",
       name: "Abhi",
       jobTitle: "Full-Stack Web Developer",
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "Bengaluru",
-        addressCountry: "IN",
-      },
     },
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Bengaluru",
+      addressRegion: "Karnataka",
+      addressCountry: "IN",
+    },
+    areaServed: [
+      { "@type": "Country", name: "India" },
+      { "@type": "Country", name: "United States" },
+      { "@type": "Country", name: "Canada" },
+    ],
+    knowsAbout: [
+      "Web Development",
+      "Next.js",
+      "React",
+      "E-Commerce Development",
+      "SEO",
+      "Web Design",
+    ],
     contactPoint: {
       "@type": "ContactPoint",
       email: "admin@ownwebify.com",
@@ -46,15 +77,16 @@ export function WebsiteJsonLd() {
   const data = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": "https://ownwebify.com/#website",
     name: "OwnWebify",
     url: "https://ownwebify.com",
     description:
       "Get affordable, professional websites built with modern technology. Starting at just ₹5,000.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: "https://ownwebify.com/services",
-      "query-input": "required name=search_term_string",
-    },
+    publisher: { "@id": "https://ownwebify.com/#organization" },
+    inLanguage: "en",
+    // No `potentialAction`/SearchAction: the site has no search endpoint, and
+    // the previous one pointed at /services with no {search_term_string}
+    // placeholder, making it invalid markup Google would discard anyway.
   };
 
   return <JsonLd data={data} />;
@@ -71,20 +103,25 @@ export function ServiceJsonLd({
     serviceType: "Web Development",
     name: service.name,
     description: service.description,
-    provider: {
-      "@type": "Organization",
-      name: "OwnWebify",
-      url: "https://ownwebify.com",
-    },
+    provider: { "@id": "https://ownwebify.com/#organization" },
     areaServed: {
       "@type": "Place",
       name: "Worldwide",
     },
+    // These are "starting from" prices, so a flat `price` would overstate
+    // precision. minPrice on a PriceSpecification is the accurate shape.
     offers: {
       "@type": "Offer",
-      price: service.price * 85,
-      priceCurrency: "INR",
       availability: "https://schema.org/InStock",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        // Rounded to the round figure the page actually advertises ("from
+        // ₹5,000", not ₹5,015) - structured data that disagrees with visible
+        // content is a rich-results violation.
+        minPrice: Math.round((service.price * INR_PER_USD) / 1000) * 1000,
+        priceCurrency: "INR",
+        valueAddedTaxIncluded: true,
+      },
     },
   }));
 

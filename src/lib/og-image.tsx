@@ -4,20 +4,23 @@ export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = "image/png";
 
 /**
- * Shared social-preview card for every /demos/* page. Demo links get shared
- * directly into WhatsApp and email outreach (see lib/lead-templates.ts), so
- * each one needs its own preview rather than the generic site-wide card.
+ * Shared social-preview card. Used by every /demos/* page (those links get
+ * shared straight into WhatsApp and email outreach - see lib/lead-templates.ts)
+ * and by the main marketing pages, so each URL previews as itself rather than
+ * falling back to one generic site-wide card.
  */
-export function renderDemoOgImage({
+export function renderOgImage({
   name,
   type,
   accent,
-  background,
+  background = "#0a0a0d",
+  subtitle = "Affordable, custom-built websites by OwnWebify",
 }: {
   name: string;
   type: string;
   accent: string;
-  background: string;
+  background?: string;
+  subtitle?: string;
 }) {
   return new ImageResponse(
     (
@@ -71,7 +74,7 @@ export function renderDemoOgImage({
               color: "rgba(255,255,255,0.6)",
             }}
           >
-            A live website demo, built by OwnWebify
+            {subtitle}
           </span>
         </div>
 

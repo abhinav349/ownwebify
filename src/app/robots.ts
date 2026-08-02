@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXTAUTH_URL || "https://ownwebify.com";
+import { SITE_URL as BASE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {

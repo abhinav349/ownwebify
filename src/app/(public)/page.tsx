@@ -19,9 +19,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { OrganizationJsonLd, WebsiteJsonLd, FAQJsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Affordable Website Development | Custom Websites from ₹5,000 | OwnWebify",
+  // `absolute` so the root layout's "%s | OwnWebify" template doesn't append a
+  // second brand suffix to a title that already ends in one.
+  title: {
+    absolute: "Affordable Website Development | Custom Websites from ₹5,000",
+  },
   description:
     "Get a professional, high-performance website at affordable prices. Agency-quality web development starting at just ₹5,000. Modern design, fast delivery, SEO optimized, 100% code ownership.",
+  alternates: { canonical: "https://ownwebify.com" },
   openGraph: {
     title: "Affordable Website Development | Custom Websites from ₹5,000",
     description:

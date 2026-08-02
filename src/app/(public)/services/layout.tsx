@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { ServiceJsonLd } from "@/components/seo/json-ld";
+import { ServiceJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
   title: "Web Development Pricing | Affordable Websites from ₹5,000",
   description:
     "Transparent pricing for professional web development. Landing pages from ₹5,000, business websites from ₹10,000, e-commerce from ₹20,000. No hidden fees. Modern tech, fast delivery.",
+  alternates: { canonical: "https://ownwebify.com/services" },
   openGraph: {
     title: "Web Development Pricing - Affordable Packages",
     description:
@@ -40,6 +41,12 @@ export default function ServicesLayout({ children }: { children: React.ReactNode
   return (
     <>
       <ServiceJsonLd services={services} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://ownwebify.com" },
+          { name: "Pricing", url: "https://ownwebify.com/services" },
+        ]}
+      />
       {children}
     </>
   );

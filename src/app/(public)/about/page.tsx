@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Award, Clock, Code2, Sparkles, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PersonJsonLd } from "@/components/seo/json-ld";
+import { PersonJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
 export const metadata: Metadata = {
   title: "About Abhi - Freelance Web Developer in Bengaluru, India",
   description:
     "Affordable freelance web developer with 3+ years of experience. Specializing in React, Next.js, and modern web development. Based in Bengaluru, India. Serving clients worldwide.",
+  alternates: { canonical: "https://ownwebify.com/about" },
   openGraph: {
     title: "About Abhi - Freelance Web Developer",
     description:
@@ -51,6 +52,12 @@ export default function AboutPage() {
   return (
     <div className="overflow-hidden">
       <PersonJsonLd />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "https://ownwebify.com" },
+          { name: "About", url: "https://ownwebify.com/about" },
+        ]}
+      />
 
       {/* Hero */}
       <section className="relative py-24">

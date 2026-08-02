@@ -63,9 +63,10 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  alternates: {
-    canonical: "https://ownwebify.com",
-  },
+  // NOTE: deliberately no `alternates.canonical` here. Next.js inherits parent
+  // metadata into child segments, so a canonical set at the root made every
+  // page declare itself a duplicate of the homepage, which tells Google not to
+  // index /about, /services, /hire etc. separately. Each page sets its own.
   icons: {
     icon: "/favicon.svg",
   },

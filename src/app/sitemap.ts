@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXTAUTH_URL || "https://ownwebify.com";
+import { SITE_URL as BASE_URL } from "@/lib/site";
 
 // Fixed dates, not `new Date()`: a build-time timestamp claims every page
 // changed on every deploy, which trains crawlers to ignore the signal.
@@ -55,12 +55,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
-    {
-      url: `${BASE_URL}/login`,
-      lastModified: MARKETING_UPDATED,
-      changeFrequency: "monthly",
-      priority: 0.3,
-    },
+    // /login, /forgot-password and /setup-account are deliberately absent:
+    // they're noindex, and listing a noindex URL in the sitemap sends
+    // crawlers contradictory signals.
   ];
 
   const demoPages: MetadataRoute.Sitemap = demos.map((demo) => ({
