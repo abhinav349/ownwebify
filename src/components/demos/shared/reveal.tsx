@@ -50,15 +50,26 @@ type StaggerProps = {
   className?: string;
   stagger?: number;
   once?: boolean;
-  amount?: number;
+  amount?: "some" | "all" | number;
 };
 
+/**
+ * Orchestrates child reveals.
+ *
+ * `amount` defaults to "some" rather than a fraction on purpose: a fractional
+ * threshold is measured against the *container*, so a tall single-column grid
+ * on mobile can need more pixels visible than the viewport has, and the
+ * children then stay stuck at opacity 0 forever. (This is exactly what
+ * happened to the 12-card /demos grid on phones: 20% of 4505px = 901px vs a
+ * 664px viewport.) "some" triggers as soon as any part scrolls in, so it
+ * cannot fail regardless of how tall the container gets.
+ */
 export function StaggerGroup({
   children,
   className,
   stagger = 0.1,
   once = true,
-  amount = 0.2,
+  amount = "some",
 }: StaggerProps) {
   const variants: Variants = {
     hidden: {},

@@ -58,6 +58,37 @@ body:has(.demo-page) {
   }
 }
 
+/*
+ * Content that reveals on hover for mouse users. Touch devices have no hover
+ * state, so a plain `opacity-0 group-hover:opacity-100` would hide this
+ * content permanently on phones - it stays visible there instead.
+ */
+.hover-reveal,
+.hover-reveal-scrim {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .group:hover .hover-reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hover-reveal-scrim {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .group:hover .hover-reveal-scrim {
+    opacity: 1;
+  }
+}
+
 .demo-grain {
   position: fixed;
   inset: 0;

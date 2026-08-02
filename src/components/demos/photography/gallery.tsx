@@ -50,8 +50,8 @@ export function Gallery() {
                     sizes="(min-width: 768px) 25vw, 50vw"
                     className="object-cover grayscale transition-all duration-700 group-hover:scale-105 group-hover:grayscale-0"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  <div className="absolute bottom-4 left-4 opacity-0 translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
+                  <div className="hover-reveal-scrim absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-black/0" />
+                  <div className="hover-reveal absolute bottom-4 left-4">
                     <p className="text-[0.65rem] uppercase tracking-wider text-white/60">{piece.category}</p>
                     <p className="font-display italic text-lg text-white">{piece.title}</p>
                   </div>
