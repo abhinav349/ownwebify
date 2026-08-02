@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Sparkles, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button-variants";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatPrice, formatDisplayPrice } from "@/lib/pricing";
 import { useCurrency } from "@/hooks/use-currency";
+import { Reveal, StaggerGroup, StaggerItem } from "@/components/demos/shared/reveal";
+import { Magnetic } from "@/components/demos/shared/magnetic";
 
 const services = [
   {
@@ -104,13 +107,12 @@ export default function ServicesPage() {
     <div className="overflow-hidden">
       {/* Hero */}
       <section className="relative py-24">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-20 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl" />
+        <div className="aurora-bg opacity-30">
+          <div className="aurora-layer" />
         </div>
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 bg-green-500/10 text-sm font-semibold text-green-700 mb-6">
+          <Reveal className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 bg-green-500/10 text-sm font-semibold text-green-700 dark:text-green-400 mb-6">
               <Sparkles className="h-4 w-4" />
               Launch Offer — Up to 71% OFF for a limited time
             </div>
@@ -122,73 +124,81 @@ export default function ServicesPage() {
               Agency-quality websites at a fraction of the price. Every plan includes
               responsive design, modern tech, and dedicated support — transparent pricing, no hidden fees.
             </p>
-          </div>
+          </Reveal>
 
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
+          <h2 className="sr-only">Pricing Plans</h2>
+          <StaggerGroup
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+            stagger={0.08}
+          >
             {services.map((service) => (
-              <Card
-                key={service.name}
-                className={`relative flex flex-col hover-lift border-border/50 ${
-                  service.popular
-                    ? "border-primary/50 shadow-xl shadow-primary/10 scale-[1.02] z-10"
-                    : ""
-                }`}
-              >
-                {service.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-pink-500 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-lg">
-                    <Sparkles className="h-3 w-3 inline mr-1" />
-                    Most Popular
-                  </div>
-                )}
-                <CardHeader className="pb-4">
-                  <div className={`h-2 w-16 rounded-full bg-gradient-to-r ${service.gradient} mb-4`} />
-                  <CardTitle className="text-xl">{service.name}</CardTitle>
-                  <CardDescription className="min-h-[3rem]">
-                    {service.description}
-                  </CardDescription>
-                  <div className="pt-3">
-                    <span className="text-xs text-muted-foreground">
-                      {service.priceNote}
-                    </span>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-3xl font-bold">
-                        {formatDisplayPrice(service.priceUSD, currency)}
-                      </p>
-                      <span className="text-sm font-semibold text-green-600 bg-green-500/10 px-2 py-0.5 rounded-full">
-                        {Math.round((1 - service.priceUSD / service.originalPriceUSD) * 100)}% OFF
-                      </span>
+              <StaggerItem key={service.name}>
+                <Card
+                  className={`tilt-card relative flex flex-col h-full glass border-border/50 ${
+                    service.popular
+                      ? "border-primary/50 shadow-xl shadow-primary/10 lg:scale-[1.02] z-10"
+                      : ""
+                  }`}
+                >
+                  {service.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-pink-500 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-lg">
+                      <Sparkles className="h-3 w-3 inline mr-1" />
+                      Most Popular
                     </div>
-                    <p className="text-sm text-muted-foreground line-through">
-                      {formatDisplayPrice(service.originalPriceUSD, currency)}
-                    </p>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <ul className="space-y-3 flex-1">
-                    {service.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-2.5 text-sm"
+                  )}
+                  <CardHeader className="pb-4">
+                    <div className={`h-2 w-16 rounded-full bg-gradient-to-r ${service.gradient} mb-4`} />
+                    <CardTitle className="text-xl">{service.name}</CardTitle>
+                    <CardDescription className="min-h-[3rem]">
+                      {service.description}
+                    </CardDescription>
+                    <div className="pt-3">
+                      <span className="text-xs text-muted-foreground">
+                        {service.priceNote}
+                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-3xl font-bold">
+                          {formatDisplayPrice(service.priceUSD, currency)}
+                        </p>
+                        <span className="text-sm font-semibold text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+                          {Math.round((1 - service.priceUSD / service.originalPriceUSD) * 100)}% OFF
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-through">
+                        {formatDisplayPrice(service.originalPriceUSD, currency)}
+                      </p>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col">
+                    <ul className="space-y-3 flex-1">
+                      {service.features.map((feature) => (
+                        <li
+                          key={feature}
+                          className="flex items-start gap-2.5 text-sm"
+                        >
+                          <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Magnetic strength={0.2} className="mt-8 block">
+                      <Link
+                        href="/hire"
+                        aria-label={`Get started with the ${service.name} plan`}
+                        className={cn(
+                          buttonVariants({ variant: service.popular ? "default" : "outline" }),
+                          "w-full rounded-full",
+                          service.popular && "shadow-lg shadow-primary/25"
+                        )}
                       >
-                        <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link href="/hire" className="mt-8 block">
-                    <Button
-                      className={`w-full rounded-full ${
-                        service.popular ? "shadow-lg shadow-primary/25" : ""
-                      }`}
-                      variant={service.popular ? "default" : "outline"}
-                    >
-                      Get Started
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+                        Get Started
+                      </Link>
+                    </Magnetic>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGroup>
 
           <p className="text-center text-sm text-muted-foreground mt-8 max-w-xl mx-auto">
             Prices cover design &amp; development. Domain (~{formatPrice(15, currency)}/yr)
@@ -202,7 +212,7 @@ export default function ServicesPage() {
       <section className="py-24 relative">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-secondary/20 to-background" />
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <Reveal className="text-center mb-12">
             <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">
               Extras
             </p>
@@ -212,72 +222,84 @@ export default function ServicesPage() {
             <p className="mt-4 text-muted-foreground">
               Add these to any package for maximum impact.
             </p>
-          </div>
-          <div className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+          </Reveal>
+          <StaggerGroup className="max-w-3xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4" stagger={0.06}>
             {addons.map((addon) => (
-              <div
-                key={addon.name}
-                className="flex items-center justify-between p-5 rounded-xl border bg-card hover-lift"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{addon.icon}</span>
-                  <span className="text-sm font-medium">{addon.name}</span>
+              <StaggerItem key={addon.name}>
+                <div className="flex items-center justify-between p-5 rounded-xl border glass hover-lift">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{addon.icon}</span>
+                    <span className="text-sm font-medium">{addon.name}</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary">
+                    {formatDisplayPrice(addon.priceUSD, currency)}
+                    {addon.perMonth ? "/mo" : ""}
+                  </span>
                 </div>
-                <span className="text-sm font-bold text-primary">
-                  {formatDisplayPrice(addon.priceUSD, currency)}
-                  {addon.perMonth ? "/mo" : ""}
-                </span>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerGroup>
         </div>
       </section>
 
       {/* Referral Banner */}
       <section className="py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="p-8 rounded-2xl border bg-gradient-to-r from-primary/5 via-card to-pink-500/5 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-lg font-semibold">
-                Know someone who needs a website?
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Refer a friend and earn{" "}
-                <span className="font-bold text-primary">
-                  {formatPrice(5, currency)}
-                </span>{" "}
-                credit. They get <span className="font-bold text-primary">10% off</span> their first project!
-              </p>
+          <Reveal>
+            <div className="gradient-border p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-card">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  Know someone who needs a website?
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Refer a friend and earn{" "}
+                  <span className="font-bold text-primary">
+                    {formatPrice(5, currency)}
+                  </span>{" "}
+                  credit. They get <span className="font-bold text-primary">10% off</span> their first project!
+                </p>
+              </div>
+              <Magnetic strength={0.2} className="shrink-0">
+                <Link
+                  href="/login"
+                  className={cn(
+                    buttonVariants({ variant: "outline" }),
+                    "rounded-full whitespace-nowrap glass"
+                  )}
+                >
+                  Get Your Referral Code
+                </Link>
+              </Magnetic>
             </div>
-            <Link href="/login">
-              <Button variant="outline" className="rounded-full whitespace-nowrap">
-                Get Your Referral Code
-              </Button>
-            </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA */}
       <section className="py-24">
         <div className="mx-auto max-w-3xl px-6 lg:px-8 text-center">
-          <div className="p-12 rounded-3xl border bg-gradient-to-br from-card via-card to-secondary/30">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Not Sure What You Need?
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-              No worries! Tell me about your project and I&apos;ll recommend the perfect
-              approach with a custom quote — completely free.
-            </p>
-            <Link href="/hire" className="inline-block mt-8">
-              <Button size="xl" className="rounded-full shadow-lg shadow-primary/25">
-                Describe Your Project <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Free consultation. Response within 48 hours.
-            </p>
-          </div>
+          <Reveal>
+            <div className="p-12 rounded-3xl border glass">
+              <h2 className="text-3xl font-bold tracking-tight">
+                Not Sure What You Need?
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
+                No worries! Tell me about your project and I&apos;ll recommend the perfect
+                approach with a custom quote — completely free.
+              </p>
+              <Magnetic strength={0.3} className="inline-block mt-8">
+                <Link
+                  href="/hire"
+                  className={cn(buttonVariants({ size: "xl" }), "rounded-full shadow-lg shadow-primary/25")}
+                >
+                  Describe Your Project <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Magnetic>
+              <p className="mt-4 text-xs text-muted-foreground">
+                Free consultation. Response within 48 hours.
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
     </div>
