@@ -1,29 +1,39 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Logo } from "@/components/ui/logo";
+import { Magnetic } from "@/components/demos/shared/magnetic";
+import { cn } from "@/lib/utils";
 
 export function Footer() {
   return (
-    <footer className="border-t bg-card">
+    <footer className="relative border-t bg-card overflow-hidden">
+      <div className="aurora-bg opacity-30">
+        <div className="aurora-layer" />
+      </div>
+      <div className="noise-overlay" />
+
       {/* Mini CTA */}
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="py-12 flex flex-col md:flex-row items-center justify-between gap-6 border-b">
+      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="py-14 flex flex-col md:flex-row items-center justify-between gap-6 border-b">
           <div>
-            <h3 className="text-lg font-semibold">Ready to get started?</h3>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h3 className="text-2xl font-bold tracking-tight">Ready to get started?</h3>
+            <p className="text-sm text-muted-foreground mt-1.5">
               Get a free quote for your project in under 48 hours.
             </p>
           </div>
-          <Link href="/hire">
-            <Button className="rounded-full shadow-md shadow-primary/20">
+          <Magnetic strength={0.25}>
+            <Link
+              href="/hire"
+              className={cn(buttonVariants({ size: "lg" }), "rounded-full shadow-lg shadow-primary/25")}
+            >
               Start a Project <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Magnetic>
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-6 py-12 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center gap-2.5">
@@ -31,8 +41,8 @@ export function Footer() {
               <span className="font-bold text-lg tracking-tight">OwnWebify</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-sm leading-relaxed">
-              Premium web development for businesses that want to dominate online.
-              From landing pages to full-scale applications.
+              Agency-quality web development, honestly priced. From landing pages
+              to full-scale web applications — built to convert.
             </p>
           </div>
 
