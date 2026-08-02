@@ -160,6 +160,19 @@ model PortfolioItem {
   updatedAt   DateTime @updatedAt
 }
 
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  quote     String
+  avatarUrl String?
+  rating    Int?
+  published Boolean  @default(false)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum LeadStatus {
   NEW
   CONTACTED
