@@ -9,13 +9,7 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { Logo } from "@/components/ui/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Magnetic } from "@/components/demos/shared/magnetic";
-
-const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Services", href: "/services" },
-  { name: "Portfolio", href: "/demos" },
-  { name: "About", href: "/about" },
-];
+import { SITE_NAV } from "@/lib/site";
 
 export function Header() {
   const pathname = usePathname();
@@ -49,7 +43,7 @@ export function Header() {
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
-          {navigation.map((item) => (
+          {SITE_NAV.map((item) => (
             <Magnetic key={item.name} strength={0.25}>
               <Link
                 href={item.href}
@@ -99,7 +93,7 @@ export function Header() {
       {mobileMenuOpen && (
         <div className="pointer-events-auto md:hidden fixed inset-x-4 top-20 z-50 bg-background/95 backdrop-blur-xl border rounded-3xl shadow-xl">
           <div className="space-y-1 px-4 py-5">
-            {navigation.map((item) => (
+            {SITE_NAV.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
