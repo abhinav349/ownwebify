@@ -17,8 +17,17 @@ type HeroCrystalCanvasProps = {
 export default function HeroCrystalCanvas({ scrollProgress, deviceTier }: HeroCrystalCanvasProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  const color = isDark ? "#a78bfa" : "#6d28d9";
-  const envPreset = isDark ? "night" : "sunset";
+  // On metal, `color` tints every reflection, so it stays desaturated — the
+  // brand hues live in the light rig, where they read as coloured highlights
+  // rather than flattening the whole surface to one shade.
+  const color = isDark ? "#e4dcff" : "#cfc6ee";
+  const accent = isDark ? "#8b5cf6" : "#a78bfa";
+  const cyan = isDark ? "#22d3ee" : "#38bdf8";
+  // Brightness of the enclosing shell: this is what unlit facets reflect, so
+  // it sets the object's base tone. Dark mode needs it higher than instinct
+  // suggests — against a near-black page a dim shell renders a silhouette.
+  const shell = isDark ? "#5b51a8" : "#a9a1dd";
+  const envIntensity = isDark ? 2.6 : 2.1;
   const highQuality = deviceTier === "high";
 
   return (
@@ -36,16 +45,19 @@ export default function HeroCrystalCanvas({ scrollProgress, deviceTier }: HeroCr
         />
         <SceneHeroCrystal
           color={color}
-          envPreset={envPreset}
+          accent={accent}
+          cyan={cyan}
+          shell={shell}
+          envIntensity={envIntensity}
           scrollProgress={scrollProgress}
           highQuality={highQuality}
         />
         {highQuality && (
           <EffectComposer>
             <Bloom
-              luminanceThreshold={0.2}
+              luminanceThreshold={isDark ? 0.5 : 0.75}
               luminanceSmoothing={0.9}
-              intensity={0.6}
+              intensity={isDark ? 1 : 0.5}
               mipmapBlur
             />
           </EffectComposer>
