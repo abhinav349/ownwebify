@@ -66,8 +66,13 @@ const faqs = [
 ];
 
 export default function HomePage() {
+  // `overflow-x-clip`, not `overflow-hidden`: both contain the hero's off-canvas
+  // bleed, but `hidden` makes this element a scroll container, and a sticky
+  // descendant then pins to *it* rather than to the viewport — which silently
+  // kills the pinned laptop scrub in the work section. `clip` establishes no
+  // scrollport, so sticky still resolves against the page.
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-x-clip">
       <OrganizationJsonLd />
       <WebsiteJsonLd />
       <FAQJsonLd faqs={faqs} />

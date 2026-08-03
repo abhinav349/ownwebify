@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/demos/shared/reveal";
 import { Magnetic } from "@/components/demos/shared/magnetic";
+import { LaptopShowcase } from "@/components/home/laptop-showcase";
 import { img, demoImages } from "@/lib/demos/images";
 
 const featured = [
@@ -68,7 +69,7 @@ export function FeaturedWorkSection() {
   return (
     <section className="py-24 relative" id="work">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <Reveal className="text-center mb-16">
+        <Reveal className="text-center mb-12">
           <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">
             Featured Work
           </p>
@@ -81,7 +82,11 @@ export function FeaturedWorkSection() {
             industry before you commit to anything.
           </p>
         </Reveal>
+      </div>
 
+      <LaptopShowcase />
+
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <StaggerGroup
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           stagger={0.08}
