@@ -1,6 +1,26 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, inject, beforeEach } from "vitest";
+import { prisma } from "@/lib/prisma";
 
 const BASE_URL = "http://localhost:3002";
+
+// Provisioned by tests/global-setup.ts with a password generated for this run
+// and destroyed afterwards, so the suite never depends on a known password
+// existing on a real account.
+const { adminEmail, adminPassword } = inject("testCredentials");
+
+// Several cases here deliberately submit bad credentials, which counts
+// against the login throttle. Clear it first so a later assertion measures
+// authentication rather than rate limiting.
+beforeEach(async () => {
+  await prisma.rateLimit.deleteMany({
+    where: {
+      OR: [
+        { key: { startsWith: "login:" } },
+        { key: { startsWith: "loginPerAccount:" } },
+      ],
+    },
+  });
+});
 
 async function getCsrfToken(): Promise<{ token: string; cookies: string }> {
   const res = await fetch(`${BASE_URL}/api/auth/csrf`);
@@ -33,7 +53,7 @@ async function attemptLogin(
 
 describe("Credentials Login", () => {
   it("succeeds with valid admin credentials", async () => {
-    const res = await attemptLogin("admin@ownwebify.com", "admin123");
+    const res = await attemptLogin(adminEmail, adminPassword);
     // Successful login returns 200 with json:true or 302 redirect
     expect([200, 302]).toContain(res.status);
 
@@ -52,7 +72,7 @@ describe("Credentials Login", () => {
   });
 
   it("fails with wrong password", async () => {
-    const res = await attemptLogin("admin@ownwebify.com", "wrongpass");
+    const res = await attemptLogin(adminEmail, "wrongpass");
     // Failed credentials return 401 or redirect to signin
     expect([200, 302, 401]).toContain(res.status);
     if (res.status === 200) {

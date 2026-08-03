@@ -60,12 +60,20 @@ describe("projectIntakeSchema", () => {
     }
   });
 
-  it("rejects password shorter than 6 characters", () => {
-    const data = { ...validProjectData, password: "12345" };
-    const result = projectIntakeSchema.safeParse(data);
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues[0].path).toContain("password");
+  // Project intake deliberately collects no password. The client account is
+  // created without one and the password is set later, through the emailed
+  // single-use setup link (see /api/setup-account). A stray `password` in the
+  // payload is therefore not a credential and must simply be ignored rather
+  // than validated or, worse, stored.
+  it("ignores a password field instead of accepting it as a credential", () => {
+    const result = projectIntakeSchema.safeParse({
+      ...validProjectData,
+      password: "12345",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("password");
     }
   });
 

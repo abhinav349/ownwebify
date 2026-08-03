@@ -8,7 +8,8 @@ afterAll(async () => {
 describe("Referral System E2E", () => {
   it("hire form has referral code input field", async () => {
     const page = await newPage();
-    await page.goto(url("/hire"), { waitUntil: "networkidle0" });
+    await page.goto(url("/hire"), { waitUntil: "domcontentloaded" });
+    await waitForText(page, "Referral Code");
 
     const text = await page.evaluate(() => document.body.innerText);
     expect(text).toContain("Referral Code");
@@ -17,7 +18,7 @@ describe("Referral System E2E", () => {
 
   it("services page shows referral banner", async () => {
     const page = await newPage();
-    await page.goto(url("/services"), { waitUntil: "networkidle0" });
+    await page.goto(url("/services"), { waitUntil: "domcontentloaded" });
     await waitForText(page, "Know someone who needs a website?");
 
     const text = await page.evaluate(() => document.body.innerText);
