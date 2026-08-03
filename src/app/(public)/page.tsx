@@ -80,8 +80,13 @@ export default function HomePage() {
       <HeroSection />
       <StatsSection />
       <ServicesSection />
-      <ProcessSection />
+      {/* Work sits above Process on purpose. Process is a pinned horizontal
+          scroll ~2.8 viewports tall, and with it in front the laptop showcase
+          did not appear until 4,964px — five and a half screens down, past the
+          point most visitors stop. Proof also reads better directly after the
+          services pitch than after a walkthrough of how the work gets done. */}
       <FeaturedWorkSection />
+      <ProcessSection />
       <TechStackSection />
       <WhyChooseSection />
       <TestimonialsSection />
