@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Lock } from "lucide-react";
@@ -13,28 +13,32 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { loginSchema, type LoginFormData } from "@/lib/validations";
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  OAuthSignin: "Could not start sign-in. The provider may not be configured.",
+  OAuthCallback: "Error during sign-in callback.",
+  OAuthCreateAccount: "Could not create account with this provider.",
+  EmailCreateAccount: "Could not create account with this email.",
+  Callback: "Sign-in callback error.",
+  Default: "An error occurred during sign-in. Please try again.",
+};
+
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [isSocialLoading, setIsSocialLoading] = useState<string | null>(null);
-  const [error, setError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [availableProviders, setAvailableProviders] = useState<{ google: boolean; github: boolean }>({ google: false, github: false });
 
-  useEffect(() => {
-    const authError = searchParams.get("error");
-    if (authError) {
-      const errorMessages: Record<string, string> = {
-        OAuthSignin: "Could not start sign-in. The provider may not be configured.",
-        OAuthCallback: "Error during sign-in callback.",
-        OAuthCreateAccount: "Could not create account with this provider.",
-        EmailCreateAccount: "Could not create account with this email.",
-        Callback: "Sign-in callback error.",
-        Default: "An error occurred during sign-in. Please try again.",
-      };
-      setError(errorMessages[authError] || errorMessages.Default);
-    }
-  }, [searchParams]);
+  // Derived during render rather than copied into state by an effect. The
+  // query string is readable on the very first pass, so the effect version
+  // rendered once without the message and once with it; it also meant a
+  // provider error and a failed submit could both be live at once, with
+  // whichever wrote last winning. Precedence is now explicit: what the user
+  // just did outranks what the URL arrived with.
+  const authError = searchParams.get("error");
+  const error =
+    submitError ||
+    (authError ? AUTH_ERROR_MESSAGES[authError] || AUTH_ERROR_MESSAGES.Default : "");
 
   useEffect(() => {
     fetch("/api/oauth-status")
@@ -53,7 +57,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    setError("");
+    setSubmitError("");
 
     const result = await signIn("credentials", {
       email: data.email,
@@ -62,14 +66,17 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setSubmitError("Invalid email or password");
       setIsLoading(false);
       return;
     }
 
     if (result?.ok) {
-      // Force a hard navigation to ensure session cookie is picked up
-      window.location.href = "/dashboard";
+      // Force a hard navigation so the session cookie is picked up. `.assign()`
+      // rather than writing `location.href`: identical navigation, but the
+      // assignment reads as a mutation of a value the component does not own,
+      // which the compiler rejects.
+      window.location.assign("/dashboard");
     }
   };
 

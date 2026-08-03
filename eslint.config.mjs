@@ -13,6 +13,30 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      /**
+       * `ignoreRestSiblings` makes the omit idiom lint-clean:
+       *
+       *     const { secret, ...safe } = user;
+       *
+       * The named bindings exist precisely so they are *excluded* from the
+       * rest object, so flagging them as unused reports the mechanism as the
+       * defect. This is typescript-eslint's own recommended setting; the Next
+       * preset ships it off. `_`-prefixed args stay exempt by the usual
+       * convention, for signatures whose shape is fixed by a caller.
+       */
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          ignoreRestSiblings: true,
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

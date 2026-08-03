@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Check, TerminalSquare } from "lucide-react";
@@ -171,7 +171,7 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     register,
     handleSubmit,
     trigger,
-    watch,
+    control,
     setValue,
     getValues,
     formState: { errors },
@@ -182,8 +182,13 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     defaultValues: { features: [] },
   });
 
-  const selectedProjectType = watch("projectType");
-  const selectedFeatures = watch("features") || [];
+  // `useWatch`, not the `watch()` returned by `useForm`. `watch()` hands back a
+  // fresh function on every render that React Compiler cannot memoize, so it
+  // bailed out of optimising this component wholesale. It is also the coarser
+  // API: it re-renders this entire multi-step form on every keystroke in any
+  // field, where `useWatch` subscribes only to the two named here.
+  const selectedProjectType = useWatch({ control, name: "projectType" });
+  const selectedFeatures = useWatch({ control, name: "features" }) || [];
   const availableFeatures = featuresByProjectType[selectedProjectType] || [];
 
   const toggleFeature = (feature: string) => {

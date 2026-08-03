@@ -26,23 +26,46 @@ export default function AdminTestimonialsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<Testimonial | null>(null);
 
-  const fetchItems = async () => {
-    const response = await fetch("/api/admin/testimonials");
-    const data = await response.json();
-    setItems(data);
-    setIsLoading(false);
-  };
+  const [reloadToken, setReloadToken] = useState(0);
+  const reload = () => setReloadToken((n) => n + 1);
+
+  /**
+   * The list is owned by this effect, and mutations request a refetch by
+   * bumping `reloadToken` rather than by calling a shared loader.
+   *
+   * Extracting the loader into a function the effect then calls hides the
+   * fetch behind a synchronous-looking call, and the state writes downstream
+   * of it get attributed to the effect body. Keeping the request inline puts
+   * every `setState` in a promise callback, which is what the effect contract
+   * actually asks for. The cancellation flag is the other half of that: as
+   * written before, deleting an item and navigating away raced a `setItems`
+   * against an unmounted component.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/testimonials")
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancelled) return;
+        setItems(data);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        // Leaving `isLoading` true on failure pins the page under a spinner
+        // forever; drop it so the empty state renders instead.
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadToken]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this testimonial?")) return;
 
     await fetch(`/api/testimonials/${id}`, { method: "DELETE" });
-    fetchItems();
+    reload();
   };
-
-  useEffect(() => {
-    fetchItems();
-  }, []);
 
   return (
     <div>
@@ -63,7 +86,7 @@ export default function AdminTestimonialsPage() {
         <TestimonialForm
           item={editingItem}
           onClose={() => { setShowForm(false); setEditingItem(null); }}
-          onSave={() => { setShowForm(false); setEditingItem(null); fetchItems(); }}
+          onSave={() => { setShowForm(false); setEditingItem(null); reload(); }}
         />
       )}
 

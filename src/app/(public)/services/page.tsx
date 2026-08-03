@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button-variants";
@@ -99,9 +98,6 @@ const addons = [
 
 export default function ServicesPage() {
   const currency = useCurrency();
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => { setIsLoaded(true); }, [currency]);
 
   return (
     <div className="overflow-hidden">
@@ -128,7 +124,13 @@ export default function ServicesPage() {
 
           <h2 className="sr-only">Pricing Plans</h2>
           <StaggerGroup
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+            /* Was an `isLoaded` flag flipped true by a mount effect, which is
+               just a fade-in with extra steps — it never went back to false,
+               so its `[currency]` dependency did nothing. It also meant the
+               prerendered HTML shipped at `opacity-0` and only became visible
+               once JS hydrated, hiding the pricing grid outright if the bundle
+               failed. A CSS keyframe renders visible without JS. */
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in"
             stagger={0.08}
           >
             {services.map((service) => (
