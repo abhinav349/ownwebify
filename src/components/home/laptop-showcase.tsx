@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useScroll } from "motion/react";
 import { LazyLaptopCanvas as LaptopCanvas } from "@/components/demos/three/lazy-laptop-canvas";
@@ -10,9 +10,15 @@ import { useDeviceTier } from "@/hooks/use-device-tier";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 /**
- * What the screen cycles through. Four rather than all six: each one is a
- * separate 1200px photo fetch, and at a 3.4s dwell six sites is a 20s loop that
- * nobody stays long enough to finish anyway.
+ * What the screen cycles through. Four rather than all six: each is a separate
+ * photo fetch, and at a 3.4s dwell six sites is a 20s loop nobody stays long
+ * enough to finish anyway.
+ *
+ * 900px at q=62, not 1200 at q=70. The photo occupies the top 1200x400 of a
+ * texture that is then mapped onto a screen roughly a third of the viewport
+ * wide and tilted away from the camera, so the extra source pixels were being
+ * thrown away by the sampler. Only the first is fetched up front; the rest are
+ * requested during idle time by SiteScreen.
  */
 const SITES: SiteMock[] = [
   {
@@ -21,7 +27,7 @@ const SITES: SiteMock[] = [
     tagline: "Roasted this morning.",
     cta: "Order ahead",
     accent: "#e0a260",
-    photo: img(demoImages.cafe.interior, 1200, 70).src,
+    photo: img(demoImages.cafe.interior, 900, 62).src,
     nav: ["Menu", "Our Roast", "Visit"],
   },
   {
@@ -30,7 +36,7 @@ const SITES: SiteMock[] = [
     tagline: "Train like it counts.",
     cta: "Join now",
     accent: "#b6ff3c",
-    photo: img(demoImages.fitness.hero, 1200, 70).src,
+    photo: img(demoImages.fitness.hero, 900, 62).src,
     nav: ["Classes", "Coaches", "Pricing"],
   },
   {
@@ -39,7 +45,7 @@ const SITES: SiteMock[] = [
     tagline: "The new season.",
     cta: "Shop now",
     accent: "#e8e6e1",
-    photo: img(demoImages.ecommerce.editorial, 1200, 70).src,
+    photo: img(demoImages.ecommerce.editorial, 900, 62).src,
     nav: ["New In", "Women", "Men"],
   },
   {
@@ -48,7 +54,7 @@ const SITES: SiteMock[] = [
     tagline: "Room to breathe.",
     cta: "Book a viewing",
     accent: "#d4af61",
-    photo: img(demoImages.realEstate.hero, 1200, 70).src,
+    photo: img(demoImages.realEstate.hero, 900, 62).src,
     nav: ["Listings", "Areas", "Sell"],
   },
 ];
@@ -110,6 +116,7 @@ export function LaptopShowcase() {
   const canShow3D = useMediaQuery("(min-width: 1024px)");
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   // Measured across the tall track while the stage is pinned to it: 0 when the
   // track's top reaches the top of the viewport, 1 when its bottom reaches the
@@ -121,6 +128,24 @@ export function LaptopShowcase() {
   });
 
   const use3D = deviceTier !== "reduced" && canShow3D;
+
+  /**
+   * Reveal the stage on the scene's first drawn frame — as a direct DOM write,
+   * not a `setState`.
+   *
+   * React defers non-urgent commits while continuous input is in flight, and
+   * this signal originates inside the render loop during exactly that: a
+   * scroll. Routed through state, a laptop that had already drawn could sit at
+   * `opacity-0` waiting for a commit that scrolling keeps postponing — the
+   * fully-rendered-but-invisible case, which is worse than the fade it was
+   * meant to fix. Toggling the class directly cannot be scheduled away.
+   */
+  const revealStage = useCallback(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    el.classList.remove("opacity-0");
+    el.classList.add("animate-fade-in");
+  }, []);
 
   // Mount the canvas just before the section arrives so the lid is already
   // rigged when the scrub starts, and freeze the render loop once it's well
@@ -135,7 +160,14 @@ export function LaptopShowcase() {
         if (entry.isIntersecting) setMounted(true);
         setActive(entry.isIntersecting);
       },
-      { rootMargin: "500px 0px" }
+      // 1200px, not 500. The scene needs ~500ms to reach its first frame, and
+      // the stage becomes visible 900px (one viewport) before the track's top
+      // is reached — so a 500px margin gave only ~500px of scrolling as head
+      // start, which at an ordinary wheel speed is about the same ~500ms. The
+      // canvas was therefore finishing at roughly the moment it came on
+      // screen, and any slower machine showed an empty stage first. This
+      // starts it a full viewport earlier so it is always ready on arrival.
+      { rootMargin: "1200px 0px" }
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -155,12 +187,19 @@ export function LaptopShowcase() {
       {use3D ? (
         <div className="sticky top-0 h-screen w-full overflow-hidden">
           {mounted && (
-            <div className="absolute inset-0 animate-fade-in">
+            // Held invisible until the scene reports a frame on screen, then
+            // faded in. Fading the wrapper on mount instead meant the fade ran
+            // over an empty canvas — WebGL setup takes ~500ms — so a visitor
+            // arriving mid-fade saw the stage brighten to nothing and the
+            // laptop pop in afterwards. Now the fade only ever runs over a
+            // drawn frame: blank, then a clean arrival.
+            <div ref={stageRef} className="absolute inset-0 opacity-0">
               <LaptopCanvas
                 sites={SITES}
                 scrollProgress={scrollYProgress}
                 deviceTier={deviceTier}
                 active={active}
+                onReady={revealStage}
               />
             </div>
           )}

@@ -43,6 +43,22 @@ export function HeroSection() {
     return () => cancel(id as number);
   }, []);
 
+  // Stop drawing once the hero is off screen. Without this the crystal, its
+  // bloom pass and its particle field kept rendering at 60fps for the whole
+  // page — invisible behind everything below, and stealing frames from the
+  // work section's laptop scene while it initialises.
+  const [heroVisible, setHeroVisible] = useState(true);
+  useEffect(() => {
+    const node = heroRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setHeroVisible(entry.isIntersecting),
+      { rootMargin: "100px 0px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   let wordIndex = 0;
 
   return (
@@ -59,7 +75,11 @@ export function HeroSection() {
 
       {deviceTier !== "reduced" && canShow3D && canvasReady && (
         <div className="absolute inset-0 z-0 animate-fade-in">
-          <HeroCrystalCanvas scrollProgress={scrollYProgress} deviceTier={deviceTier} />
+          <HeroCrystalCanvas
+            scrollProgress={scrollYProgress}
+            deviceTier={deviceTier}
+            active={heroVisible}
+          />
         </div>
       )}
 

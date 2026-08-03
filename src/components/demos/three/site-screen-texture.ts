@@ -220,7 +220,9 @@ export class SiteScreen {
 
   private readonly canvas: HTMLCanvasElement;
   private readonly ctx: CanvasRenderingContext2D;
-  private readonly layers: HTMLCanvasElement[];
+  private readonly layers: (HTMLCanvasElement | null)[];
+  private photos: (HTMLImageElement | null)[] = [];
+  private readonly requested: boolean[] = [];
   private index = 0;
   private next = 0;
   private elapsed = 0;
@@ -235,40 +237,83 @@ export class SiteScreen {
     this.canvas.height = H;
     this.ctx = this.canvas.getContext("2d")!;
 
-    this.layers = sites.map((site) => {
-      const layer = document.createElement("canvas");
-      layer.width = W;
-      layer.height = H;
-      drawMock(layer.getContext("2d")!, site, null);
-      return layer;
-    });
+    // Backing stores are allocated in `ensureLayer`, not here. Four 1200x750
+    // canvases is ~14MB reserved before a single pixel is shown, and three of
+    // them are for panels that do not appear for at least 3.4s.
+    this.layers = sites.map(() => null);
+    this.photos = sites.map(() => null);
 
     this.texture = new CanvasTexture(this.canvas);
     this.texture.colorSpace = SRGBColorSpace;
     // Clamped to the device max on upload, so an unsupported value is safe.
     this.texture.anisotropy = 8;
 
-    this.loadPhotos();
+    // Only the first site is needed to render a complete screen. Drawing all
+    // four here cost ~4x as much on the critical path for three panels nobody
+    // sees for another 3.4s, and kicking off all four photo requests at once
+    // made them contend: on a throttled connection the first site's photo
+    // landed at ~1s instead of ~0.4s because three others were sharing the
+    // pipe. The rest are prepared during idle time instead.
+    this.ensureLayer(0);
     this.composite();
+    this.schedulePrefetch();
+
   }
 
-  private loadPhotos() {
-    this.sites.forEach((site, i) => {
-      const img = new Image();
-      // Required: the texture upload reads pixels back out of the canvas, and
-      // an image drawn without CORS approval taints it, which makes WebGL
-      // reject the whole thing with a SecurityError rather than just this
-      // photo. CSP `img-src` already allows images.unsplash.com.
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        if (this.disposed) return;
-        drawMock(this.layers[i].getContext("2d")!, site, img);
+  /** Allocates and draws a layer on first use, with its photo if one arrived. */
+  private ensureLayer(i: number): HTMLCanvasElement {
+    let layer = this.layers[i];
+    if (!layer) {
+      layer = document.createElement("canvas");
+      layer.width = W;
+      layer.height = H;
+      this.layers[i] = layer;
+      drawMock(layer.getContext("2d")!, this.sites[i], this.photos[i]);
+      this.loadPhoto(i);
+    }
+    return layer;
+  }
+
+  private loadPhoto(i: number) {
+    if (this.requested[i]) return;
+    this.requested[i] = true;
+    const img = new Image();
+    // Required: the texture upload reads pixels back out of the canvas, and
+    // an image drawn without CORS approval taints it, which makes WebGL
+    // reject the whole thing with a SecurityError rather than just this
+    // photo. CSP `img-src` already allows images.unsplash.com.
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (this.disposed) return;
+      this.photos[i] = img;
+      // Only repaint if the layer exists; otherwise the photo is simply picked
+      // up when `ensureLayer` first draws it.
+      const layer = this.layers[i];
+      if (layer) {
+        drawMock(layer.getContext("2d")!, this.sites[i], img);
         this.dirty = true;
-      };
-      // On error the layer keeps its photo-less draw, which is a complete
-      // design rather than a broken one, so there is nothing to handle.
-      img.src = site.photo;
-    });
+      }
+    };
+    // On error the layer keeps its photo-less draw, which is a complete
+    // design rather than a broken one, so there is nothing to handle.
+    img.src = this.sites[i].photo;
+  }
+
+  /**
+   * Prepare the remaining panels once the main thread is free. Each still gets
+   * drawn on demand in `update` if the cycle somehow reaches it first, so this
+   * is an optimisation rather than a correctness requirement.
+   */
+  private schedulePrefetch() {
+    const schedule =
+      window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 400));
+    schedule(
+      () => {
+        if (this.disposed) return;
+        for (let i = 1; i < this.sites.length; i++) this.ensureLayer(i);
+      },
+      { timeout: 3000 }
+    );
   }
 
   /**
@@ -285,7 +330,7 @@ export class SiteScreen {
     ctx.globalAlpha = 1;
 
     if (this.fade >= 1) {
-      ctx.drawImage(this.layers[this.index], 0, 0);
+      ctx.drawImage(this.ensureLayer(this.index), 0, 0);
     } else {
       const t = this.fade;
       // easeInOutCubic — pushes off briskly and settles, rather than the linear
@@ -295,8 +340,8 @@ export class SiteScreen {
       // Guards the 1px seam that rounding can open between the two layers.
       ctx.fillStyle = "#08080c";
       ctx.fillRect(0, 0, W, H);
-      ctx.drawImage(this.layers[this.index], -dx, 0);
-      ctx.drawImage(this.layers[this.next], W - dx, 0);
+      ctx.drawImage(this.ensureLayer(this.index), -dx, 0);
+      ctx.drawImage(this.ensureLayer(this.next), W - dx, 0);
     }
 
     this.texture.needsUpdate = true;
@@ -321,6 +366,9 @@ export class SiteScreen {
         if (this.elapsed >= DWELL && this.sites.length > 1) {
           this.elapsed = 0;
           this.next = (this.index + 1) % this.sites.length;
+          // Safety net for the idle prefetch not having run yet — a panel that
+          // slides in undrawn would be a blank white rectangle.
+          this.ensureLayer(this.next);
           this.fade = 0;
           this.dirty = true;
         }

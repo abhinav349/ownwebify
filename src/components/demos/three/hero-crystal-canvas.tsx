@@ -12,9 +12,15 @@ import type { DeviceTier } from "@/hooks/use-device-tier";
 type HeroCrystalCanvasProps = {
   scrollProgress?: MotionValue<number>;
   deviceTier: DeviceTier;
+  /** False once the hero has scrolled away — freezes the render loop. */
+  active?: boolean;
 };
 
-export default function HeroCrystalCanvas({ scrollProgress, deviceTier }: HeroCrystalCanvasProps) {
+export default function HeroCrystalCanvas({
+  scrollProgress,
+  deviceTier,
+  active = true,
+}: HeroCrystalCanvasProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   // On metal, `color` tints every reflection, so it stays desaturated — the
@@ -32,6 +38,13 @@ export default function HeroCrystalCanvas({ scrollProgress, deviceTier }: HeroCr
 
   return (
     <Canvas
+      // This used to render for the entire life of the page. The hero is one
+      // viewport tall, so on every scroll past it a bloom pass, 900 particles
+      // and an iridescent BRDF kept drawing at 60fps behind eight sections of
+      // content that hide it completely — burning battery and, more visibly,
+      // competing for the main thread exactly when the work section's laptop
+      // scene is trying to initialise.
+      frameloop={active ? "always" : "never"}
       dpr={[1, highQuality ? 1.75 : 1]}
       gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
       camera={{ position: [0, 0.3, 5], fov: 42, near: 0.1, far: 60 }}

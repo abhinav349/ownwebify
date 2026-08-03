@@ -15,6 +15,8 @@ type LaptopCanvasProps = {
   deviceTier: DeviceTier;
   /** False while the section is well outside the viewport — freezes the loop. */
   active: boolean;
+  /** Fired on the first frame that reaches the screen. */
+  onReady?: () => void;
 };
 
 export default function LaptopCanvas({
@@ -22,6 +24,7 @@ export default function LaptopCanvas({
   scrollProgress,
   deviceTier,
   active,
+  onReady,
 }: LaptopCanvasProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -60,6 +63,7 @@ export default function LaptopCanvas({
           shadowColor={shadowColor}
           scrollProgress={scrollProgress}
           highQuality={highQuality}
+          onReady={onReady}
         />
         {highQuality && (
           <EffectComposer>

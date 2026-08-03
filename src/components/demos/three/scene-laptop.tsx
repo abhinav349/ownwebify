@@ -64,7 +64,13 @@ function CameraRig() {
  */
 function LaptopRig({ accent, cyan, shell }: { accent: string; cyan: string; shell: string }) {
   return (
-    <Environment resolution={192}>
+    // 128, not 192. This cubemap is rendered before the first frame can be
+    // presented, and its only job is to supply broad specular streaks across
+    // brushed aluminium — there is no fine detail in the rig to preserve, so
+    // the extra 2.25x of pixels bought nothing visible and sat on the critical
+    // path. The hero crystal keeps its higher resolution because a mirror
+    // finish does resolve what this does not.
+    <Environment resolution={128}>
       <mesh scale={50}>
         <sphereGeometry args={[1, 24, 24]} />
         <meshBasicMaterial color={shell} side={BackSide} />
@@ -109,6 +115,7 @@ export function SceneLaptop({
   shadowColor = "#1a1030",
   scrollProgress,
   highQuality = true,
+  onReady,
 }: {
   sites: SiteMock[];
   body?: string;
@@ -118,6 +125,8 @@ export function SceneLaptop({
   shadowColor?: string;
   scrollProgress?: MotionValue<number>;
   highQuality?: boolean;
+  /** Fired once, on the first frame that actually reaches the screen. */
+  onReady?: () => void;
 }) {
   const rootRef = useRef<Group>(null);
   const lidRef = useRef<Group>(null);
@@ -127,11 +136,16 @@ export function SceneLaptop({
 
   const screen = useMemo(() => new SiteScreen(sites), [sites]);
   const deck = useMemo(() => createDeckTexture(body), [body]);
+  const firstFrame = useRef(false);
 
   useEffect(() => () => screen.dispose(), [screen]);
   useEffect(() => () => deck.dispose(), [deck]);
 
   useFrame((state, delta) => {
+    if (!firstFrame.current) {
+      firstFrame.current = true;
+      onReady?.();
+    }
     // Guard against a long tab-switch or a stalled main thread handing us a
     // huge delta, which would otherwise skip the crossfade in one step.
     const dt = Math.min(delta, 1 / 20);
@@ -236,7 +250,9 @@ export function SceneLaptop({
           blur={2.8}
           opacity={0.5}
           far={2.5}
-          resolution={512}
+          // A heavily blurred contact shadow: 256 is upsampled past the point
+          // the blur radius makes the difference recoverable.
+          resolution={256}
           color={shadowColor}
         />
       )}
