@@ -58,6 +58,26 @@ function RouteScrollSync() {
   const lenis = useLenis();
 
   useEffect(() => {
+    // Kill momentum carried across the navigation.
+    //
+    // Clicking a nav link while the wheel is still coasting leaves Lenis
+    // animating toward a target belonging to the *previous* page. The router
+    // resets window.scrollY to 0 for the new route, but Lenis keeps driving
+    // toward that stale target and pulls the page straight back down — clamped
+    // to the new page's maximum, so you arrive at its *bottom*. Measured:
+    // clicking mid-momentum on the home page landed on /services at 2208px and
+    // /hire at 773px, each that page's maximum scroll. Waiting for the coast to
+    // finish before clicking always worked, which is why this only shows up in
+    // real use.
+    //
+    // Snapping onto the live window.scrollY rather than hard-coding 0 is what
+    // keeps back/forward restoration and #hash targets intact: whatever the
+    // router decided the position should be, Lenis simply adopts it. This runs
+    // in a passive effect on purpose — those flush after every layout effect,
+    // including the router's own scroll handling, so the value read here is
+    // already the router's final answer.
+    lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
+
     const sync = () => {
       lenis?.resize();
       ScrollTrigger.refresh();
