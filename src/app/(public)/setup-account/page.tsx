@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { MIN_PASSWORD_LENGTH } from "@/lib/validations";
 
 export default function SetupAccountPage() {
   const searchParams = useSearchParams();
@@ -34,8 +35,8 @@ export default function SetupAccountPage() {
     e.preventDefault();
     setError("");
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return;
     }
     if (password !== confirm) {
@@ -115,10 +116,10 @@ export default function SetupAccountPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min 6 characters"
+                  placeholder={`Min ${MIN_PASSWORD_LENGTH} characters`}
                   className="mt-1.5"
                   required
-                  minLength={6}
+                  minLength={MIN_PASSWORD_LENGTH}
                 />
               </div>
               <div>

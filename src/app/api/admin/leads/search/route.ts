@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const PLACES_API_URL =
   "https://places.googleapis.com/v1/places:searchText";
@@ -94,6 +95,15 @@ export async function POST(req: NextRequest) {
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Every call fans out to up to MAX_CHAINED_CALLS billed Places requests,
+  // so a stuck UI (or a compromised admin session) can run up real spend.
+  const limited = await enforceRateLimit(
+    req,
+    "leadSearch",
+    `user:${session.user.id}`
+  );
+  if (limited) return limited;
 
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
   if (!apiKey) {

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { randomBytes } from "crypto";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,16 +6,22 @@ import { prisma } from "@/lib/prisma";
 import { projectIntakeSchema, projectDetailsSchema } from "@/lib/validations";
 import { sendEmail, newProjectEmailHtml, projectConfirmationEmailHtml } from "@/lib/email";
 import { referralRewardUSD } from "@/lib/pricing";
-
-function generateReferralCode(name: string): string {
-  const prefix = name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, "X");
-  const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}-${suffix}`;
-}
+import { generateReferralCode } from "@/lib/password";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { PROJECT_STATUSES, type ProjectStatus } from "@/lib/project-status";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+
+    // Unauthenticated callers can create a User row and trigger two emails
+    // per request, so the anonymous path needs a per-IP budget. Signed-in
+    // submissions are attributable, so they get a per-user budget instead.
+    const limited = session?.user?.id
+      ? await enforceRateLimit(request, "projectSubmit", `user:${session.user.id}`)
+      : await enforceRateLimit(request, "projectSubmit");
+    if (limited) return limited;
+
     const body = await request.json();
 
     // Logged-in users: create the project directly against their account
@@ -46,11 +52,16 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      const adminEmail = process.env.ADMIN_EMAIL || "admin@ownwebify.com";
-      await sendEmail({
-        to: adminEmail,
-        subject: `New Project Request: ${project.title}`,
-        html: newProjectEmailHtml(project.title, user.name, user.email),
+      // Notification only — nothing in the response depends on it, so it
+      // runs after the response is flushed rather than holding the client
+      // on a Resend round-trip.
+      after(async () => {
+        const adminEmail = process.env.ADMIN_EMAIL || "admin@ownwebify.com";
+        await sendEmail({
+          to: adminEmail,
+          subject: `New Project Request: ${project.title}`,
+          html: newProjectEmailHtml(project.title, user.name, user.email),
+        });
       });
 
       return NextResponse.json(
@@ -122,33 +133,47 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@ownwebify.com";
-    await sendEmail({
-      to: adminEmail,
-      subject: `New Project Request: ${project.title}`,
-      html: newProjectEmailHtml(project.title, user.name, user.email),
-    });
-
-    // Send confirmation email to the client with an account setup link
-    // if they haven't set a password yet.
-    let setupUrl: string | undefined;
-    if (!user.passwordHash) {
-      const token = randomBytes(32).toString("hex");
-      await prisma.setupToken.create({
-        data: {
-          userId: user.id,
-          token,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
+    // Both sends are side effects the response does not report on, and this
+    // is the public lead form — two sequential Resend round-trips were
+    // sitting between the prospect hitting Submit and seeing confirmation.
+    const createdUser = user;
+    after(async () => {
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@ownwebify.com";
+      await sendEmail({
+        to: adminEmail,
+        subject: `New Project Request: ${project.title}`,
+        html: newProjectEmailHtml(
+          project.title,
+          createdUser.name,
+          createdUser.email
+        ),
       });
-      const base = process.env.NEXTAUTH_URL || "https://ownwebify.com";
-      setupUrl = `${base}/setup-account?token=${token}`;
-    }
 
-    await sendEmail({
-      to: user.email,
-      subject: `Project Received: ${project.title}`,
-      html: projectConfirmationEmailHtml(project.title, user.name, setupUrl),
+      // Confirmation to the client, with an account setup link if they
+      // haven't set a password yet.
+      let setupUrl: string | undefined;
+      if (!createdUser.passwordHash) {
+        const token = randomBytes(32).toString("hex");
+        await prisma.setupToken.create({
+          data: {
+            userId: createdUser.id,
+            token,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+        });
+        const base = process.env.NEXTAUTH_URL || "https://ownwebify.com";
+        setupUrl = `${base}/setup-account?token=${token}`;
+      }
+
+      await sendEmail({
+        to: createdUser.email,
+        subject: `Project Received: ${project.title}`,
+        html: projectConfirmationEmailHtml(
+          project.title,
+          createdUser.name,
+          setupUrl
+        ),
+      });
     });
 
     return NextResponse.json(
@@ -181,7 +206,17 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
 
     const where: Record<string, unknown> = {};
-    if (status) where.status = status;
+    // Passing an arbitrary string through to a Prisma enum filter makes the
+    // query throw, surfacing as a 500 for what is really a bad request.
+    if (status) {
+      if (!PROJECT_STATUSES.includes(status as ProjectStatus)) {
+        return NextResponse.json(
+          { error: "Invalid status filter" },
+          { status: 400 }
+        );
+      }
+      where.status = status;
+    }
 
     // Non-admin users can only see their own projects
     if (session.user.role !== "ADMIN") {

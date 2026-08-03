@@ -1,5 +1,24 @@
 import { z } from "zod";
 
+/**
+ * Minimum length for a *newly set* password, per NIST SP 800-63B.
+ *
+ * Defined once because it was previously repeated as a literal `6` in both
+ * API handlers and form schemas, which meant the server and the form could
+ * (and did) drift apart. `loginSchema` deliberately does not use it: login
+ * validates an already-issued credential, and rejecting a short legacy
+ * password at the form would lock those users out of their own reset flow.
+ */
+export const MIN_PASSWORD_LENGTH = 8;
+
+export const passwordSchema = z
+  .string()
+  .min(
+    MIN_PASSWORD_LENGTH,
+    `Password must be at least ${MIN_PASSWORD_LENGTH} characters`
+  )
+  .max(200, "Password must be under 200 characters");
+
 export const projectIntakeSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
@@ -34,6 +53,12 @@ export type ProjectDetailsFormData = z.infer<typeof projectDetailsSchema>;
 
 export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
+  // Intentionally *not* `passwordSchema`. Login checks a credential that was
+  // already issued, so it must accept anything the policy allowed at the time
+  // it was set — held at the previous 6-char floor rather than raised to
+  // MIN_PASSWORD_LENGTH, so accounts created under the old rule can still
+  // reach their account (and the reset flow) instead of being refused at the
+  // form.
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 

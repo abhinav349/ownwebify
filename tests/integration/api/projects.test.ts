@@ -1,10 +1,11 @@
 import { describe, it, expect } from "vitest";
+import { TEST_EMAIL_DOMAIN } from "../../constants";
 
 const BASE_URL = "http://localhost:3002";
 
 const validProject = {
   name: "Test Integration User",
-  email: `test-${Date.now()}@integration.test`,
+  email: `test-${Date.now()}@${TEST_EMAIL_DOMAIN}`,
   password: "testpass123",
   projectType: "landing-page",
   budget: "under-100",
@@ -16,7 +17,7 @@ const validProject = {
 
 describe("POST /api/projects", () => {
   it("creates a project with valid data and returns 201", async () => {
-    const email = `test-create-${Date.now()}@integration.test`;
+    const email = `test-create-${Date.now()}@${TEST_EMAIL_DOMAIN}`;
     const res = await fetch(`${BASE_URL}/api/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -30,7 +31,7 @@ describe("POST /api/projects", () => {
   });
 
   it("reuses existing user when email already exists", async () => {
-    const email = `test-reuse-${Date.now()}@integration.test`;
+    const email = `test-reuse-${Date.now()}@${TEST_EMAIL_DOMAIN}`;
 
     // First submission creates user
     const res1 = await fetch(`${BASE_URL}/api/projects`, {
@@ -80,7 +81,7 @@ describe("POST /api/projects", () => {
   });
 
   it("proceeds without error when referral code is invalid", async () => {
-    const email = `test-badref-${Date.now()}@integration.test`;
+    const email = `test-badref-${Date.now()}@${TEST_EMAIL_DOMAIN}`;
     const res = await fetch(`${BASE_URL}/api/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -95,7 +96,7 @@ describe("POST /api/projects", () => {
   });
 
   it("proceeds when referral code is empty string", async () => {
-    const email = `test-emptyref-${Date.now()}@integration.test`;
+    const email = `test-emptyref-${Date.now()}@${TEST_EMAIL_DOMAIN}`;
     const res = await fetch(`${BASE_URL}/api/projects`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -110,30 +111,32 @@ describe("POST /api/projects", () => {
   });
 });
 
+// These previously asserted that an anonymous GET returned 200 and a project
+// array. That is the shape of a data leak, not a passing test: the collection
+// contains every client's brief, budget and contact details. The endpoint
+// requires a session and scopes non-admins to their own rows, so what is
+// worth pinning down here is that it refuses anonymous callers at all.
 describe("GET /api/projects", () => {
-  it("returns a list of projects", async () => {
+  it("rejects unauthenticated requests", async () => {
     const res = await fetch(`${BASE_URL}/api/projects`);
-    expect(res.status).toBe(200);
+
+    expect(res.status).toBe(401);
     const data = await res.json();
-    expect(Array.isArray(data)).toBe(true);
+    expect(data.error).toBe("Unauthorized");
+    expect(Array.isArray(data)).toBe(false);
   });
 
-  it("filters by status query param", async () => {
+  it("does not leak projects through a status filter", async () => {
     const res = await fetch(`${BASE_URL}/api/projects?status=NEW`);
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(Array.isArray(data)).toBe(true);
-    for (const project of data) {
-      expect(project.status).toBe("NEW");
-    }
+
+    expect(res.status).toBe(401);
+    const body = await res.text();
+    expect(body).not.toContain("clientId");
   });
 
-  it("returns empty array for non-existent clientId", async () => {
-    const res = await fetch(
-      `${BASE_URL}/api/projects?clientId=nonexistent-id`
-    );
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toEqual([]);
+  it("refuses anonymous access regardless of query parameters", async () => {
+    const res = await fetch(`${BASE_URL}/api/projects?clientId=nonexistent-id`);
+
+    expect(res.status).toBe(401);
   });
 });

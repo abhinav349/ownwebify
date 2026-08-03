@@ -4,12 +4,22 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, leadOutreachEmailHtml } from "@/lib/email";
 import { getLeadTemplate } from "@/lib/lead-templates";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Cold outreach from the site's own domain: bursting these is the fastest
+  // way to get the sending domain flagged as spam.
+  const limited = await enforceRateLimit(
+    req,
+    "leadEmail",
+    `user:${session.user.id}`
+  );
+  if (limited) return limited;
 
   const { id } = (await req.json()) as { id: string };
 

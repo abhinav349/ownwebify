@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,28 +21,42 @@ interface PortfolioItem {
 }
 
 export default function AdminPortfolioPage() {
-  const router = useRouter();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
+  const [reloadToken, setReloadToken] = useState(0);
+  const reload = () => setReloadToken((n) => n + 1);
 
-  const fetchItems = async () => {
-    const response = await fetch("/api/portfolio");
-    const data = await response.json();
-    setItems(data);
-    setIsLoading(false);
-  };
+  /**
+   * The list is owned by this effect; mutations request a refetch by bumping
+   * `reloadToken`. See the matching comment in the testimonials admin page —
+   * the loader used to be a `const` arrow *declared below the effect that
+   * called it*, so it was also read from its own temporal dead zone.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/portfolio")
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancelled) return;
+        setItems(data);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadToken]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
 
     await fetch(`/api/portfolio/${id}`, { method: "DELETE" });
-    fetchItems();
+    reload();
   };
 
   return (
@@ -60,7 +73,7 @@ export default function AdminPortfolioPage() {
         <PortfolioForm
           item={editingItem}
           onClose={() => { setShowForm(false); setEditingItem(null); }}
-          onSave={() => { setShowForm(false); setEditingItem(null); fetchItems(); }}
+          onSave={() => { setShowForm(false); setEditingItem(null); reload(); }}
         />
       )}
 

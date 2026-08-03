@@ -16,6 +16,7 @@ import {
   Home,
   Crosshair,
   BookmarkCheck,
+  MessageSquareQuote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
@@ -27,6 +28,7 @@ const navigation = [
   { name: "Lead Finder", href: "/admin/leads", icon: Crosshair },
   { name: "Saved Leads", href: "/admin/leads/saved", icon: BookmarkCheck },
   { name: "Portfolio", href: "/admin/portfolio", icon: Image },
+  { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

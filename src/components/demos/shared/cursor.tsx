@@ -2,14 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { motion, useMotionValue, useSpring } from "motion/react";
-import { useHoverCapable } from "@/hooks/use-reduced-motion";
+import { useHoverCapable, usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 
 const INTERACTIVE_SELECTOR =
   'a, button, [role="button"], input, textarea, select, [data-cursor="link"]';
 
 /** Desktop-only custom cursor. `accent` should be a CSS color (hex/rgb/oklch). */
 export function DemoCursor({ accent = "#ffffff" }: { accent?: string }) {
-  const enabled = useHoverCapable();
+  const hoverCapable = useHoverCapable();
+  const reducedMotion = usePrefersReducedMotion();
+  // A spring-lerped element chasing the pointer is exactly the kind of
+  // incidental motion prefers-reduced-motion is meant to suppress.
+  const enabled = hoverCapable && !reducedMotion;
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 

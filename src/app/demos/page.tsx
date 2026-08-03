@@ -18,7 +18,10 @@ import {
   Flower2,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
+import { MobileNav } from "@/components/demos/mobile-nav";
 import { CreativeWorkJsonLd } from "@/components/seo/json-ld";
+import { cn } from "@/lib/utils";
+import { SITE_NAV } from "@/lib/site";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/demos/shared/reveal";
 import { Magnetic } from "@/components/demos/shared/magnetic";
 import { img, demoImages } from "@/lib/demos/images";
@@ -166,19 +169,55 @@ export default function DemosIndexPage() {
 
       {/* Header */}
       <header className="relative z-20 py-8 px-6">
-        <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
+        <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <Logo size={32} />
-            <span className="font-semibold text-lg tracking-tight">OwnWebify</span>
+            {/* Hidden below `sm`: the wordmark, the CTA pill and the hamburger
+                together overflow a 390px viewport otherwise. Same trade the
+                main site header makes. */}
+            <span className="font-semibold text-lg tracking-tight hidden sm:inline">
+              OwnWebify
+            </span>
           </Link>
-          <Magnetic>
-            <Link
-              href="/hire"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#0a0a0d] text-xs sm:text-sm font-medium hover:bg-white/90 transition-colors shadow-lg whitespace-nowrap"
-            >
-              Start Your Project <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Magnetic>
+
+          {/* This page had no navigation at all — only a logo and a CTA — so
+              the gallery was a dead end for anyone wanting Services or About,
+              with the floating "Built by" badge the sole route back. */}
+          <nav aria-label="Primary" className="hidden md:flex items-center gap-8">
+            {SITE_NAV.map((item) => {
+              const current = item.href === "/demos";
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={current ? "page" : undefined}
+                  className={cn(
+                    "text-sm tracking-wide transition-colors",
+                    current ? "text-white" : "text-white/60 hover:text-white"
+                  )}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <Magnetic>
+              <Link
+                href="/hire"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#0a0a0d] text-xs sm:text-sm font-medium hover:bg-white/90 transition-colors shadow-lg whitespace-nowrap"
+              >
+                Start Your Project <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Magnetic>
+            <MobileNav
+              links={SITE_NAV.map((item) => ({ href: item.href, label: item.name }))}
+              className="text-white/80"
+              linkClassName="text-white/80 border-white/10"
+              menuClassName="bg-[#0a0a0d] border-white/10"
+            />
+          </div>
         </div>
       </header>
 

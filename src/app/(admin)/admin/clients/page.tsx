@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 
 export default async function AdminClientsPage() {

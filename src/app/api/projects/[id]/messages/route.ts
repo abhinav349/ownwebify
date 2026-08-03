@@ -1,8 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { authorizeProject } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { sendEmail, newMessageEmailHtml } from "@/lib/email";
+
+const MAX_MESSAGE_LENGTH = 5000;
 
 export async function POST(
   request: NextRequest,
@@ -10,15 +14,43 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const limited = await enforceRateLimit(
+      request,
+      "message",
+      `user:${session.user.id}`
+    );
+    if (limited) return limited;
+
     const { id } = await params;
+
+    // The project id is caller-supplied, so membership must be checked
+    // before anything is written against it.
+    const access = await authorizeProject(id);
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.status === 401 ? "Unauthorized" : "Project not found" },
+        { status: access.status }
+      );
+    }
+
     const { content } = await request.json();
 
-    if (!content || content.trim().length === 0) {
-      return NextResponse.json({ error: "Message cannot be empty" }, { status: 400 });
+    if (typeof content !== "string" || content.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Message cannot be empty" },
+        { status: 400 }
+      );
+    }
+
+    if (content.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { error: `Message must be under ${MAX_MESSAGE_LENGTH} characters` },
+        { status: 400 }
+      );
     }
 
     const message = await prisma.message.create({
@@ -32,17 +64,20 @@ export async function POST(
       },
     });
 
-    // Send email notification to the other party
-    const project = await prisma.project.findUnique({
-      where: { id },
-      include: { client: true },
-    });
+    // Notify the other party after the response is flushed — in a chat UI
+    // the send latency is felt directly, and the lookup plus the Resend
+    // round-trip were both on that path.
+    after(async () => {
+      const project = await prisma.project.findUnique({
+        where: { id },
+        include: { client: true },
+      });
 
-    if (project) {
-      const isAdmin = session.user.role === "ADMIN";
-      const recipientEmail = isAdmin
+      if (!project) return;
+
+      const recipientEmail = access.isAdmin
         ? project.client.email
-        : (process.env.ADMIN_EMAIL || "admin@ownwebify.com");
+        : process.env.ADMIN_EMAIL || "admin@ownwebify.com";
 
       if (recipientEmail) {
         await sendEmail({
@@ -55,7 +90,7 @@ export async function POST(
           ),
         });
       }
-    }
+    });
 
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
@@ -72,12 +107,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id } = await params;
+
+    const access = await authorizeProject(id);
+    if (!access.ok) {
+      return NextResponse.json(
+        { error: access.status === 401 ? "Unauthorized" : "Project not found" },
+        { status: access.status }
+      );
+    }
 
     const messages = await prisma.message.findMany({
       where: { projectId: id },

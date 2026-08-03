@@ -8,7 +8,13 @@ export async function GET() {
     const items = await prisma.portfolioItem.findMany({
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     });
-    return NextResponse.json(items);
+    // Public, rarely-changing content — serve from the CDN edge rather than
+    // querying Postgres per visitor. See the note in the testimonials route.
+    return NextResponse.json(items, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     console.error("Error fetching portfolio:", error);
     return NextResponse.json(

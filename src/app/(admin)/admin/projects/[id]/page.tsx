@@ -10,7 +10,6 @@ import {
   referralDiscountPercent,
 } from "@/lib/pricing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { StatusUpdateForm } from "@/components/forms/status-update-form";
 import { QuoteForm } from "@/components/forms/quote-form";
 import { MessageThread } from "@/components/shared/message-thread";

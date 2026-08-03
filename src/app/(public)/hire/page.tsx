@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Check, TerminalSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import {
   projectIntakeSchema,
   projectDetailsSchema,
@@ -18,6 +18,8 @@ import {
 } from "@/lib/validations";
 import { type CurrencyCode, formatDisplayPrice } from "@/lib/pricing";
 import { useCurrency } from "@/hooks/use-currency";
+import { Reveal } from "@/components/demos/shared/reveal";
+import { Magnetic } from "@/components/demos/shared/magnetic";
 
 const projectTypes = [
   { value: "landing-page", label: "Landing Page" },
@@ -141,9 +143,11 @@ export default function HirePage() {
   const { status } = useSession();
 
   if (status === "loading") {
+    // Reserves roughly the height of the resolved form. Without it the footer
+    // sits high, then jumps down when the session resolves — a ~0.31 CLS.
     return (
-      <div className="py-32 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="py-32 min-h-[1100px] flex items-start justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mt-32" />
       </div>
     );
   }
@@ -167,7 +171,7 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     register,
     handleSubmit,
     trigger,
-    watch,
+    control,
     setValue,
     getValues,
     formState: { errors },
@@ -178,8 +182,13 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
     defaultValues: { features: [] },
   });
 
-  const selectedProjectType = watch("projectType");
-  const selectedFeatures = watch("features") || [];
+  // `useWatch`, not the `watch()` returned by `useForm`. `watch()` hands back a
+  // fresh function on every render that React Compiler cannot memoize, so it
+  // bailed out of optimising this component wholesale. It is also the coarser
+  // API: it re-renders this entire multi-step form on every keystroke in any
+  // field, where `useWatch` subscribes only to the two named here.
+  const selectedProjectType = useWatch({ control, name: "projectType" });
+  const selectedFeatures = useWatch({ control, name: "features" }) || [];
   const availableFeatures = featuresByProjectType[selectedProjectType] || [];
 
   const toggleFeature = (feature: string) => {
@@ -242,33 +251,42 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   if (isSubmitted) {
     return (
-      <div className="py-24">
+      <div className="py-24 relative">
+        <div className="aurora-bg opacity-30">
+          <div className="aurora-layer" />
+        </div>
         <div className="mx-auto max-w-lg px-6 text-center">
-          <div className="h-20 w-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/20">
-            <CheckCircle className="h-10 w-10 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold mb-4">You&apos;re All Set!</h1>
-          <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-            I&apos;ve received your project details and I&apos;m excited to take a look.
-            Expect a custom quote in your inbox within 48 hours.
-          </p>
-          {isLoggedIn ? (
-            <a
-              href={newProjectId ? `/dashboard/projects/${newProjectId}` : "/dashboard"}
-              className="inline-block mt-2"
-            >
-              <Button className="rounded-full shadow-md shadow-primary/20">
-                View Your Project &rarr;
-              </Button>
-            </a>
-          ) : (
-            <div className="p-4 rounded-xl bg-muted/50 border space-y-2">
-              <p className="text-sm text-muted-foreground">
-                We&apos;ll email you a quote along with a link to set up your account so you can
-                track progress, view quotes, and message us directly.
+          <Reveal>
+            <div className="rounded-2xl border glass p-10">
+              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/20">
+                <CheckCircle className="h-10 w-10 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold mb-4">You&apos;re All Set!</h1>
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                I&apos;ve received your project details and I&apos;m excited to take a look.
+                Expect a custom quote in your inbox within 48 hours.
               </p>
+              {isLoggedIn ? (
+                <Magnetic strength={0.3} className="inline-block">
+                  <a
+                    href={newProjectId ? `/dashboard/projects/${newProjectId}` : "/dashboard"}
+                    className="inline-block mt-2"
+                  >
+                    <Button className="rounded-full shadow-md shadow-primary/20">
+                      View Your Project &rarr;
+                    </Button>
+                  </a>
+                </Magnetic>
+              ) : (
+                <div className="p-4 rounded-xl bg-muted/50 border space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    We&apos;ll email you a quote along with a link to set up your account so you can
+                    track progress, view quotes, and message us directly.
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+          </Reveal>
         </div>
       </div>
     );
@@ -276,12 +294,11 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <div className="py-24 relative">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl" />
+      <div className="aurora-bg opacity-30">
+        <div className="aurora-layer" />
       </div>
       <div className="mx-auto max-w-2xl px-6">
-        <div className="text-center mb-12">
+        <Reveal className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-4">
             Let&apos;s Build Something{" "}
             <span className="gradient-text">Amazing</span>
@@ -291,24 +308,24 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
               ? "Welcome back! Just share your project details and I'll respond with a custom proposal within 48 hours."
               : "Tell me about your vision. I'll respond with a custom proposal within 48 hours."}
           </p>
-        </div>
+        </Reveal>
 
         {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-12">
+        <div className="flex items-center justify-center mb-12 font-mono">
           {steps.map((step, index) => (
             <div key={step.title} className="flex items-center">
               <div className="flex flex-col items-center">
                 <div
-                  className={`h-11 w-11 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                  className={`h-9 w-9 sm:h-11 sm:w-11 rounded-lg flex items-center justify-center text-xs sm:text-sm font-semibold transition-all border shrink-0 ${
                     index <= currentStep
-                      ? "bg-gradient-to-br from-primary to-pink-500 text-white shadow-lg shadow-primary/20"
-                      : "bg-muted text-muted-foreground"
+                      ? "bg-gradient-to-br from-primary to-pink-500 text-white shadow-lg shadow-primary/20 border-transparent"
+                      : "bg-transparent text-muted-foreground border-border"
                   }`}
                 >
                   {index < currentStep ? (
-                    <CheckCircle className="h-5 w-5" />
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                   ) : (
-                    index + 1
+                    String(index + 1).padStart(2, "0")
                   )}
                 </div>
                 <span className="text-xs mt-2 text-muted-foreground hidden sm:block font-medium">
@@ -317,7 +334,7 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-16 sm:w-24 h-0.5 mx-2 rounded-full transition-colors ${
+                  className={`w-4 sm:w-16 md:w-24 h-0.5 mx-1 sm:mx-2 rounded-full transition-colors shrink-0 ${
                     index < currentStep ? "bg-gradient-to-r from-primary to-pink-500" : "bg-muted"
                   }`}
                 />
@@ -326,9 +343,20 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
           ))}
         </div>
 
-        <Card>
+        <Card className="glass overflow-hidden">
+          {/* Terminal chrome */}
+          <div className="flex items-center gap-2 px-5 py-3 border-b bg-muted/40">
+            <span className="h-2.5 w-2.5 rounded-full bg-red-400/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/60" />
+            <span className="h-2.5 w-2.5 rounded-full bg-green-400/60" />
+            <span className="ml-2 flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+              <TerminalSquare className="h-3.5 w-3.5" /> ownwebify — new-project
+            </span>
+          </div>
           <CardHeader>
-            <CardTitle>{steps[currentStep].title}</CardTitle>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight font-mono">
+              <span className="text-primary">&gt;</span> {steps[currentStep].title}
+            </h2>
             <CardDescription>{steps[currentStep].description}</CardDescription>
           </CardHeader>
           <CardContent>
@@ -540,20 +568,25 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
               {/* Navigation Buttons */}
               <div className="flex justify-between pt-4">
                 {currentStep > 0 ? (
-                  <Button type="button" variant="outline" onClick={prevStep}>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
+                  <Magnetic strength={0.2}>
+                    <Button type="button" variant="outline" onClick={prevStep}>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Previous
+                    </Button>
+                  </Magnetic>
                 ) : (
                   <div />
                 )}
 
                 {currentStep < lastStep ? (
-                  <Button type="button" onClick={nextStep}>
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
+                  <Magnetic strength={0.2}>
+                    <Button type="button" onClick={nextStep}>
+                      Next
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Magnetic>
                 ) : (
+                  <Magnetic strength={0.2}>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
@@ -564,6 +597,7 @@ function HireForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                       "Submit Project"
                     )}
                   </Button>
+                  </Magnetic>
                 )}
               </div>
             </form>

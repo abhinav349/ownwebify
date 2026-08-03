@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -31,7 +32,11 @@ export default async function DashboardPage() {
       .substring(0, 4)
       .toUpperCase()
       .replace(/[^A-Z]/g, "X");
-    const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    // `randomBytes`, not `Math.random`: this writes a column with a UNIQUE
+    // constraint, so a collision is a failed page load rather than a cosmetic
+    // repeat, and `Math.random().toString(36).substring(2, 6)` also yields
+    // fewer than 4 usable characters whenever the float renders short.
+    const suffix = randomBytes(3).toString("hex").toUpperCase();
     const referralCode = `${prefix}-${suffix}`;
     await prisma.user.update({
       where: { id: session!.user.id },

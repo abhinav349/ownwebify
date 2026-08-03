@@ -1,14 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { MIN_PASSWORD_LENGTH } from "@/lib/validations";
+import { BCRYPT_COST } from "@/lib/password";
 
 export async function POST(request: NextRequest) {
   try {
+    // Redeems a setup token straight into a password. Throttled so the
+    // token space cannot be probed.
+    const limited = await enforceRateLimit(request, "setupAccount");
+    if (limited) return limited;
+
     const { token, password } = await request.json();
 
-    if (!token || !password || password.length < 6) {
+    if (
+      !token ||
+      typeof token !== "string" ||
+      !password ||
+      typeof password !== "string" ||
+      password.length < MIN_PASSWORD_LENGTH
+    ) {
       return NextResponse.json(
-        { error: "Token and a password (min 6 chars) are required." },
+        {
+          error: `Token and a password (min ${MIN_PASSWORD_LENGTH} chars) are required.`,
+        },
         { status: 400 }
       );
     }
@@ -25,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
 
     await prisma.$transaction([
       prisma.user.update({
