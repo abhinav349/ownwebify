@@ -1,39 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-const verifyAttempts = new Map<string, { count: number; lastAttempt: number }>();
+import { enforceRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
     const { email, code } = await request.json();
 
-    if (!email || !code) {
+    if (
+      !email ||
+      !code ||
+      typeof email !== "string" ||
+      typeof code !== "string"
+    ) {
       return NextResponse.json(
         { error: "Email and code are required" },
         { status: 400 }
       );
     }
 
-    // Rate limit: max 5 verification attempts per email per 15 minutes
-    const key = email.toLowerCase();
-    const now = Date.now();
-    const attempt = verifyAttempts.get(key);
-    if (attempt) {
-      if (now - attempt.lastAttempt < 15 * 60 * 1000 && attempt.count >= 5) {
-        return NextResponse.json(
-          { error: "Too many attempts. Please request a new code." },
-          { status: 429 }
-        );
-      }
-      if (now - attempt.lastAttempt >= 15 * 60 * 1000) {
-        verifyAttempts.set(key, { count: 1, lastAttempt: now });
-      } else {
-        attempt.count++;
-        attempt.lastAttempt = now;
-      }
-    } else {
-      verifyAttempts.set(key, { count: 1, lastAttempt: now });
-    }
+    // Throttling lives in Postgres rather than a module-level Map: this runs
+    // on serverless functions, so an in-process counter only ever saw the
+    // requests that happened to land on one instance and was wiped on every
+    // cold start — which handed an attacker a fresh budget for free. The Map
+    // also grew without bound, as nothing evicted stale entries.
+    const normalizedEmail = email.toLowerCase();
+
+    const limitedByEmail = await enforceRateLimit(
+      request,
+      "otpVerify",
+      `email:${normalizedEmail}`
+    );
+    if (limitedByEmail) return limitedByEmail;
+
+    const limitedByIp = await enforceRateLimit(request, "otpVerify");
+    if (limitedByIp) return limitedByIp;
 
     const otpRecord = await prisma.otpCode.findFirst({
       where: {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Clear attempts on success
-    verifyAttempts.delete(key);
+    await resetRateLimit("otpVerify", `email:${normalizedEmail}`);
 
     return NextResponse.json({ success: true, verified: true });
   } catch (error) {

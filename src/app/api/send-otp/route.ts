@@ -1,14 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, otpEmailHtml } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { generateOtpCode } from "@/lib/password";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();
 
-    if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    if (!email || typeof email !== "string" || !EMAIL_PATTERN.test(email)) {
+      return NextResponse.json(
+        { error: "A valid email is required" },
+        { status: 400 }
+      );
     }
+
+    // The per-email cap below stops one address being spammed, but on its
+    // own it lets a caller send unlimited mail by rotating the address —
+    // every send costs money and burns sender reputation. Cap the source
+    // too.
+    const limitedByIp = await enforceRateLimit(request, "otpSend");
+    if (limitedByIp) return limitedByIp;
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentCodes = await prisma.otpCode.count({
@@ -18,11 +32,11 @@ export async function POST(request: NextRequest) {
     if (recentCodes >= 3) {
       return NextResponse.json(
         { error: "Too many requests. Try again later." },
-        { status: 429 }
+        { status: 429, headers: { "Retry-After": "3600" } }
       );
     }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = generateOtpCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await prisma.otpCode.create({

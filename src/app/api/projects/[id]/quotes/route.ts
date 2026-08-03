@@ -1,15 +1,19 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { randomBytes } from "crypto";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, quoteEmailHtml } from "@/lib/email";
+import { quoteSchema } from "@/lib/validations";
 import {
   formatAmount,
   toCurrencyCode,
   applyDiscount,
   referralDiscountPercent,
 } from "@/lib/pricing";
+
+/** A quote can only be settled one way or the other by its recipient. */
+const ACCEPTABLE_QUOTE_STATUSES = ["ACCEPTED", "REJECTED"];
 
 export async function POST(
   request: NextRequest,
@@ -22,8 +26,29 @@ export async function POST(
     }
 
     const { id } = await params;
-    const { amount, description, validUntil, currency } = await request.json();
-    const quoteCurrency = toCurrencyCode(currency);
+    const body = await request.json();
+
+    // `amount` and `validUntil` land in a Float and a DateTime; unvalidated
+    // they surface as opaque 500s (or a NaN/Invalid Date row) instead of a
+    // usable 400.
+    const parsed = quoteSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+    const { amount, description, validUntil } = parsed.data;
+
+    const validUntilDate = new Date(validUntil);
+    if (Number.isNaN(validUntilDate.getTime())) {
+      return NextResponse.json(
+        { error: "validUntil must be a valid date" },
+        { status: 400 }
+      );
+    }
+
+    const quoteCurrency = toCurrencyCode(body.currency);
 
     // Determine referral discount: a referred client gets 10% off the quote
     // for their first project only.
@@ -51,7 +76,7 @@ export async function POST(
         currency: quoteCurrency,
         discountPercent,
         description,
-        validUntil: new Date(validUntil),
+        validUntil: validUntilDate,
       },
     });
 
@@ -62,32 +87,37 @@ export async function POST(
       include: { client: true },
     });
 
-    // Notify client (show the discounted total they will pay)
-    if (project.client.email) {
-      const payable = applyDiscount(amount, discountPercent);
-      const amountLabel =
-        discountPercent > 0
-          ? `${formatAmount(payable, quoteCurrency, quoteCurrency)} (incl. ${discountPercent}% referral discount)`
-          : formatAmount(amount, quoteCurrency, quoteCurrency);
+    // Notify client (show the discounted total they will pay). Deferred:
+    // the token write and the Resend call are side effects the admin's
+    // response does not report on.
+    const client = project.client;
+    if (client.email) {
+      after(async () => {
+        const payable = applyDiscount(amount, discountPercent);
+        const amountLabel =
+          discountPercent > 0
+            ? `${formatAmount(payable, quoteCurrency, quoteCurrency)} (incl. ${discountPercent}% referral discount)`
+            : formatAmount(amount, quoteCurrency, quoteCurrency);
 
-      let setupUrl: string | undefined;
-      if (!project.client.passwordHash) {
-        const token = randomBytes(32).toString("hex");
-        await prisma.setupToken.create({
-          data: {
-            userId: project.client.id,
-            token,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-          },
+        let setupUrl: string | undefined;
+        if (!client.passwordHash) {
+          const token = randomBytes(32).toString("hex");
+          await prisma.setupToken.create({
+            data: {
+              userId: client.id,
+              token,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+            },
+          });
+          const base = process.env.NEXTAUTH_URL || "https://ownwebify.com";
+          setupUrl = `${base}/setup-account?token=${token}`;
+        }
+
+        await sendEmail({
+          to: client.email!,
+          subject: `New Quote for: ${project.title}`,
+          html: quoteEmailHtml(project.title, amountLabel, description, setupUrl),
         });
-        const base = process.env.NEXTAUTH_URL || "https://ownwebify.com";
-        setupUrl = `${base}/setup-account?token=${token}`;
-      }
-
-      await sendEmail({
-        to: project.client.email,
-        subject: `New Quote for: ${project.title}`,
-        html: quoteEmailHtml(project.title, amountLabel, description, setupUrl),
       });
     }
 
@@ -114,6 +144,17 @@ export async function PATCH(
     const { id } = await params;
     const { quoteId, status } = await request.json();
 
+    if (!quoteId || typeof quoteId !== "string") {
+      return NextResponse.json({ error: "quoteId is required" }, { status: 400 });
+    }
+
+    if (!ACCEPTABLE_QUOTE_STATUSES.includes(status)) {
+      return NextResponse.json(
+        { error: "status must be ACCEPTED or REJECTED" },
+        { status: 400 }
+      );
+    }
+
     // Verify the user owns this project or is admin
     const project = await prisma.project.findUnique({ where: { id } });
     if (!project) {
@@ -123,10 +164,19 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const quote = await prisma.quote.update({
-      where: { id: quoteId },
+    // Owning the project in the URL does not imply owning `quoteId`. Scope
+    // the update to this project so a caller cannot pass their own project
+    // id alongside someone else's quote and act on it.
+    const updated = await prisma.quote.updateMany({
+      where: { id: quoteId, projectId: id },
       data: { status },
     });
+
+    if (updated.count === 0) {
+      return NextResponse.json({ error: "Quote not found" }, { status: 404 });
+    }
+
+    const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
 
     if (status === "ACCEPTED") {
       await prisma.project.update({

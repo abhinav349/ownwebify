@@ -64,6 +64,9 @@ model Referral {
   status     ReferralStatus @default(PENDING)
   amount     Float
   createdAt  DateTime       @default(now())
+
+  @@index([referrerId])
+  @@index([refereeId])
 }
 
 model Project {
@@ -84,6 +87,9 @@ model Project {
 
   quotes   Quote[]
   messages Message[]
+
+  @@index([clientId, createdAt])
+  @@index([status])
 }
 
 model Quote {
@@ -98,6 +104,8 @@ model Quote {
   status      QuoteStatus @default(PENDING)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  @@index([projectId])
 }
 
 model Message {
@@ -109,6 +117,9 @@ model Message {
   content   String
   imageUrl  String?
   createdAt DateTime @default(now())
+
+  @@index([projectId, createdAt])
+  @@index([senderId])
 }
 
 model OtpCode {
@@ -120,6 +131,8 @@ model OtpCode {
   createdAt DateTime @default(now())
 
   @@index([email, code])
+  @@index([email, createdAt])
+  @@index([expiresAt])
 }
 
 model PasswordResetToken {
@@ -199,4 +212,24 @@ model Lead {
   emailSentAt   DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// Fixed-window rate limit counters.
+///
+/// Kept in Postgres rather than in process memory because the app runs on
+/// serverless functions: an in-memory counter only limits the one instance
+/// that happens to serve the request, so an attacker gets a fresh budget on
+/// every cold start or fan-out. `key` encodes the bucket (rule + subject,
+/// e.g. `login:ip:1.2.3.4`) and is the primary key so the counter can be
+/// bumped in a single atomic upsert.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([windowStart])
 }

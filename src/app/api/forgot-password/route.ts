@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, otpEmailHtml } from "@/lib/email";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { generateOtpCode } from "@/lib/password";
 
 export async function POST(request: NextRequest) {
   const { email } = await request.json();
 
-  if (!email) {
+  if (!email || typeof email !== "string") {
     return NextResponse.json({ error: "Email is required" }, { status: 400 });
   }
+
+  // Per-IP cap: the per-email cap further down is keyed on the address, so
+  // rotating addresses otherwise gives an unlimited outbound mail budget.
+  const limitedByIp = await enforceRateLimit(request, "otpSend");
+  if (limitedByIp) return limitedByIp;
 
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -26,7 +33,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = generateOtpCode();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
   await prisma.otpCode.create({

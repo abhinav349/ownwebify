@@ -3,6 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { enforceRateLimit } from "@/lib/rate-limit";
+import { MIN_PASSWORD_LENGTH } from "@/lib/validations";
+import { BCRYPT_COST } from "@/lib/password";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -10,11 +13,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Verifies `currentPassword`, so it is a guessing oracle against the
+  // session owner's password (e.g. from a briefly unattended browser).
+  const limited = await enforceRateLimit(
+    request,
+    "changePassword",
+    `user:${session.user.id}`
+  );
+  if (limited) return limited;
+
   const { currentPassword, newPassword } = await request.json();
 
-  if (!newPassword || newPassword.length < 6) {
+  if (
+    !newPassword ||
+    typeof newPassword !== "string" ||
+    newPassword.length < MIN_PASSWORD_LENGTH
+  ) {
     return NextResponse.json(
-      { error: "New password must be at least 6 characters" },
+      { error: `New password must be at least ${MIN_PASSWORD_LENGTH} characters` },
       { status: 400 }
     );
   }
@@ -44,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const passwordHash = await bcrypt.hash(newPassword, 10);
+  const passwordHash = await bcrypt.hash(newPassword, BCRYPT_COST);
   await prisma.user.update({
     where: { id: session.user.id },
     data: { passwordHash },

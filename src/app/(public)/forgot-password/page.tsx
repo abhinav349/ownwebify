@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { passwordSchema } from "@/lib/validations";
 import { Loader2, Mail, ArrowLeft, CheckCircle2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ const emailSchema = z.object({
 const resetSchema = z
   .object({
     otp: z.string().length(6, "OTP must be 6 digits"),
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: passwordSchema,
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

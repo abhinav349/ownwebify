@@ -9,7 +9,14 @@ export async function GET() {
       where: { published: true },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     });
-    return NextResponse.json(testimonials);
+    // Public, rarely-changing content: let the CDN absorb the traffic
+    // instead of hitting Postgres on every page view. `stale-while-
+    // revalidate` keeps the refresh off the visitor's critical path.
+    return NextResponse.json(testimonials, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     console.error("Error fetching testimonials:", error);
     return NextResponse.json(

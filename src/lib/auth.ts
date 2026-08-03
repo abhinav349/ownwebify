@@ -5,11 +5,35 @@ import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { generateReferralCode } from "./password";
+import { checkRateLimit, resetRateLimit, RATE_LIMITS } from "./rate-limit";
 
-function generateReferralCode(name: string): string {
-  const prefix = name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, "X");
-  const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${prefix}-${suffix}`;
+/**
+ * A real bcrypt hash of an unguessable value, compared against when no
+ * account matches so that the failure path costs the same as a wrong
+ * password. Cost 12 to match {@link BCRYPT_COST}.
+ */
+const DUMMY_HASH =
+  "$2b$12$.mRB2Rnc4T57peBQ68t8yOPJ9FqNUs/t5GXBPRjvZvq0mEBoMLIzO";
+
+/**
+ * NextAuth hands `authorize` a stripped request whose `headers` is a plain
+ * object, not a `Headers`, so {@link getClientIp} does not apply directly.
+ */
+function clientIpFromAuthRequest(req: {
+  headers?: Record<string, string> | undefined;
+}): string {
+  const headers = req?.headers ?? {};
+  const vercel = headers["x-vercel-forwarded-for"];
+  if (vercel) return vercel.split(",")[0].trim();
+
+  const realIp = headers["x-real-ip"];
+  if (realIp) return realIp.trim();
+
+  const forwarded = headers["x-forwarded-for"];
+  if (forwarded) return forwarded.split(",")[0].trim();
+
+  return "unknown";
 }
 
 const providers: Provider[] = [];
@@ -39,9 +63,34 @@ providers.push(
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null;
+        }
+
+        const email = credentials.email.toLowerCase();
+        const ip = clientIpFromAuthRequest(req);
+
+        // Password login was previously unthrottled, which left credential
+        // stuffing and straight brute force open. Count every attempt
+        // against both the account and the source: the per-account bucket
+        // stops one account being ground down from many IPs, the per-IP
+        // bucket stops one host working through a list of accounts.
+        const [byAccount, byIp] = await Promise.all([
+          checkRateLimit(
+            `loginPerAccount:email:${email}`,
+            RATE_LIMITS.loginPerAccount
+          ),
+          checkRateLimit(`login:ip:${ip}`, RATE_LIMITS.login),
+        ]);
+
+        if (!byAccount.ok || !byIp.ok) {
+          const retryAfter = Math.max(byAccount.retryAfter, byIp.retryAfter);
+          throw new Error(
+            `Too many login attempts. Please try again in ${Math.ceil(
+              retryAfter / 60
+            )} minute(s).`
+          );
         }
 
         const user = await prisma.user.findUnique({
@@ -49,6 +98,10 @@ providers.push(
         });
 
         if (!user || !user.passwordHash) {
+          // Burn comparable time on a throwaway hash. Returning early here
+          // makes "no such account" measurably faster than "wrong
+          // password", which is enough to enumerate valid addresses.
+          await bcrypt.compare(credentials.password, DUMMY_HASH);
           return null;
         }
 
@@ -60,6 +113,13 @@ providers.push(
         if (!isPasswordValid) {
           return null;
         }
+
+        // Correct credentials — release the throttle so a user who
+        // mistyped a few times isn't left locked out.
+        await Promise.all([
+          resetRateLimit("loginPerAccount", `email:${email}`),
+          resetRateLimit("login", `ip:${ip}`),
+        ]);
 
         if (user.role !== "ADMIN" && !user.emailVerified) {
           throw new Error("Please verify your email before logging in.");
@@ -79,6 +139,12 @@ export const authOptions: NextAuthOptions = {
   providers,
   session: {
     strategy: "jwt",
+    // Without this NextAuth defaults to a 30-day session that also slides
+    // forward on every request, so a stolen token stays usable more or less
+    // indefinitely. Cap the absolute lifetime and refresh the rolling window
+    // at most once a day.
+    maxAge: 7 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
   },
   callbacks: {
     async signIn({ user, account }) {
