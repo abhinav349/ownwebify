@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { GeoPrice } from "@/components/shared/geo-price";
 import { Magnetic } from "@/components/demos/shared/magnetic";
-import { LazyHeroCrystalCanvas as HeroCrystalCanvas } from "@/components/demos/three/lazy-hero-crystal-canvas";
+import { LazyHeroParticlesCanvas as HeroParticlesCanvas } from "@/components/demos/three/lazy-hero-particles-canvas";
 import { useDeviceTier } from "@/hooks/use-device-tier";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -20,10 +20,9 @@ const headlineLines = [
 export function HeroSection() {
   const heroRef = useRef<HTMLElement>(null);
   const deviceTier = useDeviceTier();
-  // The crystal is positioned off to the side in world-space; below `lg` the
-  // headline already spans the full width, so there's no room to show it
-  // without overlapping text — skip mounting the canvas entirely there
-  // rather than pay the WebGL cost for something that'd be invisible/clipped.
+  // Desktop only. What is left in this canvas is ambient drift behind the
+  // copy, which is not worth a WebGL context, a bloom pass and three.js on a
+  // phone — the aurora and grid layers already carry the hero without it.
   const canShow3D = useMediaQuery("(min-width: 1024px)");
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -32,7 +31,7 @@ export function HeroSection() {
 
   // three.js is ~970KB and costs ~1s of script evaluation. Mounting it during
   // hydration blocks the main thread while the user is trying to read/click,
-  // so wait for idle — the hero reads as complete without it, and the crystal
+  // so wait for idle — the hero reads as complete without it, and the field
   // easing in a beat later is part of the effect rather than a regression.
   const [canvasReady, setCanvasReady] = useState(false);
   useEffect(() => {
@@ -43,10 +42,10 @@ export function HeroSection() {
     return () => cancel(id as number);
   }, []);
 
-  // Stop drawing once the hero is off screen. Without this the crystal, its
-  // bloom pass and its particle field kept rendering at 60fps for the whole
-  // page — invisible behind everything below, and stealing frames from the
-  // work section's laptop scene while it initialises.
+  // Stop drawing once the hero is off screen. Without this the particle field
+  // and its bloom pass kept rendering at 60fps for the whole page — invisible
+  // behind everything below, and stealing frames from the work section's
+  // laptop scene while it initialises.
   const [heroVisible, setHeroVisible] = useState(true);
   useEffect(() => {
     const node = heroRef.current;
@@ -75,7 +74,7 @@ export function HeroSection() {
 
       {deviceTier !== "reduced" && canShow3D && canvasReady && (
         <div className="absolute inset-0 z-0 animate-fade-in">
-          <HeroCrystalCanvas
+          <HeroParticlesCanvas
             scrollProgress={scrollYProgress}
             deviceTier={deviceTier}
             active={heroVisible}

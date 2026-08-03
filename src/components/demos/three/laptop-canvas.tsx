@@ -33,9 +33,10 @@ export default function LaptopCanvas({
   // one. Both stay desaturated — the brand colour belongs in the light rig and
   // on the screen, not smeared over the chassis.
   const body = isDark ? "#8f939c" : "#c3c6ce";
-  // What unlit faces reflect, so it sets the chassis' base tone. As with the
-  // hero crystal, dark mode needs this far brighter than it looks like it
-  // should, or the laptop renders as a hole in the page.
+  // What unlit faces reflect, so it sets the chassis' base tone. Dark mode
+  // needs this far brighter than instinct suggests: the shell is what a metal
+  // surface samples where no emitter covers it, so against a near-black page a
+  // dim shell renders the laptop as a hole rather than an object.
   const shell = isDark ? "#514b74" : "#eceaf6";
   const accent = isDark ? "#8b5cf6" : "#a78bfa";
   const cyan = isDark ? "#22d3ee" : "#38bdf8";

@@ -5,45 +5,40 @@ import { Canvas } from "@react-three/fiber";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import type { MotionValue } from "motion/react";
 import { useTheme } from "next-themes";
-import { SceneHeroCrystal } from "@/components/demos/three/scene-hero-crystal";
 import { SceneParticles } from "@/components/demos/three/scene-particles";
 import type { DeviceTier } from "@/hooks/use-device-tier";
 
-type HeroCrystalCanvasProps = {
+type HeroParticlesCanvasProps = {
   scrollProgress?: MotionValue<number>;
   deviceTier: DeviceTier;
   /** False once the hero has scrolled away — freezes the render loop. */
   active?: boolean;
 };
 
-export default function HeroCrystalCanvas({
+/**
+ * Ambient particle drift behind the hero copy.
+ *
+ * This canvas used to also carry a faceted iridescent gem. It was removed:
+ * positioned off to the right in world space, it crowded the headline at
+ * common viewport widths and pulled the eye away from the words it was meant
+ * to frame. What remains is atmosphere that stays behind the text instead of
+ * competing with it.
+ */
+export default function HeroParticlesCanvas({
   scrollProgress,
   deviceTier,
   active = true,
-}: HeroCrystalCanvasProps) {
+}: HeroParticlesCanvasProps) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
-  // On metal, `color` tints every reflection, so it stays desaturated — the
-  // brand hues live in the light rig, where they read as coloured highlights
-  // rather than flattening the whole surface to one shade.
-  const color = isDark ? "#e4dcff" : "#cfc6ee";
-  const accent = isDark ? "#8b5cf6" : "#a78bfa";
-  const cyan = isDark ? "#22d3ee" : "#38bdf8";
-  // Brightness of the enclosing shell: this is what unlit facets reflect, so
-  // it sets the object's base tone. Dark mode needs it higher than instinct
-  // suggests — against a near-black page a dim shell renders a silhouette.
-  const shell = isDark ? "#5b51a8" : "#a9a1dd";
-  const envIntensity = isDark ? 2.6 : 2.1;
   const highQuality = deviceTier === "high";
 
   return (
     <Canvas
-      // This used to render for the entire life of the page. The hero is one
-      // viewport tall, so on every scroll past it a bloom pass, 900 particles
-      // and an iridescent BRDF kept drawing at 60fps behind eight sections of
-      // content that hide it completely — burning battery and, more visibly,
-      // competing for the main thread exactly when the work section's laptop
-      // scene is trying to initialise.
+      // The hero is one viewport tall, so without this the field kept drawing
+      // at 60fps behind eight sections of content that hide it completely —
+      // burning battery and competing for the main thread exactly when the
+      // work section's laptop scene is trying to initialise.
       frameloop={active ? "always" : "never"}
       dpr={[1, highQuality ? 1.75 : 1]}
       gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
@@ -56,17 +51,10 @@ export default function HeroCrystalCanvas({
           count={highQuality ? 900 : 350}
           scrollProgress={scrollProgress}
         />
-        <SceneHeroCrystal
-          color={color}
-          accent={accent}
-          cyan={cyan}
-          shell={shell}
-          envIntensity={envIntensity}
-          scrollProgress={scrollProgress}
-          highQuality={highQuality}
-        />
         {highQuality && (
           <EffectComposer>
+            {/* Threshold sits above the page background but below a lit
+                particle, so only the points themselves pick up a halo. */}
             <Bloom
               luminanceThreshold={isDark ? 0.5 : 0.75}
               luminanceSmoothing={0.9}

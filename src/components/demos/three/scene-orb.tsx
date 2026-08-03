@@ -27,7 +27,7 @@ export function SceneOrb({ color = "#e8e6e1" }: { color?: string }) {
           drei fetch a multi-megabyte HDRI from raw.githack.com at runtime,
           which puts a third party on the critical path of a first-party page:
           a blocked or slow fetch throws inside the Canvas and takes the whole
-          route to its error boundary. Same idiom as scene-hero-crystal. */}
+          route to its error boundary. Same idiom as scene-laptop's rig. */}
       <Environment resolution={128}>
         <Lightformer
           form="rect"

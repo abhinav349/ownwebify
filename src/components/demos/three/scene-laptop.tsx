@@ -57,19 +57,20 @@ function CameraRig() {
 }
 
 /**
- * Compact studio rig. Same reasoning as the hero crystal's: a full enclosing
- * shell, because brushed aluminium samples the environment from every
- * direction and renders as a silhouette against anything it doesn't cover.
- * The two hard strips are what draw the long specular highlight down the lid.
+ * Compact studio rig: a full enclosing shell, because brushed aluminium
+ * samples the environment from every direction and renders as a silhouette
+ * against anything it doesn't cover. Emitters shaped as hard strips rather
+ * than a photographic HDRI — a stock preset makes a reflective surface read as
+ * a photo wrapped round it, with recognisable sky and buildings showing
+ * through. The two strips are what draw the specular highlight down the lid.
  */
 function LaptopRig({ accent, cyan, shell }: { accent: string; cyan: string; shell: string }) {
   return (
-    // 128, not 192. This cubemap is rendered before the first frame can be
-    // presented, and its only job is to supply broad specular streaks across
-    // brushed aluminium — there is no fine detail in the rig to preserve, so
-    // the extra 2.25x of pixels bought nothing visible and sat on the critical
-    // path. The hero crystal keeps its higher resolution because a mirror
-    // finish does resolve what this does not.
+    // 128. This cubemap is rendered before the first frame can be presented,
+    // and its only job is to supply broad specular streaks across brushed
+    // aluminium — a roughness-0.34 surface blurs the reflection anyway, so
+    // there is no fine detail to preserve and the pixels above this only sat
+    // on the critical path.
     <Environment resolution={128}>
       <mesh scale={50}>
         <sphereGeometry args={[1, 24, 24]} />
