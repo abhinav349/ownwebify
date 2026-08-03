@@ -36,31 +36,51 @@ function GsapLenisBridge() {
 }
 
 /**
- * ScrollTrigger only auto-refreshes on `load` / `DOMContentLoaded` / `resize`
- * (see gsap/ScrollTrigger.js), none of which fire again on a Next.js
- * client-side route transition. Without this, a pinned section's cached
- * start/end can go stale against the newly-mounted page's real layout
- * (fonts/images still settling) and scroll appears to "stick" once you
- * reach it, for the rest of that SPA session.
+ * Re-measures both scroll systems after a client-side route change.
+ *
+ * Lenis caches the document height as its scroll limit. A Next.js navigation
+ * swaps the content without ever resizing the viewport, so that limit stays at
+ * the *previous* page's height and scrolling clamps dead at it — arriving on
+ * the home page from /services stopped at exactly 2207px, which is that page's
+ * maximum, roughly a third of the way down. Its `autoResize` ResizeObserver
+ * does not reliably catch this, so the resize has to be driven explicitly.
+ *
+ * ScrollTrigger has the same blind spot for its own reasons: it only
+ * auto-refreshes on `load` / `DOMContentLoaded` / `resize` (see
+ * gsap/ScrollTrigger.js), none of which fire again on a route transition, so a
+ * pinned section's cached start/end can go stale against the new layout.
+ *
+ * Order matters — Lenis first, so ScrollTrigger measures against the corrected
+ * scroll range rather than the stale one.
  */
-function RouteScrollTriggerRefresh() {
+function RouteScrollSync() {
   const pathname = usePathname();
+  const lenis = useLenis();
 
   useEffect(() => {
-    const refresh = () => ScrollTrigger.refresh();
+    const sync = () => {
+      lenis?.resize();
+      ScrollTrigger.refresh();
+    };
 
     // Let the new route's DOM paint before measuring.
-    const raf = requestAnimationFrame(() => requestAnimationFrame(refresh));
-    document.fonts?.ready?.then(refresh);
+    const raf = requestAnimationFrame(() => requestAnimationFrame(sync));
+    document.fonts?.ready?.then(sync);
 
     const images = Array.from(document.images).filter((img) => !img.complete);
-    images.forEach((img) => img.addEventListener("load", refresh, { once: true }));
+    images.forEach((img) => img.addEventListener("load", sync, { once: true }));
+
+    // Deliberately no ResizeObserver on the document: ScrollTrigger.refresh()
+    // resizes its own pin-spacers, which changes document height and would
+    // retrigger the observer in a loop that pins scroll at 0.
+    const settle = window.setTimeout(sync, 600);
 
     return () => {
       cancelAnimationFrame(raf);
-      images.forEach((img) => img.removeEventListener("load", refresh));
+      clearTimeout(settle);
+      images.forEach((img) => img.removeEventListener("load", sync));
     };
-  }, [pathname]);
+  }, [pathname, lenis]);
 
   return null;
 }
@@ -85,7 +105,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       }}
     >
       <GsapLenisBridge />
-      <RouteScrollTriggerRefresh />
+      <RouteScrollSync />
       {children}
     </ReactLenis>
   );

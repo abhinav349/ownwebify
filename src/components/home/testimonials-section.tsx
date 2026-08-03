@@ -3,11 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/demos/shared/reveal";
 
 export async function TestimonialsSection() {
-  const testimonials = await prisma.testimonial.findMany({
-    where: { published: true },
-    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-    take: 9,
-  });
+  // An unreachable database must not take the homepage down with it. Neon
+  // suspends idle instances, so a cold start or a network blip here would
+  // otherwise throw during render and drop every section of the page — the
+  // marketing site is worth far more than this one optional block.
+  let testimonials: Awaited<ReturnType<typeof prisma.testimonial.findMany>> = [];
+  try {
+    testimonials = await prisma.testimonial.findMany({
+      where: { published: true },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+      take: 9,
+    });
+  } catch (error) {
+    console.error("Failed to load testimonials:", error);
+    return null;
+  }
 
   if (testimonials.length === 0) return null;
 
