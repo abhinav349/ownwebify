@@ -32,12 +32,17 @@ export default function LaptopCanvas({
   // Anodised aluminium: silver against a light page, graphite against a dark
   // one. Both stay desaturated — the brand colour belongs in the light rig and
   // on the screen, not smeared over the chassis.
-  const body = isDark ? "#8f939c" : "#c3c6ce";
-  // What unlit faces reflect, so it sets the chassis' base tone. Dark mode
-  // needs this far brighter than instinct suggests: the shell is what a metal
-  // surface samples where no emitter covers it, so against a near-black page a
-  // dim shell renders the laptop as a hole rather than an object.
-  const shell = isDark ? "#514b74" : "#eceaf6";
+  // Dark mode runs a genuine graphite rather than a light grey: against a
+  // near-black page the old value read as a pale slab floating in the void.
+  const body = isDark ? "#6e727b" : "#c0c3cb";
+  // The environment gradient the chassis reflects: bright above falling to a
+  // darker floor. This is what gives the metal its top-to-bottom falloff, so
+  // it has to be a ramp rather than one tone. Dark mode still needs the whole
+  // ramp lifted well above the page colour — a shell near black renders the
+  // laptop as a hole rather than an object.
+  const shellTop = isDark ? "#8b83bd" : "#ffffff";
+  const shellMid = isDark ? "#4a4468" : "#e7e5f1";
+  const shellBottom = isDark ? "#1b1926" : "#a9a6bd";
   const accent = isDark ? "#8b5cf6" : "#a78bfa";
   const cyan = isDark ? "#22d3ee" : "#38bdf8";
   const shadowColor = isDark ? "#000000" : "#4c1d95";
@@ -60,7 +65,9 @@ export default function LaptopCanvas({
           body={body}
           accent={accent}
           cyan={cyan}
-          shell={shell}
+          shellTop={shellTop}
+          shellMid={shellMid}
+          shellBottom={shellBottom}
           shadowColor={shadowColor}
           scrollProgress={scrollProgress}
           highQuality={highQuality}
@@ -68,10 +75,12 @@ export default function LaptopCanvas({
         />
         {highQuality && (
           <EffectComposer>
-            {/* Threshold sits above the chassis highlights on purpose: the only
-                thing that should bloom is the lit panel. */}
+            {/* Raised from 0.62. At that level the rig's specular streaks on
+                the chassis edges crossed the threshold too, wrapping the lid
+                and the front lip in a glowing outline that read as neon strip
+                lighting. Only the lit panel should bloom. */}
             <Bloom
-              luminanceThreshold={0.62}
+              luminanceThreshold={0.9}
               luminanceSmoothing={0.85}
               intensity={isDark ? 0.85 : 0.45}
               mipmapBlur
