@@ -30,7 +30,23 @@ export async function POST(req: NextRequest) {
   // Unlike the Google route, there's no billed-call chain and no
   // pageToken to walk - Overpass returns everything it found (capped at
   // MAX_OSM_RESULTS in osm-search.ts) in a single request.
-  const places = await searchOsmPlaces(query);
+  const result = await searchOsmPlaces(query);
+
+  if (!result.ok) {
+    // A too-large area or an unrecognised place is a problem with the
+    // query, so it's a 400; anything else is OSM being unavailable, which
+    // is upstream's fault and worth retrying, so 502.
+    const status =
+      result.reason === "area_too_large" || result.reason === "geocode_failed"
+        ? 400
+        : 502;
+    return NextResponse.json(
+      { error: result.message, reason: result.reason },
+      { status }
+    );
+  }
+
+  const { places } = result;
 
   return NextResponse.json({
     places,

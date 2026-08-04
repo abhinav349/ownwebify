@@ -51,11 +51,16 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
   const [error, setError] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>("no-website");
   const [lastQuery, setLastQuery] = useState("");
+  // Distinguishes "haven't searched yet" from "searched and got nothing".
+  // Without it a zero-result search renders exactly like a fresh page load,
+  // which reads as the feature being broken.
+  const [hasSearched, setHasSearched] = useState(false);
 
   const search = useCallback(async () => {
     setLoading(true);
     setPlaces([]);
     setError(null);
+    setHasSearched(false);
 
     try {
       const res = await fetch("/api/admin/leads/search-osm", {
@@ -64,14 +69,15 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
         body: JSON.stringify({ query }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         throw new Error(data.error || "Search failed");
       }
 
-      const data = await res.json();
       setPlaces(data.places);
       setLastQuery(query);
+      setHasSearched(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
@@ -434,6 +440,19 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
             </a>
           </p>
         </>
+      )}
+
+      {/* Searched, no error, but OSM genuinely had nothing for this area. */}
+      {hasSearched && places.length === 0 && !error && (
+        <div className="text-center py-10 space-y-1">
+          <p className="text-muted-foreground">
+            No businesses found for &ldquo;{lastQuery}&rdquo;.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            OpenStreetMap&apos;s coverage varies by area. Try a nearby
+            neighbourhood, or a different business type.
+          </p>
+        </div>
       )}
 
       {/* Link to saved leads */}

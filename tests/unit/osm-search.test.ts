@@ -67,6 +67,42 @@ describe("splitQuery", () => {
   });
 });
 
+// Mirrors the guard in src/lib/osm-search.ts that rejects a bounding box
+// too large for Overpass to scan before it times out.
+const MAX_BBOX_AREA_SQ_DEG = 2;
+
+function isAreaSearchable(dLat: number, dLon: number): boolean {
+  return dLat * dLon <= MAX_BBOX_AREA_SQ_DEG;
+}
+
+describe("bounding box area guard", () => {
+  it("rejects a whole US state", () => {
+    // California, as returned by Nominatim: ~9.48 x 10.35 degrees.
+    expect(isAreaSearchable(9.48, 10.35)).toBe(false);
+  });
+
+  it("allows a large metro area", () => {
+    // Los Angeles ~0.68 x 0.51 degrees.
+    expect(isAreaSearchable(0.68, 0.51)).toBe(true);
+  });
+
+  it("allows a city", () => {
+    // Toronto ~0.28 x 0.53, Bangalore ~0.31 x 0.32 degrees.
+    expect(isAreaSearchable(0.28, 0.53)).toBe(true);
+    expect(isAreaSearchable(0.31, 0.32)).toBe(true);
+  });
+
+  it("allows a neighbourhood", () => {
+    // Koramangala ~0.04 x 0.04 degrees.
+    expect(isAreaSearchable(0.04, 0.04)).toBe(true);
+  });
+
+  it("treats the threshold itself as searchable", () => {
+    expect(isAreaSearchable(1, MAX_BBOX_AREA_SQ_DEG)).toBe(true);
+    expect(isAreaSearchable(1, MAX_BBOX_AREA_SQ_DEG + 0.001)).toBe(false);
+  });
+});
+
 describe("matchCategory", () => {
   it("matches a known category by keyword", () => {
     expect(matchCategory("restaurants").label).toBe("Restaurant");

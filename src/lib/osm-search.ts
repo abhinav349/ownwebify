@@ -14,9 +14,16 @@
  * OSM tags via CATEGORY_TAGS below.
  *
  * Both services publish fair-use policies capping automated callers at
- * roughly one request/second. The `leadSearch` rate limit on the route that
- * calls this (60/hour/admin) already sits well under that, so no separate
- * throttling is done here.
+ * roughly one request/second. The `leadSearchOsm` rate limit on the route
+ * that calls this (60/hour/admin) already sits well under that, so no
+ * separate throttling is done here.
+ *
+ * The public Overpass instance is shared infrastructure and sheds load
+ * aggressively: it returns 504s intermittently even for small areas that
+ * succeed on a retry. Every failure mode below is therefore reported to the
+ * caller rather than folded into an empty result - an empty list must mean
+ * "the area genuinely has no matches", never "the lookup broke", or the UI
+ * has no way to tell the user which happened.
  */
 
 const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
@@ -35,6 +42,33 @@ const MAX_OSM_RESULTS = 60;
 // exact address rather than a neighborhood) is padded out to roughly a
 // 1km square so Overpass has an area worth searching instead of one point.
 const MIN_BBOX_SPAN_DEG = 0.01;
+
+// Overpass has to scan every object in the box before it can apply the
+// output cap, so an area this large times out server-side no matter how
+// few results we ask for - "restaurants in California" (~98 sq deg) burns
+// the full 25s and comes back empty. Rejecting it up front turns a 30s
+// wait ending in a blank screen into an instant, actionable message.
+//
+// Sized to comfortably clear any city or metro (Los Angeles ~0.35,
+// Greater London ~0.3, Toronto ~0.15, Bangalore ~0.10 sq deg) while still
+// catching states and countries.
+const MAX_BBOX_AREA_SQ_DEG = 2;
+
+// 504/429/502/503 from Overpass are load shedding, not a bad query; the
+// same request usually succeeds moments later.
+const OVERPASS_RETRY_STATUSES = new Set([429, 502, 503, 504]);
+const OVERPASS_MAX_ATTEMPTS = 3;
+const OVERPASS_RETRY_BACKOFF_MS = [1000, 3000];
+
+export type OsmSearchFailure =
+  | "geocode_failed"
+  | "area_too_large"
+  | "overpass_unavailable"
+  | "overpass_timeout";
+
+export type OsmSearchResult =
+  | { ok: true; places: OsmPlace[] }
+  | { ok: false; reason: OsmSearchFailure; message: string };
 
 export interface OsmPlace {
   placeId: string;
@@ -155,23 +189,72 @@ function buildOverpassQuery(selectors: string[], bbox: Bbox): string {
   return `[out:json][timeout:${OVERPASS_TIMEOUT_S}];\n(\n${clauses}\n);\nout body center ${MAX_OSM_RESULTS};`;
 }
 
-async function runOverpassQuery(ql: string): Promise<OverpassElement[]> {
-  const res = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": OSM_USER_AGENT,
-    },
-    body: `data=${encodeURIComponent(ql)}`,
-  });
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  if (!res.ok) {
-    console.error("Overpass API error:", res.status, await res.text());
-    return [];
+type OverpassOutcome =
+  | { ok: true; elements: OverpassElement[] }
+  | { ok: false; reason: "overpass_unavailable" | "overpass_timeout" };
+
+async function runOverpassQuery(ql: string): Promise<OverpassOutcome> {
+  let lastStatus: number | null = null;
+
+  for (let attempt = 0; attempt < OVERPASS_MAX_ATTEMPTS; attempt++) {
+    if (attempt > 0) {
+      await wait(
+        OVERPASS_RETRY_BACKOFF_MS[attempt - 1] ??
+          OVERPASS_RETRY_BACKOFF_MS[OVERPASS_RETRY_BACKOFF_MS.length - 1]
+      );
+    }
+
+    let res: Response;
+    try {
+      res = await fetch(OVERPASS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": OSM_USER_AGENT,
+        },
+        body: `data=${encodeURIComponent(ql)}`,
+      });
+    } catch (err) {
+      // Network-level failure (DNS, connection reset). Same class of
+      // transient problem as a 504, so it gets the same retry.
+      console.error("Overpass request failed:", err);
+      lastStatus = null;
+      continue;
+    }
+
+    if (!res.ok) {
+      lastStatus = res.status;
+      console.error("Overpass API error:", res.status);
+      if (OVERPASS_RETRY_STATUSES.has(res.status)) continue;
+      return { ok: false, reason: "overpass_unavailable" };
+    }
+
+    let data: { elements?: OverpassElement[]; remark?: string };
+    try {
+      data = await res.json();
+    } catch {
+      lastStatus = res.status;
+      continue;
+    }
+
+    // Overpass reports a server-side query timeout or memory exhaustion as
+    // a `remark` on an otherwise-200 response with no elements. Without
+    // this check that reads as "no businesses here", which is exactly the
+    // wrong thing to tell the user.
+    if (data.remark && !data.elements?.length) {
+      console.error("Overpass remark:", data.remark);
+      return { ok: false, reason: "overpass_timeout" };
+    }
+
+    return { ok: true, elements: data.elements ?? [] };
   }
 
-  const data = (await res.json()) as { elements?: OverpassElement[] };
-  return data.elements ?? [];
+  console.error("Overpass exhausted retries; last status:", lastStatus);
+  return { ok: false, reason: "overpass_unavailable" };
 }
 
 function toPlace(el: OverpassElement, category: string): OsmPlace | null {
@@ -207,32 +290,65 @@ function toPlace(el: OverpassElement, category: string): OsmPlace | null {
 }
 
 /**
- * Best-effort: any failure (bad geocode, Overpass timeout/outage) resolves
- * to an empty list rather than throwing, since this is a supplementary
- * source layered on top of Google Places, never the only one a search
- * depends on.
+ * Never throws: every failure comes back as `{ ok: false }` carrying a
+ * reason the caller can turn into a message. A successful result with an
+ * empty `places` array means the area really has no matches - the two must
+ * stay distinguishable, since they call for opposite advice ("try a
+ * different area" vs "try again in a moment").
  */
-export async function searchOsmPlaces(query: string): Promise<OsmPlace[]> {
+export async function searchOsmPlaces(query: string): Promise<OsmSearchResult> {
   try {
     const { what, where } = splitQuery(query);
-    const bbox = await geocode(where || query);
-    if (!bbox) return [];
+    const location = where || query;
+
+    const bbox = await geocode(location);
+    if (!bbox) {
+      return {
+        ok: false,
+        reason: "geocode_failed",
+        message: `Couldn't find a place called "${location}". Try adding a city or country, e.g. "cafes in Vancouver, Canada".`,
+      };
+    }
+
+    const area = (bbox.north - bbox.south) * (bbox.east - bbox.west);
+    if (area > MAX_BBOX_AREA_SQ_DEG) {
+      return {
+        ok: false,
+        reason: "area_too_large",
+        message: `"${location}" covers too large an area for OpenStreetMap to search. Try a city or neighbourhood instead, e.g. "restaurants in San Francisco, California".`,
+      };
+    }
 
     const { selectors, label } = matchCategory(what);
-    const elements = await runOverpassQuery(buildOverpassQuery(selectors, bbox));
+    const outcome = await runOverpassQuery(buildOverpassQuery(selectors, bbox));
+
+    if (!outcome.ok) {
+      return {
+        ok: false,
+        reason: outcome.reason,
+        message:
+          outcome.reason === "overpass_timeout"
+            ? "OpenStreetMap timed out on that area. Try a smaller or more specific location."
+            : "OpenStreetMap's search service is busy right now. Please try again in a moment.",
+      };
+    }
 
     const seen = new Set<string>();
     const places: OsmPlace[] = [];
-    for (const el of elements) {
+    for (const el of outcome.elements) {
       const place = toPlace(el, label);
       if (place && !seen.has(place.placeId)) {
         seen.add(place.placeId);
         places.push(place);
       }
     }
-    return places;
+    return { ok: true, places };
   } catch (err) {
     console.error("OSM lead search error:", err);
-    return [];
+    return {
+      ok: false,
+      reason: "overpass_unavailable",
+      message: "The OpenStreetMap lookup failed unexpectedly. Please try again.",
+    };
   }
 }
