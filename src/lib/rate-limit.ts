@@ -59,6 +59,13 @@ export const RATE_LIMITS = {
   upload: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** Google Places search — billed per call. */
   leadSearch: { limit: 60, windowMs: 60 * 60 * 1000 },
+  /**
+   * OpenStreetMap lead search — free and keyless, so this isn't about
+   * spend. It's here so one admin session can't hammer the shared public
+   * Nominatim/Overpass instances past their fair-use policies (~1 req/sec)
+   * and get OwnWebify's server IP blocked from both.
+   */
+  leadSearchOsm: { limit: 60, windowMs: 60 * 60 * 1000 },
   /** Outreach email send. */
   leadEmail: { limit: 100, windowMs: 60 * 60 * 1000 },
   /** Catch-all for read endpoints, to blunt scraping. */

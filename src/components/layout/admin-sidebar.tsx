@@ -16,16 +16,22 @@ import {
   Home,
   Crosshair,
   BookmarkCheck,
+  MapPinned,
   MessageSquareQuote,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
 
+// `exact` opts an entry out of the prefix match below. Needed for any href
+// that is a prefix of another entry's href, otherwise both light up at
+// once - /admin/leads has /admin/leads/saved and /admin/leads/osm nested
+// under it, each with their own entry.
 const navigation = [
-  { name: "Dashboard", href: "/admin", icon: BarChart3 },
+  { name: "Dashboard", href: "/admin", icon: BarChart3, exact: true },
   { name: "Projects", href: "/admin/projects", icon: FolderKanban },
   { name: "Clients", href: "/admin/clients", icon: Users },
-  { name: "Lead Finder", href: "/admin/leads", icon: Crosshair },
+  { name: "Lead Finder", href: "/admin/leads", icon: Crosshair, exact: true },
+  { name: "OSM Leads", href: "/admin/leads/osm", icon: MapPinned },
   { name: "Saved Leads", href: "/admin/leads/saved", icon: BookmarkCheck },
   { name: "Portfolio", href: "/admin/portfolio", icon: Image },
   { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquareQuote },
@@ -49,7 +55,7 @@ export function AdminSidebar() {
         {navigation.map((item) => {
           const isActive =
             pathname === item.href ||
-            (item.href !== "/admin" && pathname.startsWith(item.href));
+            (!item.exact && pathname.startsWith(item.href));
           return (
             <Link
               key={item.name}
