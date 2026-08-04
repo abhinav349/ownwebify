@@ -30,6 +30,7 @@ interface Place {
   rating: number | null;
   userRatings: number | null;
   mapsUrl: string | null;
+  source: "google" | "osm";
 }
 
 type FilterMode = "all" | "no-website" | "has-website";
@@ -382,6 +383,11 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                               No Website
                             </Badge>
                           )}
+                          {place.source === "osm" && (
+                            <Badge variant="outline" className="text-[11px]">
+                              OSM
+                            </Badge>
+                          )}
                           {isSaved && (
                             <Badge className="bg-green-100 text-green-800 border-green-200 text-[11px]">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -468,6 +474,20 @@ export function LeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
           {filtered.length === 0 && (
             <p className="text-center text-muted-foreground py-8">
               No results match the current filter.
+            </p>
+          )}
+
+          {places.some((p) => p.source === "osm") && (
+            <p className="text-center text-[11px] text-muted-foreground">
+              Includes results from{" "}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                OpenStreetMap contributors
+              </a>
             </p>
           )}
 

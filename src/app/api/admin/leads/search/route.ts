@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { searchOsmPlaces } from "@/lib/osm-search";
 
 const PLACES_API_URL =
   "https://places.googleapis.com/v1/places:searchText";
@@ -105,13 +106,10 @@ export async function POST(req: NextRequest) {
   );
   if (limited) return limited;
 
+  // Google is billed and needs a key; OSM (below) is free and keyless, so a
+  // missing key no longer fails the whole search - it just means Google's
+  // slice of the results comes back empty and OSM carries the search alone.
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "Google Places API key not configured" },
-      { status: 500 }
-    );
-  }
 
   const body = await req.json();
   const { query, pageToken } = body as {
@@ -126,7 +124,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  try {
+  async function fetchGoogleBatch(
+    key: string | undefined,
+    textQuery: string
+  ): Promise<{ places: PlaceResult[]; nextPageToken?: string }> {
+    if (!key) return { places: [] };
+
     const collected: PlaceResult[] = [];
     let token = pageToken;
     let nextPageToken: string | undefined;
@@ -140,7 +143,7 @@ export async function POST(req: NextRequest) {
         await delay(PAGE_TOKEN_DELAY_MS);
       }
 
-      const page = await fetchPage(apiKey, query, token);
+      const page = await fetchPage(key, textQuery, token);
       collected.push(...page.places);
       nextPageToken = page.nextPageToken;
       token = nextPageToken;
@@ -148,7 +151,20 @@ export async function POST(req: NextRequest) {
       if (!nextPageToken) break;
     }
 
-    const places = collected.map((p) => ({
+    return { places: collected, nextPageToken };
+  }
+
+  try {
+    const [google, osmPlaces] = await Promise.all([
+      fetchGoogleBatch(apiKey, query),
+      // OSM has no pagination of its own - it returns everything it found
+      // in one shot - so it only runs on a fresh search. Running it again
+      // on every "Load More" click (which reuses the same query) would just
+      // re-append the same rows.
+      pageToken ? Promise.resolve([]) : searchOsmPlaces(query),
+    ]);
+
+    const googlePlaces = google.places.map((p) => ({
       placeId: p.id,
       name: p.displayName?.text ?? "Unknown",
       address: p.formattedAddress ?? "",
@@ -158,11 +174,17 @@ export async function POST(req: NextRequest) {
       rating: p.rating ?? null,
       userRatings: p.userRatingCount ?? null,
       mapsUrl: p.googleMapsUri ?? null,
+      source: "google" as const,
     }));
+
+    const places = [
+      ...googlePlaces,
+      ...osmPlaces.map((p) => ({ ...p, source: "osm" as const })),
+    ];
 
     return NextResponse.json({
       places,
-      nextPageToken: nextPageToken ?? null,
+      nextPageToken: google.nextPageToken ?? null,
       total: places.length,
       withoutWebsite: places.filter((p) => !p.website).length,
     });
