@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2, Check, TerminalSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -140,6 +140,17 @@ const authedSteps = [
 ];
 
 export default function HirePage() {
+  // Scoped here rather than in the root Providers: this is the only page on
+  // the site that reads a session, so every other page (the whole marketing
+  // site) was paying for a client-side fetch to /api/auth/session it never used.
+  return (
+    <SessionProvider>
+      <HirePageContent />
+    </SessionProvider>
+  );
+}
+
+function HirePageContent() {
   const { status } = useSession();
 
   if (status === "loading") {

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, otpEmailHtml } from "@/lib/email";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -40,10 +40,14 @@ export async function POST(request: NextRequest) {
     data: { email, code, expiresAt },
   });
 
-  await sendEmail({
-    to: email,
-    subject: "Password Reset OTP - OwnWebify",
-    html: otpEmailHtml(code),
+  // The response never reflects send success/failure (always {success: true},
+  // to avoid leaking which emails exist), so there's nothing to wait for.
+  after(async () => {
+    await sendEmail({
+      to: email,
+      subject: "Password Reset OTP - OwnWebify",
+      html: otpEmailHtml(code),
+    });
   });
 
   return NextResponse.json({ success: true });
