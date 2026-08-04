@@ -33,11 +33,9 @@ export function Header() {
             : "mt-5 max-w-6xl w-full px-6 py-3"
         )}
       >
-        {/* aria-label because the wordmark is hidden below `sm`, which would
-            otherwise leave this link with no accessible name on phones. */}
         <Link href="/" aria-label="OwnWebify home" className="flex items-center gap-2.5 group shrink-0">
           <Logo size={scrolled ? 28 : 32} className="transition-all duration-500" />
-          <span className="font-bold tracking-tight transition-all duration-500 hidden sm:inline">
+          <span className="font-bold tracking-tight text-sm sm:text-base transition-all duration-500">
             OwnWebify
           </span>
         </Link>
