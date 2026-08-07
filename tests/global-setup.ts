@@ -17,6 +17,32 @@ const prisma = new PrismaClient();
 const LEGACY_TEST_DOMAINS = ["integration.test"];
 const LEGACY_TEST_PREFIXES = ["e2e-pup-"];
 
+/**
+ * The rate-limit bucket a request to `localhost` always lands in: nothing
+ * this suite talks to sets the headers `getClientIp` reads, so every
+ * IP-keyed counter the tests create - login throttles above all - collapses
+ * onto this one synthetic key. Real traffic can never share it (production
+ * goes through Vercel, which always sets `x-vercel-forwarded-for`), which is
+ * what makes it safe to sweep unconditionally below.
+ */
+const TEST_IP_KEY = "ip:unknown";
+
+/**
+ * Matches only rate-limit rows this test run could plausibly have created:
+ * the shared local-IP bucket, or anything keyed to one of the fixture
+ * accounts. This DB is shared with a live site, so the wipe below must never
+ * touch a counter that belongs to a real account or visitor.
+ */
+function testRateLimitWhere() {
+  return {
+    OR: [
+      { key: { endsWith: `:${TEST_IP_KEY}` } },
+      { key: { contains: TEST_ADMIN_EMAIL } },
+      { key: { contains: TEST_CLIENT_EMAIL } },
+    ],
+  };
+}
+
 export const TEST_ADMIN_EMAIL = `e2e-admin@${TEST_EMAIL_DOMAIN}`;
 export const TEST_CLIENT_EMAIL = `e2e-client@${TEST_EMAIL_DOMAIN}`;
 
@@ -129,13 +155,16 @@ export async function setup({ provide }: TestProject) {
   provide("testCredentials", credentials);
 
   // Counters are per-IP and per-account; a suite that logs in repeatedly from
-  // one host would otherwise trip the login throttle partway through.
-  await prisma.rateLimit.deleteMany({});
+  // one host would otherwise trip the login throttle partway through. Scoped
+  // rather than blanket: this table is shared with a live site, and an
+  // unfiltered delete here would reset rate-limit state for every real
+  // account and visitor, not just this run's fixtures.
+  await prisma.rateLimit.deleteMany({ where: testRateLimitWhere() });
 }
 
 export async function teardown() {
   const removed = await purgeTestUsers();
-  await prisma.rateLimit.deleteMany({});
+  await prisma.rateLimit.deleteMany({ where: testRateLimitWhere() });
   await prisma.$disconnect();
   if (removed > 0) {
     console.log(`[global-setup] removed ${removed} test user(s)`);

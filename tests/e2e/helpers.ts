@@ -128,18 +128,31 @@ export async function waitForText(page: Page, text: string, timeout = 10000): Pr
 }
 
 /**
- * Drop the login throttle counters.
+ * A Puppeteer request straight to `localhost` carries none of the headers
+ * `getClientIp` looks for (`x-vercel-forwarded-for` etc. are only ever set
+ * by Vercel's edge), so every login attempt this suite makes lands on the
+ * same synthetic `ip:unknown` bucket. Real traffic - production goes through
+ * Vercel - can never share that bucket, which is what makes it safe to
+ * clear: this key exists only because the test runner put it there.
+ */
+const TEST_IP_KEY = "ip:unknown";
+
+/**
+ * Drop the login throttle counters this suite itself accumulated.
  *
  * Login is rate limited per account and per source IP. Every suite here logs
  * in from the same host, so without this the later files in a run would be
- * throttled rather than genuinely failing.
+ * throttled rather than genuinely failing. Scoped to the account being
+ * logged into plus the shared test IP bucket - this DB is shared with a live
+ * site, so a blanket `deleteMany({})` here would reset rate-limit state for
+ * every real account and visitor, not just the test's own.
  */
-export async function clearLoginThrottle(): Promise<void> {
+export async function clearLoginThrottle(email: string): Promise<void> {
   await prisma.rateLimit.deleteMany({
     where: {
       OR: [
-        { key: { startsWith: "login:" } },
-        { key: { startsWith: "loginPerAccount:" } },
+        { key: `login:${TEST_IP_KEY}` },
+        { key: `loginPerAccount:${email}` },
       ],
     },
   });
@@ -150,7 +163,7 @@ export async function login(
   email: string,
   password: string
 ): Promise<void> {
-  await clearLoginThrottle();
+  await clearLoginThrottle(email);
   await page.goto(url("/login"), { waitUntil: "domcontentloaded" });
   await page.waitForSelector('input[id="email"]');
   await page.type('input[id="email"]', email);
