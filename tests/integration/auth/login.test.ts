@@ -8,15 +8,40 @@ const BASE_URL = "http://localhost:3002";
 // existing on a real account.
 const { adminEmail, adminPassword } = inject("testCredentials");
 
+// Every non-fixture email this file submits, so the throttle reset below can
+// name them individually instead of clearing every account's counter.
+const TEST_LOGIN_EMAILS = [adminEmail, "noone@example.com", "nobody@example.com"];
+
+// Every loopback representation a request to localhost can end up tagged
+// with - measured empirically, not assumed: this fork's dev server turns
+// out to populate the forwarding header from the raw socket address, which
+// resolves "localhost" to "::1" rather than falling through to "unknown" on
+// this machine. Either way none of these can be a real visitor's bucket -
+// production arrives through Vercel's edge, which always injects a genuine
+// public client IP.
+const TEST_IPS = ["unknown", "::1", "127.0.0.1"];
+
 // Several cases here deliberately submit bad credentials, which counts
 // against the login throttle. Clear it first so a later assertion measures
-// authentication rather than rate limiting.
+// authentication rather than rate limiting. Scoped to this file's own
+// fixtures: this DB is shared with a live site, and a blanket
+// `startsWith("login:")`/`startsWith("loginPerAccount:")` sweep would reset
+// every real account's and visitor's throttle on every single test case.
 beforeEach(async () => {
   await prisma.rateLimit.deleteMany({
     where: {
       OR: [
-        { key: { startsWith: "login:" } },
-        { key: { startsWith: "loginPerAccount:" } },
+        ...TEST_IPS.map((ip) => ({ key: `login:ip:${ip}` })),
+        // `contains` rather than reconstructing auth.ts's exact key: a
+        // literal rebuild here silently stops matching the moment that
+        // format changes elsewhere, which fails open into "throttle never
+        // cleared" rather than an error.
+        ...TEST_LOGIN_EMAILS.map((email) => ({
+          key: {
+            startsWith: "loginPerAccount:",
+            contains: email.toLowerCase(),
+          },
+        })),
       ],
     },
   });

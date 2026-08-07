@@ -128,14 +128,20 @@ export async function waitForText(page: Page, text: string, timeout = 10000): Pr
 }
 
 /**
- * A Puppeteer request straight to `localhost` carries none of the headers
- * `getClientIp` looks for (`x-vercel-forwarded-for` etc. are only ever set
- * by Vercel's edge), so every login attempt this suite makes lands on the
- * same synthetic `ip:unknown` bucket. Real traffic - production goes through
- * Vercel - can never share that bucket, which is what makes it safe to
- * clear: this key exists only because the test runner put it there.
+ * Every loopback representation a request to `localhost` can end up tagged
+ * with. Measured empirically rather than assumed: `getClientIp` falls back
+ * to the literal "unknown" when no forwarding header is set, but this fork's
+ * dev server turns out to populate one from the raw socket address anyway,
+ * which resolves "localhost" to the IPv6 loopback "::1" - not "unknown" - on
+ * this machine. Listing both (plus IPv4 loopback, in case a CI runner
+ * resolves it the other way) rather than trusting one guessed literal.
+ *
+ * The invariant that makes any of these safe to clear is the same either
+ * way: production traffic arrives through Vercel's edge, which always
+ * injects a real public client IP, so none of these values can ever be a
+ * real visitor's bucket - only a local test run can produce one.
  */
-const TEST_IP_KEY = "ip:unknown";
+const TEST_IPS = ["unknown", "::1", "127.0.0.1"];
 
 /**
  * Drop the login throttle counters this suite itself accumulated.
@@ -151,8 +157,14 @@ export async function clearLoginThrottle(email: string): Promise<void> {
   await prisma.rateLimit.deleteMany({
     where: {
       OR: [
-        { key: `login:${TEST_IP_KEY}` },
-        { key: `loginPerAccount:${email}` },
+        ...TEST_IPS.map((ip) => ({ key: `login:ip:${ip}` })),
+        // `contains` rather than reconstructing auth.ts's exact key
+        // (`loginPerAccount:email:<lowercased>`): a literal rebuild here
+        // silently stops matching anything the moment that format changes
+        // elsewhere, which fails open into "throttle never cleared" rather
+        // than an error - `contains` only needs the email substring to
+        // still be true.
+        { key: { startsWith: "loginPerAccount:", contains: email.toLowerCase() } },
       ],
     },
   });

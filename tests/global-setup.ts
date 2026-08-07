@@ -18,25 +18,28 @@ const LEGACY_TEST_DOMAINS = ["integration.test"];
 const LEGACY_TEST_PREFIXES = ["e2e-pup-"];
 
 /**
- * The rate-limit bucket a request to `localhost` always lands in: nothing
- * this suite talks to sets the headers `getClientIp` reads, so every
- * IP-keyed counter the tests create - login throttles above all - collapses
- * onto this one synthetic key. Real traffic can never share it (production
- * goes through Vercel, which always sets `x-vercel-forwarded-for`), which is
- * what makes it safe to sweep unconditionally below.
+ * Every loopback representation a request to `localhost` can end up tagged
+ * with - measured empirically, not assumed: `getClientIp` falls back to the
+ * literal "unknown" when no forwarding header is set, but this fork's dev
+ * server turns out to populate one from the raw socket address anyway, which
+ * resolves "localhost" to "::1" rather than "unknown" on this machine.
+ * Listing all three rather than trusting one guessed literal. Real traffic
+ * can never share any of them - production goes through Vercel, which always
+ * injects a genuine public client IP - which is what makes them safe to
+ * sweep unconditionally below.
  */
-const TEST_IP_KEY = "ip:unknown";
+const TEST_IPS = ["unknown", "::1", "127.0.0.1"];
 
 /**
  * Matches only rate-limit rows this test run could plausibly have created:
- * the shared local-IP bucket, or anything keyed to one of the fixture
+ * the shared local-IP buckets, or anything keyed to one of the fixture
  * accounts. This DB is shared with a live site, so the wipe below must never
  * touch a counter that belongs to a real account or visitor.
  */
 function testRateLimitWhere() {
   return {
     OR: [
-      { key: { endsWith: `:${TEST_IP_KEY}` } },
+      ...TEST_IPS.map((ip) => ({ key: { endsWith: `:ip:${ip}` } })),
       { key: { contains: TEST_ADMIN_EMAIL } },
       { key: { contains: TEST_CLIENT_EMAIL } },
     ],
