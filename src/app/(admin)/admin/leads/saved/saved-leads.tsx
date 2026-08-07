@@ -21,6 +21,7 @@ import {
   MessageCircle,
   Send,
   CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,9 @@ const LEAD_STATUSES = [
 
 type StatusFilter = "ALL" | string;
 
+/** Mirrors MAX_LEADS_PER_REQUEST in the enrich route. */
+const ENRICH_BATCH_SIZE = 20;
+
 export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
   const [leads, setLeads] = useState<SavedLead[]>(initialLeads);
   const [expandedLead, setExpandedLead] = useState<string | null>(null);
@@ -65,6 +69,9 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
   const [editingEmail, setEditingEmail] = useState<Record<string, string>>({});
   const [sendingEmail, setSendingEmail] = useState<Set<string>>(new Set());
   const [emailError, setEmailError] = useState<Record<string, string>>({});
+  const [enriching, setEnriching] = useState<Set<string>>(new Set());
+  const [enrichNote, setEnrichNote] = useState<Record<string, string>>({});
+  const [bulkEnrichNote, setBulkEnrichNote] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
@@ -142,6 +149,87 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
     }
   }, []);
 
+  /**
+   * Reads the leads' own websites looking for contact details.
+   *
+   * Neither lead source can provide an email address, so without this every
+   * outreach email needs one typed in by hand. The server only ever fills
+   * blanks, so running this over a lead that already has an address is safe.
+   */
+  const enrichLeads = useCallback(async (targets: SavedLead[]) => {
+    if (!targets.length) return;
+    const ids = targets.map((l) => l.id);
+
+    setEnriching((prev) => new Set([...prev, ...ids]));
+    setBulkEnrichNote(null);
+    setEnrichNote((prev) => {
+      const next = { ...prev };
+      ids.forEach((id) => delete next[id]);
+      return next;
+    });
+
+    try {
+      const res = await fetch("/api/admin/leads/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        const message = data.error || "Contact lookup failed";
+        if (ids.length === 1) setEnrichNote({ [ids[0]]: message });
+        else setBulkEnrichNote(message);
+        return;
+      }
+
+      const results = data.results as {
+        id: string;
+        email: string | null;
+        phone: string | null;
+        error?: string;
+      }[];
+
+      setLeads((prev) =>
+        prev.map((l) => {
+          const found = results.find((r) => r.id === l.id);
+          return found ? { ...l, email: found.email, phone: found.phone } : l;
+        })
+      );
+
+      // Per-lead reasons ("no website on file", "site published nothing")
+      // are worth showing: they tell the admin which leads still need
+      // manual work and why, instead of the row just not changing.
+      setEnrichNote((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          results.filter((r) => r.error).map((r) => [r.id, r.error as string])
+        ),
+      }));
+
+      if (ids.length > 1) {
+        const gained = results.filter(
+          (r) => r.email && !targets.find((t) => t.id === r.id)?.email
+        ).length;
+        setBulkEnrichNote(
+          `Checked ${results.length} websites - found ${gained} new email ${
+            gained === 1 ? "address" : "addresses"
+          }.`
+        );
+      }
+    } catch {
+      const message = "Contact lookup failed";
+      if (ids.length === 1) setEnrichNote({ [ids[0]]: message });
+      else setBulkEnrichNote(message);
+    } finally {
+      setEnriching((prev) => {
+        const next = new Set(prev);
+        ids.forEach((id) => next.delete(id));
+        return next;
+      });
+    }
+  }, []);
+
   const deleteLead = useCallback(async (lead: SavedLead) => {
     if (!confirm(`Remove "${lead.businessName}" from saved leads?`)) return;
     setUpdatingLead((prev) => new Set(prev).add(lead.id));
@@ -176,6 +264,10 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
     }
     return true;
   });
+
+  // The leads a website lookup could actually help: something to read, and
+  // no address yet.
+  const enrichable = leads.filter((l) => l.website && !l.email);
 
   const statusCounts = LEAD_STATUSES.map((s) => ({
     ...s,
@@ -230,6 +322,34 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
           className="pl-10"
         />
       </div>
+
+      {/* Bulk contact lookup */}
+      {enrichable.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border bg-muted/40">
+          <p className="text-sm text-muted-foreground">
+            {enrichable.length}{" "}
+            {enrichable.length === 1 ? "lead has" : "leads have"} a website but
+            no email address.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={enriching.size > 0}
+            onClick={() => enrichLeads(enrichable.slice(0, ENRICH_BATCH_SIZE))}
+          >
+            {enriching.size > 0 ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            )}
+            Find emails ({Math.min(enrichable.length, ENRICH_BATCH_SIZE)})
+          </Button>
+        </div>
+      )}
+
+      {bulkEnrichNote && (
+        <p className="text-sm text-muted-foreground">{bulkEnrichNote}</p>
+      )}
 
       {/* Results count */}
       {(searchTerm || statusFilter !== "ALL") && (
@@ -464,6 +584,21 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                               Save Email
                             </Button>
                           )}
+                        {lead.website && !lead.email && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={enriching.has(lead.id)}
+                            onClick={() => enrichLeads([lead])}
+                          >
+                            {enriching.has(lead.id) ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                            ) : (
+                              <Sparkles className="h-3.5 w-3.5 mr-1" />
+                            )}
+                            Find Email
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           disabled={!lead.email || sendingEmail.has(lead.id)}
@@ -477,6 +612,11 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                           Send Outreach Email
                         </Button>
                       </div>
+                      {enrichNote[lead.id] && (
+                        <p className="text-xs text-muted-foreground mt-1.5">
+                          {enrichNote[lead.id]}
+                        </p>
+                      )}
                       {lead.emailSentAt && (
                         <p className="text-xs text-green-700 flex items-center gap-1 mt-1.5">
                           <CheckCircle2 className="h-3.5 w-3.5" />

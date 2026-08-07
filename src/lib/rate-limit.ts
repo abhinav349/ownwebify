@@ -66,6 +66,12 @@ export const RATE_LIMITS = {
    * and get OwnWebify's server IP blocked from both.
    */
   leadSearchOsm: { limit: 60, windowMs: 60 * 60 * 1000 },
+  /**
+   * Website contact-scraping. One request fans out to several outbound
+   * fetches against third-party sites, so this caps how much traffic one
+   * admin session can aim at other people's servers on our IP.
+   */
+  leadEnrich: { limit: 40, windowMs: 60 * 60 * 1000 },
   /** Outreach email send. */
   leadEmail: { limit: 100, windowMs: 60 * 60 * 1000 },
   /** Catch-all for read endpoints, to blunt scraping. */

@@ -75,12 +75,24 @@ export interface OsmPlace {
   name: string;
   address: string;
   phone: string | null;
+  email: string | null;
   website: string | null;
   category: string | null;
   rating: null;
   userRatings: null;
   mapsUrl: string | null;
 }
+
+// OSM has no schema police: the same fact gets tagged under several keys
+// depending on which editor preset the mapper used. `contact:*` is the
+// namespaced convention, the bare keys are the older (still more common)
+// style, and both appear on the same map. Reading only one of each pair -
+// which is what this file used to do - silently discards contact details
+// Overpass already handed us, so every alias is checked, best-documented
+// first.
+const PHONE_TAGS = ["phone", "contact:phone", "contact:mobile", "mobile"];
+const EMAIL_TAGS = ["email", "contact:email"];
+const WEBSITE_TAGS = ["website", "contact:website", "url"];
 
 interface Bbox {
   south: number;
@@ -257,6 +269,45 @@ async function runOverpassQuery(ql: string): Promise<OverpassOutcome> {
   return { ok: false, reason: "overpass_unavailable" };
 }
 
+/**
+ * First usable value across a list of equivalent tag keys.
+ *
+ * OSM packs multiple values into one tag with semicolons
+ * (`phone=+91 80 2345 6789;+91 98450 12345`), so the raw value can't be used
+ * as-is - a `tel:` link or a WhatsApp deep link built from it would be
+ * malformed. Only the first value is kept; the extras are almost always a
+ * second line for the same business rather than new information.
+ */
+function firstTag(tags: Record<string, string>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = tags[key]?.split(";")[0].trim();
+    if (value) return value;
+  }
+  return null;
+}
+
+/** Rejects the junk that ends up in OSM's email tags (bare domains, "n/a"). */
+function cleanEmail(value: string | null): string | null {
+  if (!value) return null;
+  const email = value.replace(/^mailto:/i, "").trim().toLowerCase();
+  return /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/.test(email) ? email : null;
+}
+
+/**
+ * Mappers frequently omit the scheme (`website=example.com`), which makes the
+ * value useless as an `href` - the browser resolves it relative to the current
+ * page. Assume https, since that's what a bare domain means in practice today.
+ */
+function cleanWebsite(value: string | null): string | null {
+  if (!value) return null;
+  const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  try {
+    return new URL(url).toString();
+  } catch {
+    return null;
+  }
+}
+
 function toPlace(el: OverpassElement, category: string): OsmPlace | null {
   const tags = el.tags ?? {};
   const name = tags.name;
@@ -280,8 +331,9 @@ function toPlace(el: OverpassElement, category: string): OsmPlace | null {
     placeId: `osm:${el.type}/${el.id}`,
     name,
     address: addressParts.join(", "),
-    phone: tags.phone ?? tags["contact:phone"] ?? null,
-    website: tags.website ?? tags["contact:website"] ?? null,
+    phone: firstTag(tags, PHONE_TAGS),
+    email: cleanEmail(firstTag(tags, EMAIL_TAGS)),
+    website: cleanWebsite(firstTag(tags, WEBSITE_TAGS)),
     category,
     rating: null,
     userRatings: null,

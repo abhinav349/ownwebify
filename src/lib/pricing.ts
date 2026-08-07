@@ -56,6 +56,16 @@ export const countryToCurrency: Record<string, CurrencyCode> = {
   CA: "CAD",
 };
 
+/**
+ * Currency used when the visitor's own is not known yet — the server render,
+ * and the window before the geo lookup resolves on the client.
+ *
+ * Exported rather than inlined because it is also the currency a crawler is
+ * served: anything that mirrors prerendered prices into structured data has to
+ * agree with it, or the markup contradicts the page it describes.
+ */
+export const DEFAULT_CURRENCY: CurrencyCode = "INR";
+
 export const basePricesUSD = [59, 118, 235, 353];
 
 export const referralRewardUSD = 5;

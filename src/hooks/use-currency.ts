@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { type CurrencyCode, currencies } from "@/lib/pricing";
+import { type CurrencyCode, currencies, DEFAULT_CURRENCY } from "@/lib/pricing";
 
 function isCurrencyCode(value: string): value is CurrencyCode {
   return value === "USD" || value === "INR" || value === "CAD";
@@ -63,5 +63,5 @@ export function useCurrency() {
     };
   }, [override]);
 
-  return override ?? geoCurrency ?? "INR";
+  return override ?? geoCurrency ?? DEFAULT_CURRENCY;
 }

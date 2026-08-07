@@ -7,6 +7,7 @@ import {
   GlobeOff,
   MapPin,
   Phone,
+  Mail,
   Save,
   ExternalLink,
   Loader2,
@@ -24,6 +25,7 @@ interface Place {
   name: string;
   address: string;
   phone: string | null;
+  email: string | null;
   website: string | null;
   category: string | null;
   mapsUrl: string | null;
@@ -99,6 +101,7 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                 name: place.name,
                 address: place.address,
                 phone: place.phone,
+                email: place.email,
                 category: place.category,
                 website: place.website,
                 mapsUrl: place.mapsUrl,
@@ -146,6 +149,7 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
             name: p.name,
             address: p.address,
             phone: p.phone,
+            email: p.email,
             category: p.category,
             website: p.website,
             mapsUrl: p.mapsUrl,
@@ -366,6 +370,12 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                             <span className="flex items-center gap-1">
                               <Phone className="h-3.5 w-3.5 shrink-0" />
                               {place.phone}
+                            </span>
+                          )}
+                          {place.email && (
+                            <span className="flex items-center gap-1 truncate">
+                              <Mail className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate">{place.email}</span>
                             </span>
                           )}
                         </div>

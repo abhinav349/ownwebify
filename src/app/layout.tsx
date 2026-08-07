@@ -36,21 +36,24 @@ export const metadata: Metadata = {
     title: "OwnWebify | Affordable Website Development Starting at ₹5,000",
     description:
       "Professional websites at budget-friendly prices. Custom design, modern tech stack, and lightning-fast performance. Starting at just ₹5,000.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "OwnWebify - Affordable Web Development",
-      },
-    ],
+    // NOTE: deliberately no `images` here, in either block. Both used to point
+    // at /og-image.png, which does not exist in public/ — og:image survived
+    // only because file-based metadata (app/opengraph-image.tsx) outranks the
+    // metadata object, but twitter:image is resolved separately and shipped
+    // the 404, so every share on X rendered imageless.
+    //
+    // Leaving both unset is what makes this cascade correctly: Next fills
+    // og:image from the nearest opengraph-image file, then fills twitter's
+    // images from the *resolved* og:image. So each /demos/* route, which has
+    // its own opengraph-image.tsx, now gets its own Twitter card too —
+    // something a root twitter-image.tsx would have overridden with the
+    // generic OwnWebify card.
   },
   twitter: {
     card: "summary_large_image",
     title: "OwnWebify | Affordable Website Development Starting at ₹5,000",
     description:
       "Professional websites at budget-friendly prices. Starting at just ₹5,000.",
-    images: ["/og-image.png"],
   },
   robots: {
     index: true,

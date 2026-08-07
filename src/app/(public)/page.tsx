@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { FaqSection } from "@/components/shared/faq-section";
+import { getFaqs } from "@/lib/faqs";
+import { DEFAULT_CURRENCY } from "@/lib/pricing";
 import { OrganizationJsonLd, WebsiteJsonLd, FAQJsonLd } from "@/components/seo/json-ld";
 import { Reveal } from "@/components/demos/shared/reveal";
 import { HeroSection } from "@/components/home/hero-section";
@@ -32,38 +34,11 @@ export const metadata: Metadata = {
   },
 };
 
-const faqs = [
-  {
-    question: "How much does it cost to build a website?",
-    answer:
-      "Our website development starts at just ₹5,000 for a landing page. Business websites start at ₹10,000, e-commerce at ₹20,000, and custom web applications at ₹30,000. All prices are transparent with no hidden fees — and we're currently running a launch offer with 50% off.",
-  },
-  {
-    question: "How long does it take to build a website?",
-    answer:
-      "A landing page takes about 1 week, a business website 2-3 weeks, e-commerce 4-6 weeks, and custom web apps 6-10 weeks. We provide regular updates throughout the process.",
-  },
-  {
-    question: "Do you offer affordable website development for small businesses?",
-    answer:
-      "Yes! We specialize in affordable, professional websites for small businesses and startups. Our pricing starts at ₹5,000 and we offer flexible packages to fit any budget.",
-  },
-  {
-    question: "What technologies do you use to build websites?",
-    answer:
-      "We use modern technologies like React, Next.js, TypeScript, and Tailwind CSS for the frontend, with Node.js and PostgreSQL for the backend. This ensures fast, secure, and scalable websites.",
-  },
-  {
-    question: "Do I own the website code after the project is complete?",
-    answer:
-      "Absolutely! You get 100% ownership of all code, designs, and assets. The website is completely yours — no lock-in, no recurring platform fees.",
-  },
-  {
-    question: "Do you offer website maintenance and support?",
-    answer:
-      "Yes, every project includes 30 days of free post-launch support. We also offer ongoing monthly maintenance plans starting at ₹3,300/month for updates, security patches, and performance monitoring.",
-  },
-];
+// Built with DEFAULT_CURRENCY, not the visitor's: `FaqSection` is a client
+// component whose currency arrives from a geo lookup, so the HTML a crawler is
+// served always carries the default-currency prices. The markup has to describe
+// that same page.
+const faqs = getFaqs(DEFAULT_CURRENCY);
 
 export default function HomePage() {
   // `overflow-x-clip`, not `overflow-hidden`: both contain the hero's off-canvas

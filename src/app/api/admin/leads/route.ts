@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       name: string;
       address: string;
       phone?: string | null;
+      email?: string | null;
       category?: string | null;
       website?: string | null;
       mapsUrl?: string | null;
@@ -58,12 +59,18 @@ export async function POST(req: NextRequest) {
           mapsUrl: b.mapsUrl ?? null,
           rating: b.rating ?? null,
           userRatings: b.userRatings ?? null,
+          // Only ever fills a gap, never clears. An email on an existing
+          // lead was either typed in by hand or found by the enricher, and
+          // re-saving the same business from a search result (where the
+          // source rarely carries one) must not wipe that work.
+          ...(b.email ? { email: b.email } : {}),
         },
         create: {
           placeId: b.placeId,
           businessName: b.name,
           address: b.address,
           phone: b.phone ?? null,
+          email: b.email ?? null,
           category: b.category ?? null,
           website: b.website ?? null,
           mapsUrl: b.mapsUrl ?? null,

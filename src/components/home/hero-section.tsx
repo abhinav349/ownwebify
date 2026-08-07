@@ -108,13 +108,26 @@ export function HeroSection() {
                 })}
               </span>
             ))}
+
+            {/* The punchline above is brand copy and shares no terms with what
+                anyone actually searches — it even says "expensive" while the
+                title tag sells "affordable". This subline puts the target
+                phrase inside the page's highest-weight element without giving
+                the punchline up. Visible and accurate on purpose: hiding it
+                for crawlers only would be cloaking. */}
+            <span
+              style={{ animationDelay: "0.32s" }}
+              className="hero-fade-up mt-6 block text-lg font-medium tracking-normal text-muted-foreground sm:text-xl lg:text-2xl"
+            >
+              Affordable website development for small businesses.
+            </span>
           </h1>
 
           <p
-            style={{ animationDelay: "0.18s" }}
-            className="hero-fade-up mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed"
+            style={{ animationDelay: "0.4s" }}
+            className="hero-fade-up mx-auto mt-6 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed"
           >
-            Agency-quality web development, honestly priced — starting at{" "}
+            Agency-quality work, honestly priced — starting at{" "}
             <span className="font-semibold text-foreground">
               <GeoPrice amount={59} />
             </span>
