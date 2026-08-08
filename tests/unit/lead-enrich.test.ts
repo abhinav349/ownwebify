@@ -6,6 +6,8 @@ import {
   registrableDomain,
   isSameSite,
   enrichFromWebsite,
+  isWebsiteDown,
+  type EnrichResult,
 } from "@/lib/lead-enrich";
 
 // Every hostname is DNS-resolved before it's fetched. Tests drive the
@@ -269,5 +271,31 @@ describe("enrichFromWebsite redirect handling", () => {
     if (!result.ok) return;
     expect(result.email).toBeNull();
     expect(result.note).toBeUndefined();
+  });
+});
+
+describe("isWebsiteDown", () => {
+  it("is true only for a genuinely unreachable site", () => {
+    const result: EnrichResult = { ok: false, reason: "unreachable", message: "" };
+    expect(isWebsiteDown(result)).toBe(true);
+  });
+
+  it("is false for a reachable site, even with no contact details found", () => {
+    const result: EnrichResult = { ok: true, email: null, phone: null, checked: [] };
+    expect(isWebsiteDown(result)).toBe(false);
+  });
+
+  it("is false for a blocked host - that's this app refusing to fetch it, not the site being down", () => {
+    const result: EnrichResult = { ok: false, reason: "blocked_host", message: "" };
+    expect(isWebsiteDown(result)).toBe(false);
+  });
+
+  it("is false for an invalid URL or a non-HTML response", () => {
+    expect(
+      isWebsiteDown({ ok: false, reason: "invalid_url", message: "" })
+    ).toBe(false);
+    expect(
+      isWebsiteDown({ ok: false, reason: "not_html", message: "" })
+    ).toBe(false);
   });
 });

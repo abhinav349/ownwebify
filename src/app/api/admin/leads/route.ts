@@ -35,6 +35,9 @@ export async function POST(req: NextRequest) {
       mapsUrl?: string | null;
       rating?: number | null;
       userRatings?: number | null;
+      /** Set only when the OSM finder's "Check Websites" action ran on
+       *  this place before saving; undefined means "not checked". */
+      websiteUnreachable?: boolean | null;
     }[];
     searchQuery?: string;
   };
@@ -64,6 +67,13 @@ export async function POST(req: NextRequest) {
           // re-saving the same business from a search result (where the
           // source rarely carries one) must not wipe that work.
           ...(b.email ? { email: b.email } : {}),
+          // Unlike email this is never hand-typed - it's purely a fetch
+          // result - so a fresh check is always trusted over a stale one.
+          // Omitted (undefined) when the finder never checked this place;
+          // only overwrite when it actually did.
+          ...(b.websiteUnreachable != null
+            ? { websiteUnreachable: b.websiteUnreachable, websiteCheckedAt: new Date() }
+            : {}),
         },
         create: {
           placeId: b.placeId,
@@ -77,6 +87,8 @@ export async function POST(req: NextRequest) {
           rating: b.rating ?? null,
           userRatings: b.userRatings ?? null,
           searchQuery: searchQuery ?? null,
+          websiteUnreachable: b.websiteUnreachable ?? null,
+          websiteCheckedAt: b.websiteUnreachable != null ? new Date() : null,
         },
       })
     )

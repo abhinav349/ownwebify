@@ -72,6 +72,13 @@ export const RATE_LIMITS = {
    * admin session can aim at other people's servers on our IP.
    */
   leadEnrich: { limit: 40, windowMs: 60 * 60 * 1000 },
+  /**
+   * Website reachability check on OSM search results, before they're saved
+   * as leads. Same outbound-fan-out concern as leadEnrich, kept as its own
+   * bucket so a bulk check on the search page and a bulk email-find on the
+   * saved-leads page don't compete for one shared budget.
+   */
+  leadCheckWebsites: { limit: 40, windowMs: 60 * 60 * 1000 },
   /** Outreach email send. */
   leadEmail: { limit: 100, windowMs: 60 * 60 * 1000 },
   /** Catch-all for read endpoints, to blunt scraping. */

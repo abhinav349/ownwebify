@@ -472,6 +472,21 @@ export function extractContacts(
   return { emails, phone, contactLinks };
 }
 
+/**
+ * True only when the failure is evidence the business's own site is down -
+ * not evidence about something else (a malformed URL, a host this app
+ * refuses to fetch, a non-HTML response). `blocked_host` in particular is
+ * not "down": it means the site pointed somewhere this app won't follow,
+ * which says nothing about whether the business's real site is up.
+ *
+ * This is the one signal worth surfacing as a "Website Down" badge, so both
+ * callers (the saved-lead enricher and the pre-save OSM checker) go through
+ * this instead of each re-deriving the same reason list and risking drift.
+ */
+export function isWebsiteDown(result: EnrichResult): boolean {
+  return !result.ok && result.reason === "unreachable";
+}
+
 // -- Entry point ------------------------------------------------------------
 
 /**

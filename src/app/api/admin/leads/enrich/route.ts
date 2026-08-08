@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { enforceRateLimit } from "@/lib/rate-limit";
-import { enrichFromWebsite } from "@/lib/lead-enrich";
+import { enrichFromWebsite, isWebsiteDown } from "@/lib/lead-enrich";
 
 /**
  * Fills in missing contact details by reading each lead's own website.
@@ -56,12 +56,9 @@ async function enrichLead(lead: {
   const result = await enrichFromWebsite(lead.website);
 
   if (!result.ok) {
-    // Specifically "the site didn't answer", not "we chose not to trust it"
-    // (invalid_url/not_html) or "we refused to fetch it" (blocked_host) -
-    // only unreachable is evidence the business's own site is down, which is
-    // the signal worth surfacing on the lead itself. A dead site is a
-    // *stronger* prospect than no site at all: they already paid for one.
-    const websiteUnreachable = result.reason === "unreachable" ? true : lead.websiteUnreachable;
+    // A dead site is a *stronger* prospect than no site at all: they
+    // already paid for one. See isWebsiteDown for which failures count.
+    const websiteUnreachable = isWebsiteDown(result) ? true : lead.websiteUnreachable;
     if (websiteUnreachable !== lead.websiteUnreachable) {
       await prisma.lead
         .update({

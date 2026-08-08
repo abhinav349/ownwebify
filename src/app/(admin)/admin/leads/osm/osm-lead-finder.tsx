@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   Filter,
   Building2,
+  AlertTriangle,
+  Wifi,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -33,7 +35,10 @@ interface Place {
   isChain: boolean;
 }
 
-type FilterMode = "all" | "no-website" | "has-website";
+type FilterMode = "all" | "no-website" | "has-website" | "website-down";
+
+/** Bounds a single "Check Websites" call - mirrors the server's own cap. */
+const MAX_WEBSITES_PER_CHECK = 40;
 
 const QUERY_SUGGESTIONS = [
   "restaurants in Koramangala, Bangalore",
@@ -59,6 +64,13 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
   // results to be worth hiding by default rather than reviewing by hand
   // every search.
   const [hideChains, setHideChains] = useState(true);
+  // Keyed by placeId. Absent = not yet checked; false = checked and
+  // reachable; true = checked and down. Client-only until a place is
+  // actually saved - these results have no Lead row yet.
+  const [websiteStatus, setWebsiteStatus] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [checkingWebsites, setCheckingWebsites] = useState(false);
   const [lastQuery, setLastQuery] = useState("");
   // Distinguishes "haven't searched yet" from "searched and got nothing".
   // Without it a zero-result search renders exactly like a fresh page load,
@@ -68,6 +80,7 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
   const search = useCallback(async () => {
     setLoading(true);
     setPlaces([]);
+    setWebsiteStatus({});
     setError(null);
     setHasSearched(false);
 
@@ -94,6 +107,63 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
     }
   }, [query]);
 
+  /**
+   * Reads each website's own reachability before anything is saved.
+   *
+   * Deliberately separate from `search`: see check-websites/route.ts for why
+   * this can't be bundled into the search response without risking a very
+   * long wait or an outright timeout.
+   */
+  const checkWebsites = useCallback(async () => {
+    const toCheck = places
+      .filter(
+        (p) =>
+          p.website && !p.isChain && websiteStatus[p.placeId] === undefined
+      )
+      .slice(0, MAX_WEBSITES_PER_CHECK);
+    if (!toCheck.length) return;
+
+    setCheckingWebsites(true);
+    try {
+      const res = await fetch("/api/admin/leads/check-websites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          places: toCheck.map((p) => ({
+            placeId: p.placeId,
+            website: p.website,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const results = data.results as { placeId: string; unreachable: boolean }[];
+        setWebsiteStatus((prev) => {
+          const next = { ...prev };
+          results.forEach((r) => {
+            next[r.placeId] = r.unreachable;
+          });
+          return next;
+        });
+      }
+    } finally {
+      setCheckingWebsites(false);
+    }
+  }, [places, websiteStatus]);
+
+  /** Shared by the results list and "Save All" so the two can never disagree
+   *  about which places a filter mode actually selects. */
+  const matchesFilter = useCallback(
+    (p: Place) => {
+      if (hideChains && p.isChain) return false;
+      if (filterMode === "no-website") return !p.website;
+      if (filterMode === "has-website") return !!p.website;
+      if (filterMode === "website-down") return websiteStatus[p.placeId] === true;
+      return true;
+    },
+    [filterMode, hideChains, websiteStatus]
+  );
+
   const saveLead = useCallback(
     async (place: Place) => {
       setSaving((prev) => new Set(prev).add(place.placeId));
@@ -112,6 +182,7 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                 category: place.category,
                 website: place.website,
                 mapsUrl: place.mapsUrl,
+                websiteUnreachable: websiteStatus[place.placeId] ?? null,
               },
             ],
             searchQuery: lastQuery,
@@ -129,16 +200,11 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
         });
       }
     },
-    [lastQuery]
+    [lastQuery, websiteStatus]
   );
 
   const saveAllFiltered = useCallback(async () => {
-    const currentFiltered = places.filter((p) => {
-      if (hideChains && p.isChain) return false;
-      if (filterMode === "no-website") return !p.website;
-      if (filterMode === "has-website") return !!p.website;
-      return true;
-    });
+    const currentFiltered = places.filter(matchesFilter);
     const toSave = currentFiltered.filter(
       (p) => !savedSet.has(p.placeId)
     );
@@ -161,6 +227,7 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
             category: p.category,
             website: p.website,
             mapsUrl: p.mapsUrl,
+            websiteUnreachable: websiteStatus[p.placeId] ?? null,
           })),
           searchQuery: lastQuery,
         }),
@@ -176,14 +243,9 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
         return next;
       });
     }
-  }, [places, savedSet, lastQuery, filterMode, hideChains]);
+  }, [places, savedSet, lastQuery, matchesFilter, websiteStatus]);
 
-  const filtered = places.filter((p) => {
-    if (hideChains && p.isChain) return false;
-    if (filterMode === "no-website") return !p.website;
-    if (filterMode === "has-website") return !!p.website;
-    return true;
-  });
+  const filtered = places.filter(matchesFilter);
 
   // Counted across every result, not just the filtered set, so the stat
   // row always describes the full search rather than shifting definitions
@@ -191,6 +253,12 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
   const noWebsiteCount = places.filter((p) => !p.website).length;
   const hasWebsiteCount = places.filter((p) => !!p.website).length;
   const chainCount = places.filter((p) => p.isChain).length;
+  const websiteDownCount = places.filter(
+    (p) => websiteStatus[p.placeId] === true
+  ).length;
+  const uncheckedWithWebsite = places.filter(
+    (p) => p.website && !p.isChain && websiteStatus[p.placeId] === undefined
+  ).length;
   const unsavedFiltered = filtered.filter(
     (p) => !savedSet.has(p.placeId)
   ).length;
@@ -275,6 +343,17 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                   {hasWebsiteCount} with website
                 </span>
               </div>
+              {websiteDownCount > 0 && (
+                <>
+                  <span className="text-muted-foreground text-sm">|</span>
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                    <span className="text-sm font-medium">
+                      {websiteDownCount} website down
+                    </span>
+                  </div>
+                </>
+              )}
               <span className="text-muted-foreground text-sm">|</span>
               <span className="text-sm text-muted-foreground">
                 {places.length} total
@@ -316,7 +395,43 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                 >
                   Has Website
                 </button>
+                {websiteDownCount > 0 && (
+                  <button
+                    onClick={() => setFilterMode("website-down")}
+                    className={`px-3 py-1.5 border-l transition-colors ${
+                      filterMode === "website-down"
+                        ? "bg-red-600 text-white"
+                        : "hover:bg-muted text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <AlertTriangle className="h-3 w-3" />
+                      Website Down ({websiteDownCount})
+                    </span>
+                  </button>
+                )}
               </div>
+
+              {uncheckedWithWebsite > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={checkWebsites}
+                  disabled={checkingWebsites}
+                  title="Fetches each website to see if it's still reachable - takes a few seconds per site"
+                >
+                  {checkingWebsites ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  ) : (
+                    <Wifi className="h-3.5 w-3.5 mr-1.5" />
+                  )}
+                  Check {Math.min(uncheckedWithWebsite, MAX_WEBSITES_PER_CHECK)}{" "}
+                  Website
+                  {Math.min(uncheckedWithWebsite, MAX_WEBSITES_PER_CHECK) === 1
+                    ? ""
+                    : "s"}
+                </Button>
+              )}
 
               {chainCount > 0 && (
                 <Button
@@ -358,9 +473,11 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                 <Card
                   key={place.placeId}
                   className={
-                    !place.website
-                      ? "border-orange-200 bg-orange-50/50 dark:border-orange-900/30 dark:bg-orange-950/10"
-                      : ""
+                    websiteStatus[place.placeId] === true
+                      ? "border-red-200 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/10"
+                      : !place.website
+                        ? "border-orange-200 bg-orange-50/50 dark:border-orange-900/30 dark:bg-orange-950/10"
+                        : ""
                   }
                 >
                   <CardContent className="p-4 sm:p-5">
@@ -378,6 +495,16 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                           {!place.website && (
                             <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-[11px]">
                               No Website
+                            </Badge>
+                          )}
+                          {/* A dead site is a *stronger* prospect than no
+                              site at all - they already paid for one - so
+                              it gets its own badge rather than folding into
+                              "No Website" or "Has Website". */}
+                          {websiteStatus[place.placeId] === true && (
+                            <Badge className="bg-red-100 text-red-800 border-red-200 text-[11px]">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Website Down
                             </Badge>
                           )}
                           {/* Only reachable with "Show Chains" toggled on -
