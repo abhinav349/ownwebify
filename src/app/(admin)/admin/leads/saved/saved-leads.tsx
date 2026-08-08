@@ -22,6 +22,7 @@ import {
   Send,
   CheckCircle2,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,10 @@ interface SavedLead {
   mapsUrl: string | null;
   rating: number | null;
   userRatings: number | null;
+  // Set only by the contact-lookup enricher. null means "never checked" -
+  // most rows, and every lead with no website at all - distinct from a
+  // check that came back and found the site genuinely reachable.
+  websiteUnreachable: boolean | null;
   status: string;
   notes: string | null;
   searchQuery: string | null;
@@ -187,13 +192,21 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
         id: string;
         email: string | null;
         phone: string | null;
+        websiteUnreachable: boolean | null;
         error?: string;
       }[];
 
       setLeads((prev) =>
         prev.map((l) => {
           const found = results.find((r) => r.id === l.id);
-          return found ? { ...l, email: found.email, phone: found.phone } : l;
+          return found
+            ? {
+                ...l,
+                email: found.email,
+                phone: found.phone,
+                websiteUnreachable: found.websiteUnreachable,
+              }
+            : l;
         })
       );
 
@@ -412,6 +425,15 @@ export function SavedLeads({ initialLeads }: { initialLeads: SavedLead[] }) {
                       ) : (
                         <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-[11px]">
                           No Website
+                        </Badge>
+                      )}
+                      {/* A dead site is a stronger prospect than no site at
+                          all - they already paid for one - so this gets its
+                          own badge rather than folding into "Has Website". */}
+                      {lead.website && lead.websiteUnreachable && (
+                        <Badge className="bg-red-100 text-red-800 border-red-200 text-[11px]">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          Website Down
                         </Badge>
                       )}
                       {lead.notes && (

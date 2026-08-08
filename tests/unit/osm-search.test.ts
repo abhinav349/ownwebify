@@ -228,4 +228,24 @@ describe("searchOsmPlaces tag extraction", () => {
       "https://thaicafe.in/"
     );
   });
+
+  it("flags a business tagged with a brand as a chain", async () => {
+    expect((await firstPlace({ brand: "Starbucks" })).isChain).toBe(true);
+  });
+
+  it("flags a business identified only by a brand:wikidata QID", async () => {
+    // Smaller/regional chains often carry the QID without a human-readable
+    // brand tag, or vice versa - either alone is enough.
+    expect(
+      (await firstPlace({ "brand:wikidata": "Q37158" })).isChain
+    ).toBe(true);
+  });
+
+  it("does not flag an independent business with no brand tag", async () => {
+    expect((await firstPlace({})).isChain).toBe(false);
+  });
+
+  it("ignores an empty brand tag left behind by a careless edit", async () => {
+    expect((await firstPlace({ brand: "   " })).isChain).toBe(false);
+  });
 });

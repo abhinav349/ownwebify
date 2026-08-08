@@ -13,6 +13,7 @@ import {
   Loader2,
   CheckCircle2,
   Filter,
+  Building2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface Place {
   website: string | null;
   category: string | null;
   mapsUrl: string | null;
+  isChain: boolean;
 }
 
 type FilterMode = "all" | "no-website" | "has-website";
@@ -52,6 +54,11 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
   );
   const [error, setError] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<FilterMode>("no-website");
+  // Chains (Starbucks, Tim Hortons, ...) are unsellable regardless of tag
+  // completeness and, measured live, common enough among "has website"
+  // results to be worth hiding by default rather than reviewing by hand
+  // every search.
+  const [hideChains, setHideChains] = useState(true);
   const [lastQuery, setLastQuery] = useState("");
   // Distinguishes "haven't searched yet" from "searched and got nothing".
   // Without it a zero-result search renders exactly like a fresh page load,
@@ -127,6 +134,7 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
 
   const saveAllFiltered = useCallback(async () => {
     const currentFiltered = places.filter((p) => {
+      if (hideChains && p.isChain) return false;
       if (filterMode === "no-website") return !p.website;
       if (filterMode === "has-website") return !!p.website;
       return true;
@@ -168,16 +176,21 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
         return next;
       });
     }
-  }, [places, savedSet, lastQuery, filterMode]);
+  }, [places, savedSet, lastQuery, filterMode, hideChains]);
 
   const filtered = places.filter((p) => {
+    if (hideChains && p.isChain) return false;
     if (filterMode === "no-website") return !p.website;
     if (filterMode === "has-website") return !!p.website;
     return true;
   });
 
+  // Counted across every result, not just the filtered set, so the stat
+  // row always describes the full search rather than shifting definitions
+  // depending on which toggle is active.
   const noWebsiteCount = places.filter((p) => !p.website).length;
   const hasWebsiteCount = places.filter((p) => !!p.website).length;
+  const chainCount = places.filter((p) => p.isChain).length;
   const unsavedFiltered = filtered.filter(
     (p) => !savedSet.has(p.placeId)
   ).length;
@@ -305,6 +318,22 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                 </button>
               </div>
 
+              {chainCount > 0 && (
+                <Button
+                  size="sm"
+                  variant={hideChains ? "outline" : "secondary"}
+                  onClick={() => setHideChains((v) => !v)}
+                  title={
+                    hideChains
+                      ? "Chain locations (Starbucks, Tim Hortons, ...) are hidden"
+                      : "Chain locations are shown"
+                  }
+                >
+                  <Building2 className="h-3.5 w-3.5 mr-1.5" />
+                  {hideChains ? `${chainCount} Chains Hidden` : "Show Chains"}
+                </Button>
+              )}
+
               {unsavedFiltered > 0 && (
                 <Button
                   size="sm"
@@ -349,6 +378,16 @@ export function OsmLeadFinder({ savedPlaceIds }: { savedPlaceIds: string[] }) {
                           {!place.website && (
                             <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-[11px]">
                               No Website
+                            </Badge>
+                          )}
+                          {/* Only reachable with "Show Chains" toggled on -
+                              hideChains filters these out of `filtered`
+                              entirely - but still worth labelling once
+                              visible, same as the OSM-page badge below. */}
+                          {place.isChain && (
+                            <Badge className="bg-slate-200 text-slate-700 border-slate-300 text-[11px] dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+                              <Building2 className="h-3 w-3 mr-1" />
+                              Chain
                             </Badge>
                           )}
                           {isSaved && (

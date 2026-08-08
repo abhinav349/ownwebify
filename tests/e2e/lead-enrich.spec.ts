@@ -4,26 +4,48 @@ import { prisma } from "@/lib/prisma";
 
 const { adminEmail, adminPassword } = inject("testCredentials");
 
-// Reserved id so the fixture can never collide with, or be mistaken for, a
-// real saved lead.
+// Reserved ids so the fixtures can never collide with, or be mistaken for, a
+// real saved lead. Distinct names too: the saved-leads search box does a
+// substring match, so a shared prefix would pull both fixtures into one
+// filtered view and the click-by-text helpers could land on the wrong card.
 const FIXTURE_PLACE_ID = "osm:node/999000001";
-const FIXTURE_NAME = "E2E Enrich Fixture";
+const FIXTURE_NAME = "E2E Enrich Fixture Live";
+
+// `.invalid` is reserved by RFC 2606 to never resolve - a deterministic,
+// always-unreachable target, rather than depending on some real site
+// happening to be down for the duration of this test.
+const DOWN_FIXTURE_PLACE_ID = "osm:node/999000002";
+const DOWN_FIXTURE_NAME = "E2E Enrich Fixture Down";
+const DOWN_FIXTURE_WEBSITE = "https://e2e-fixture-nonexistent.invalid/";
 
 beforeAll(async () => {
-  await prisma.lead.deleteMany({ where: { placeId: FIXTURE_PLACE_ID } });
-  await prisma.lead.create({
-    data: {
-      placeId: FIXTURE_PLACE_ID,
-      businessName: FIXTURE_NAME,
-      address: "Halifax, NS",
-      website: "https://reddoorrealty.ca/",
-      searchQuery: "e2e fixture",
-    },
+  await prisma.lead.deleteMany({
+    where: { placeId: { in: [FIXTURE_PLACE_ID, DOWN_FIXTURE_PLACE_ID] } },
+  });
+  await prisma.lead.createMany({
+    data: [
+      {
+        placeId: FIXTURE_PLACE_ID,
+        businessName: FIXTURE_NAME,
+        address: "Halifax, NS",
+        website: "https://reddoorrealty.ca/",
+        searchQuery: "e2e fixture",
+      },
+      {
+        placeId: DOWN_FIXTURE_PLACE_ID,
+        businessName: DOWN_FIXTURE_NAME,
+        address: "Nowhere, NS",
+        website: DOWN_FIXTURE_WEBSITE,
+        searchQuery: "e2e fixture",
+      },
+    ],
   });
 });
 
 afterAll(async () => {
-  await prisma.lead.deleteMany({ where: { placeId: FIXTURE_PLACE_ID } });
+  await prisma.lead.deleteMany({
+    where: { placeId: { in: [FIXTURE_PLACE_ID, DOWN_FIXTURE_PLACE_ID] } },
+  });
   await closeBrowser();
 });
 
@@ -75,6 +97,44 @@ describe("Lead contact enrichment", () => {
       where: { placeId: FIXTURE_PLACE_ID },
     });
     expect(saved?.email).toBe("info@reddoorrealty.ca");
+
+    await page.close();
+  }, 120000);
+
+  it("badges a lead whose website doesn't resolve as Website Down", async () => {
+    const page = await newPage();
+    await login(page, adminEmail, adminPassword);
+
+    await page.goto("http://localhost:3002/admin/leads/saved", {
+      waitUntil: "domcontentloaded",
+    });
+
+    await page.waitForSelector('input[placeholder*="Search saved leads"]');
+    await page.type(
+      'input[placeholder*="Search saved leads"]',
+      DOWN_FIXTURE_NAME
+    );
+    await waitForText(page, DOWN_FIXTURE_NAME);
+
+    await clickByText(page, "button", DOWN_FIXTURE_NAME);
+    await waitForText(page, "Find Email");
+    await clickByText(page, "button", "Find Email");
+
+    await waitForText(page, "Website Down", 45000);
+
+    await page.screenshot({
+      path: "/tmp/lead-enrich-down-ui.png",
+      fullPage: false,
+    });
+
+    const saved = await prisma.lead.findUnique({
+      where: { placeId: DOWN_FIXTURE_PLACE_ID },
+    });
+    expect(saved?.websiteUnreachable).toBe(true);
+    expect(saved?.websiteCheckedAt).not.toBeNull();
+    // Confirms enrichment genuinely tried and failed to reach the site,
+    // rather than the badge being set some other way.
+    expect(saved?.email).toBeNull();
 
     await page.close();
   }, 120000);

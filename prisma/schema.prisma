@@ -33,26 +33,26 @@ enum ReferralStatus {
 }
 
 model User {
-  id              String    @id @default(cuid())
+  id              String   @id @default(cuid())
   name            String
-  email           String    @unique
+  email           String   @unique
   passwordHash    String?
-  role            Role      @default(CLIENT)
+  role            Role     @default(CLIENT)
   company         String?
-  emailVerified   Boolean   @default(false)
-  referralCode    String?   @unique
-  referralBalance Float     @default(0)
+  emailVerified   Boolean  @default(false)
+  referralCode    String?  @unique
+  referralBalance Float    @default(0)
   referredById    String?
-  referredBy      User?     @relation("UserReferrals", fields: [referredById], references: [id])
-  referrals       User[]    @relation("UserReferrals")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  referredBy      User?    @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals       User[]   @relation("UserReferrals")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  projects         Project[]
-  messages         Message[]
-  referralsMade    Referral[] @relation("ReferrerReferrals")
-  referralsUsed    Referral[] @relation("RefereeReferrals")
-  setupTokens      SetupToken[]
+  projects      Project[]
+  messages      Message[]
+  referralsMade Referral[]   @relation("ReferrerReferrals")
+  referralsUsed Referral[]   @relation("RefereeReferrals")
+  setupTokens   SetupToken[]
 }
 
 model Referral {
@@ -70,20 +70,20 @@ model Referral {
 }
 
 model Project {
-  id              String        @id @default(cuid())
-  title           String
-  description     String
-  projectType     String
-  budget          String
-  timeline        String
-  status          ProjectStatus @default(NEW)
-  referenceLinks  String?
-  howFoundUs      String?
-  features        String[]  @default([])
-  clientId        String
-  client          User          @relation(fields: [clientId], references: [id])
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  title          String
+  description    String
+  projectType    String
+  budget         String
+  timeline       String
+  status         ProjectStatus @default(NEW)
+  referenceLinks String?
+  howFoundUs     String?
+  features       String[]      @default([])
+  clientId       String
+  client         User          @relation(fields: [clientId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   quotes   Quote[]
   messages Message[]
@@ -93,17 +93,17 @@ model Project {
 }
 
 model Quote {
-  id          String      @id @default(cuid())
-  projectId   String
-  project     Project     @relation(fields: [projectId], references: [id])
+  id              String      @id @default(cuid())
+  projectId       String
+  project         Project     @relation(fields: [projectId], references: [id])
   amount          Float
   currency        String      @default("USD")
   discountPercent Float       @default(0)
-  description String
-  validUntil  DateTime
-  status      QuoteStatus @default(PENDING)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  description     String
+  validUntil      DateTime
+  status          QuoteStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@index([projectId])
 }
@@ -159,18 +159,18 @@ model SetupToken {
 }
 
 model PortfolioItem {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  description     String
   longDescription String?
-  imageUrl    String?
-  techStack   String[]
-  liveUrl     String?
-  category    String
-  featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  imageUrl        String?
+  techStack       String[]
+  liveUrl         String?
+  category        String
+  featured        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Testimonial {
@@ -195,23 +195,33 @@ enum LeadStatus {
 }
 
 model Lead {
-  id            String     @id @default(cuid())
-  businessName  String
-  address       String
-  phone         String?
-  email         String?
-  category      String?
-  placeId       String     @unique
-  website       String?
-  mapsUrl       String?
-  rating        Float?
-  userRatings   Int?
-  status        LeadStatus @default(NEW)
-  notes         String?
-  searchQuery   String?
-  emailSentAt   DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id                 String     @id @default(cuid())
+  businessName       String
+  address            String
+  phone              String?
+  email              String?
+  category           String?
+  placeId            String     @unique
+  website            String?
+  mapsUrl            String?
+  rating             Float?
+  userRatings        Int?
+  status             LeadStatus @default(NEW)
+  notes              String?
+  searchQuery        String?
+  emailSentAt        DateTime?
+  // Set by the contact-lookup enricher (src/lib/lead-enrich.ts), never by
+  // hand. Three-valued on purpose: null means "never checked" (most rows,
+  // and the leads without a website at all), distinct from a check that
+  // came back and found the site genuinely reachable.
+  //
+  // A lead whose site is down is a *stronger* prospect than one with no
+  // site - they already paid for one - so this is a signal worth surfacing,
+  // not just an enrichment failure to discard.
+  websiteUnreachable Boolean?
+  websiteCheckedAt   DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   @@index([status])
   @@index([createdAt])

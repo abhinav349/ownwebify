@@ -28,6 +28,7 @@ interface EnrichOutcome {
   businessName: string;
   email: string | null;
   phone: string | null;
+  websiteUnreachable: boolean | null;
   /** Absent on success; a human-readable reason otherwise. */
   error?: string;
 }
@@ -38,43 +39,77 @@ async function enrichLead(lead: {
   website: string | null;
   email: string | null;
   phone: string | null;
+  websiteUnreachable: boolean | null;
 }): Promise<EnrichOutcome> {
   const base = { id: lead.id, businessName: lead.businessName };
 
   if (!lead.website) {
-    return { ...base, email: null, phone: null, error: "No website on file" };
+    return {
+      ...base,
+      email: null,
+      phone: null,
+      websiteUnreachable: lead.websiteUnreachable,
+      error: "No website on file",
+    };
   }
 
   const result = await enrichFromWebsite(lead.website);
 
   if (!result.ok) {
-    return { ...base, email: null, phone: null, error: result.message };
+    // Specifically "the site didn't answer", not "we chose not to trust it"
+    // (invalid_url/not_html) or "we refused to fetch it" (blocked_host) -
+    // only unreachable is evidence the business's own site is down, which is
+    // the signal worth surfacing on the lead itself. A dead site is a
+    // *stronger* prospect than no site at all: they already paid for one.
+    const websiteUnreachable = result.reason === "unreachable" ? true : lead.websiteUnreachable;
+    if (websiteUnreachable !== lead.websiteUnreachable) {
+      await prisma.lead
+        .update({
+          where: { id: lead.id },
+          data: { websiteUnreachable, websiteCheckedAt: new Date() },
+        })
+        .catch((err) => console.error("Lead enrich status update failed:", err));
+    }
+    return { ...base, email: null, phone: null, websiteUnreachable, error: result.message };
   }
 
   // Only ever fill gaps. An existing value was typed in by an admin or came
   // from the lead source, and both beat a guess scraped off a web page.
   const email = lead.email ?? result.email;
   const phone = lead.phone ?? result.phone;
+  // The site answered, so any earlier "unreachable" flag is stale - clear it
+  // rather than leaving a broken-website badge on a business that fixed it.
+  const websiteUnreachable = false;
+
+  try {
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { email, phone, websiteUnreachable, websiteCheckedAt: new Date() },
+    });
+  } catch (err) {
+    console.error("Lead enrich update failed:", err);
+    return {
+      ...base,
+      email: lead.email,
+      phone: lead.phone,
+      websiteUnreachable: lead.websiteUnreachable,
+      error: "Couldn't save the details found",
+    };
+  }
 
   if (email === lead.email && phone === lead.phone) {
     return {
       ...base,
       email: lead.email,
       phone: lead.phone,
+      websiteUnreachable,
       error: result.email
         ? undefined
         : (result.note ?? "No contact details published on that site"),
     };
   }
 
-  try {
-    await prisma.lead.update({ where: { id: lead.id }, data: { email, phone } });
-  } catch (err) {
-    console.error("Lead enrich update failed:", err);
-    return { ...base, email: lead.email, phone: lead.phone, error: "Couldn't save the details found" };
-  }
-
-  return { ...base, email, phone };
+  return { ...base, email, phone, websiteUnreachable };
 }
 
 export async function POST(req: NextRequest) {
@@ -106,7 +141,14 @@ export async function POST(req: NextRequest) {
 
   const leads = await prisma.lead.findMany({
     where: { id: { in: ids } },
-    select: { id: true, businessName: true, website: true, email: true, phone: true },
+    select: {
+      id: true,
+      businessName: true,
+      website: true,
+      email: true,
+      phone: true,
+      websiteUnreachable: true,
+    },
   });
 
   if (!leads.length) {

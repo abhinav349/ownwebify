@@ -81,6 +81,15 @@ export interface OsmPlace {
   rating: null;
   userRatings: null;
   mapsUrl: string | null;
+  /**
+   * True when OSM tags this business as a location of a named chain
+   * (`brand`/`brand:wikidata` - Starbucks, Tim Hortons, ...). This app's
+   * customer is the independent business without a web presence; a chain
+   * outlet is unsellable regardless of how sparse its OSM tags are, and
+   * measured live it's common enough in "has website" results to be worth
+   * flagging rather than making every search work around it by hand.
+   */
+  isChain: boolean;
 }
 
 // OSM has no schema police: the same fact gets tagged under several keys
@@ -93,6 +102,17 @@ export interface OsmPlace {
 const PHONE_TAGS = ["phone", "contact:phone", "contact:mobile", "mobile"];
 const EMAIL_TAGS = ["email", "contact:email"];
 const WEBSITE_TAGS = ["website", "contact:website", "url"];
+
+/**
+ * `brand:wikidata` is a mapper tagging this location as an outlet of a
+ * specific, globally-identified chain (a Wikidata QID - unambiguous, unlike
+ * a free-text name). `brand` alone is the same claim without the QID, common
+ * for chains too small or regional to have a Wikidata entry. Either is
+ * enough: a franchise location doesn't stop being one for lacking a QID.
+ */
+function isChainTagged(tags: Record<string, string>): boolean {
+  return Boolean(tags.brand?.trim() || tags["brand:wikidata"]?.trim());
+}
 
 interface Bbox {
   south: number;
@@ -338,6 +358,7 @@ function toPlace(el: OverpassElement, category: string): OsmPlace | null {
     rating: null,
     userRatings: null,
     mapsUrl: `https://www.openstreetmap.org/${el.type}/${el.id}`,
+    isChain: isChainTagged(tags),
   };
 }
 
